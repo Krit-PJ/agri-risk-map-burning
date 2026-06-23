@@ -13,7 +13,7 @@ const Dashboard = (() => {
   // ── Init ──────────────────────────────────────────────
   function init() {
     _initTrendChart();
-    _initTopProvinceChart();
+    _initTopDistrictChart();
     _initCropChart();
     _initRiskChart();
     document.getElementById('last-updated').textContent =
@@ -31,7 +31,7 @@ const Dashboard = (() => {
     const allFeatures = Object.values(hotspotStore).flat();
     _updateCards(allFeatures);
     _updateTrend();
-    _updateTopProvince(allFeatures);
+    _updateTopDistrict(allFeatures);
     _updateCropChart(allFeatures);
     _updateTopDistrictTable(allFeatures);
   }
@@ -57,11 +57,11 @@ const Dashboard = (() => {
     charts.trend = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: [2564, 2565, 2566, 2567, 2568].map(y => `${y}`),
+        labels: [2566, 2567, 2568].map(y => `${y}`),
         datasets: [{
           label: 'Hotspot',
-          data: [0, 0, 0, 0, 0],
-          backgroundColor: [2564, 2565, 2566, 2567, 2568].map(y => CONFIG.YEAR_COLORS[y]),
+          data: [0, 0, 0],
+          backgroundColor: [2566, 2567, 2568].map(y => CONFIG.YEAR_COLORS[y]),
           borderRadius: 3,
         }],
       },
@@ -70,31 +70,31 @@ const Dashboard = (() => {
   }
 
   function _updateTrend() {
-    const data = [2564, 2565, 2566, 2567, 2568].map(y => (hotspotStore[y] || []).length);
+    const data = [2566, 2567, 2568].map(y => (hotspotStore[y] || []).length);
     charts.trend.data.datasets[0].data = data;
     charts.trend.update('none');
   }
 
-  // ── Top Province Chart (horizontal bar) ──────────────
-  function _initTopProvinceChart() {
-    const ctx = document.getElementById('chart-top-province').getContext('2d');
-    charts.topProvince = new Chart(ctx, {
+  // ── Top District Chart (horizontal bar) ──────────────
+  function _initTopDistrictChart() {
+    const ctx = document.getElementById('chart-top-district').getContext('2d');
+    charts.topDistrict = new Chart(ctx, {
       type: 'bar',
       data: { labels: [], datasets: [{ label: 'Hotspot', data: [], backgroundColor: '#5bc0de', borderRadius: 3 }] },
       options: { ..._chartOptions({ showLegend: false }), indexAxis: 'y' },
     });
   }
 
-  function _updateTopProvince(features) {
+  function _updateTopDistrict(features) {
     const counts = {};
     features.forEach(f => {
-      const p = f.properties?.province || f.properties?.PROV_NAM_T || f.properties?.prov_name || 'ไม่ระบุ';
-      counts[p] = (counts[p] || 0) + 1;
+      const d = f.properties?.district || f.properties?.AMP_NAM_T || f.properties?.amp_name || 'ไม่ระบุ';
+      counts[d] = (counts[d] || 0) + 1;
     });
     const top5 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    charts.topProvince.data.labels              = top5.map(x => x[0]);
-    charts.topProvince.data.datasets[0].data   = top5.map(x => x[1]);
-    charts.topProvince.update('none');
+    charts.topDistrict.data.labels            = top5.map(x => x[0]);
+    charts.topDistrict.data.datasets[0].data  = top5.map(x => x[1]);
+    charts.topDistrict.update('none');
   }
 
   // ── Crop Pie Chart ────────────────────────────────────
@@ -190,7 +190,7 @@ const Dashboard = (() => {
         legend: {
           display: showLegend,
           position: legendPosition,
-          labels: { color: '#8aaccc', font: { size: 10 }, boxWidth: 10, padding: 6 },
+          labels: { color: '#8aaccc', font: { size: 12 }, boxWidth: 10, padding: 6 },
         },
         tooltip: {
           backgroundColor: '#0d2137',
@@ -201,8 +201,8 @@ const Dashboard = (() => {
         },
       },
       scales: {
-        x: { ticks: { color: '#6a8faa', font: { size: 10 } }, grid: { color: '#1e3a52' } },
-        y: { ticks: { color: '#6a8faa', font: { size: 10 } }, grid: { color: '#1e3a52' } },
+        x: { ticks: { color: '#6a8faa', font: { size: 12 } }, grid: { color: '#1e3a52' } },
+        y: { ticks: { color: '#6a8faa', font: { size: 12 } }, grid: { color: '#1e3a52' } },
       },
     };
   }
@@ -219,11 +219,11 @@ const Dashboard = (() => {
       charts.trend.update('none');
     }
 
-    // Top province
+    // Top district
     if (stats.top_province) {
-      charts.topProvince.data.labels            = stats.top_province.map(r => r.name);
-      charts.topProvince.data.datasets[0].data  = stats.top_province.map(r => r.count);
-      charts.topProvince.update('none');
+      charts.topDistrict.data.labels            = stats.top_province.map(r => r.name);
+      charts.topDistrict.data.datasets[0].data  = stats.top_province.map(r => r.count);
+      charts.topDistrict.update('none');
     }
 
     // Crop distribution
