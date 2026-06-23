@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agri-Risk Map Burning Dashboard</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Leaflet MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header id="app-header">
+    <div class="header-left">
+      <img src="assets/logo.png" alt="DOAE" id="logo" onerror="this.style.display='none'" />
+      <div>
+        <h1>Agri-Risk Map Burning Dashboard</h1>
+        <p>กรมส่งเสริมการเกษตร | ระบบแผนที่ความเสี่ยงการเผาไหม้ภาคเกษตร</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span id="last-updated"></span>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <div id="app-body">
+
+    <!-- LEFT PANEL: Controls -->
+    <aside id="left-panel">
+      <section class="panel-section">
+        <h3>🗺️ ชั้นข้อมูล</h3>
+
+        <div class="layer-group">
+          <label class="section-label">ขอบเขต</label>
+          <label class="toggle-row">
+            <input type="checkbox" id="lyr-province" checked /> จังหวัด
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="lyr-district" /> อำเภอ
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="lyr-subdistrict" /> ตำบล
+          </label>
+        </div>
+
+        <div class="layer-group">
+          <label class="section-label">Hotspot รายปี</label>
+          <label class="toggle-row hs-2564">
+            <input type="checkbox" class="hs-layer" data-year="2564" /> ปี 2564
+          </label>
+          <label class="toggle-row hs-2565">
+            <input type="checkbox" class="hs-layer" data-year="2565" /> ปี 2565
+          </label>
+          <label class="toggle-row hs-2566">
+            <input type="checkbox" class="hs-layer" data-year="2566" /> ปี 2566
+          </label>
+          <label class="toggle-row hs-2567">
+            <input type="checkbox" class="hs-layer" data-year="2567" /> ปี 2567
+          </label>
+          <label class="toggle-row hs-2568">
+            <input type="checkbox" class="hs-layer" data-year="2568" checked /> ปี 2568
+          </label>
+        </div>
+
+        <div class="layer-group">
+          <label class="section-label">ความเสี่ยง & เพิ่มเติม</label>
+          <label class="toggle-row">
+            <input type="checkbox" id="lyr-risk" /> แผนที่ความเสี่ยง (ตำบล)
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="lyr-burnscar" /> Burn Scar (แผลไฟ)
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="lyr-crop" /> พื้นที่เพาะปลูก
+          </label>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h3>🔍 กรองข้อมูล</h3>
+        <label>จังหวัด
+          <select id="filter-province">
+            <option value="">-- ทั้งหมด --</option>
+          </select>
+        </label>
+        <label>อำเภอ
+          <select id="filter-district">
+            <option value="">-- ทั้งหมด --</option>
+          </select>
+        </label>
+        <button id="btn-reset-filter" class="btn-secondary">รีเซ็ต</button>
+      </section>
+
+      <section class="panel-section">
+        <h3>🗃️ Basemap</h3>
+        <div class="radio-group">
+          <label><input type="radio" name="basemap" value="osm" checked /> OpenStreetMap</label>
+          <label><input type="radio" name="basemap" value="satellite" /> Satellite</label>
+          <label><input type="radio" name="basemap" value="topo" /> Topo</label>
+        </div>
+      </section>
+    </aside>
+
+    <!-- CENTER: Map -->
+    <main id="map-container">
+      <div id="map"></div>
+      <div id="map-legend">
+        <strong>ระดับความเสี่ยง</strong>
+        <div><span class="dot low"></span> ต่ำ</div>
+        <div><span class="dot medium"></span> ปานกลาง</div>
+        <div><span class="dot high"></span> สูง</div>
+        <div><span class="dot very-high"></span> สูงมาก</div>
+      </div>
+    </main>
+
+    <!-- RIGHT PANEL: Dashboard -->
+    <aside id="right-panel">
+
+      <!-- Summary Cards -->
+      <div id="summary-cards">
+        <div class="card card-total">
+          <div class="card-icon">🔥</div>
+          <div class="card-body">
+            <div class="card-value" id="card-total">-</div>
+            <div class="card-label">Hotspot ทั้งหมด</div>
+          </div>
+        </div>
+        <div class="card card-high">
+          <div class="card-icon">⚠️</div>
+          <div class="card-body">
+            <div class="card-value" id="card-high-risk">-</div>
+            <div class="card-label">พื้นที่เสี่ยงสูง</div>
+          </div>
+        </div>
+        <div class="card card-province">
+          <div class="card-icon">📍</div>
+          <div class="card-body">
+            <div class="card-value" id="card-provinces">-</div>
+            <div class="card-label">จังหวัดที่พบ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="chart-box">
+        <h4>Hotspot รายปี (Trend)</h4>
+        <canvas id="chart-trend" height="160"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h4>Top 5 จังหวัด</h4>
+        <canvas id="chart-top-province" height="180"></canvas>
+      </div>
+
+      <div class="chart-box half-charts">
+        <div>
+          <h4>ประเภทพืช</h4>
+          <canvas id="chart-crop" height="150"></canvas>
+        </div>
+        <div>
+          <h4>ระดับความเสี่ยง</h4>
+          <canvas id="chart-risk" height="150"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Districts Table -->
+      <div class="chart-box">
+        <h4>Top 10 อำเภอ (Hotspot สูงสุด)</h4>
+        <table id="tbl-top-district">
+          <thead>
+            <tr><th>อำเภอ</th><th>จังหวัด</th><th>Hotspot</th><th>ความเสี่ยง</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- POPUP Detail Panel -->
+  <div id="detail-panel" class="hidden">
+    <button id="detail-close">✕</button>
+    <h3 id="detail-title">รายละเอียด</h3>
+    <div id="detail-content"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/geoserver.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/risk.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

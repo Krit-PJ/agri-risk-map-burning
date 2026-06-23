@@ -1,0 +1,32 @@
+# Node.js
+backend/node_modules/
+backend/.env
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Large source files (not needed for web)
+scripts/
+geoserver/
+
+# Local server only
+server.py
+START.bat
