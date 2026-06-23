@@ -4,7 +4,7 @@
 
 /* ---- Reset & Base ---- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 13px; background: #0f1923; color: #dce8f0; }
+html, body { height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 15px; background: #0f1923; color: #dce8f0; }
 
 /* ---- Header ---- */
 #app-header {
@@ -16,9 +16,9 @@ html, body { height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; font-siz
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
 #logo { height: 36px; }
-#app-header h1 { font-size: 16px; font-weight: 700; color: #5bc0de; }
-#app-header p  { font-size: 11px; color: #8aaccc; }
-#last-updated  { font-size: 11px; color: #6a8faa; }
+#app-header h1 { font-size: 18px; font-weight: 700; color: #5bc0de; }
+#app-header p  { font-size: 13px; color: #8aaccc; }
+#last-updated  { font-size: 13px; color: #6a8faa; }
 
 /* ---- App Body ---- */
 #app-body {
@@ -42,14 +42,14 @@ html, body { height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; font-siz
 
 .panel-section { margin-bottom: 16px; }
 .panel-section h3 {
-  font-size: 12px; font-weight: 700; color: #5bc0de;
+  font-size: 13px; font-weight: 700; color: #5bc0de;
   text-transform: uppercase; letter-spacing: 0.5px;
   padding-bottom: 4px; border-bottom: 1px solid #1e3a52;
   margin-bottom: 8px;
 }
 .layer-group  { margin-bottom: 10px; }
-.section-label { display: block; font-size: 10px; color: #6a8faa; margin-bottom: 4px; text-transform: uppercase; }
-.toggle-row   { display: flex; align-items: center; gap: 6px; padding: 3px 4px; border-radius: 4px; cursor: pointer; }
+.section-label { display: block; font-size: 12px; color: #6a8faa; margin-bottom: 4px; text-transform: uppercase; }
+.toggle-row   { display: flex; align-items: center; gap: 6px; padding: 4px 4px; border-radius: 4px; cursor: pointer; font-size: 13px; }
 .toggle-row:hover { background: #1a2f42; }
 .toggle-row input[type=checkbox] { accent-color: #5bc0de; cursor: pointer; }
 
@@ -61,11 +61,11 @@ html, body { height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; font-siz
 .hs-2568 { border-left: 3px solid #2ecc71; padding-left: 4px; }
 
 /* Selects */
-label { display: block; margin-bottom: 6px; color: #8aaccc; font-size: 11px; }
+label { display: block; margin-bottom: 6px; color: #8aaccc; font-size: 13px; }
 select {
-  width: 100%; padding: 5px 6px; margin-top: 3px;
+  width: 100%; padding: 6px 8px; margin-top: 3px;
   background: #0d2137; border: 1px solid #2a6496;
-  color: #dce8f0; border-radius: 4px; font-size: 12px;
+  color: #dce8f0; border-radius: 4px; font-size: 13px;
 }
 .btn-secondary {
   width: 100%; margin-top: 6px; padding: 6px;
@@ -124,17 +124,30 @@ select {
 .half-charts > div { background: #091829; border-radius: 4px; padding: 8px; }
 
 /* ---- Table ---- */
-#tbl-top-district { width: 100%; border-collapse: collapse; font-size: 11px; }
+#tbl-top-district { width: 100%; border-collapse: collapse; font-size: 12px; }
 #tbl-top-district th {
   background: #1a3a5c; color: #5bc0de;
-  padding: 5px 6px; text-align: left; border-bottom: 1px solid #2a6496;
+  padding: 6px 7px; text-align: left; border-bottom: 1px solid #2a6496;
 }
-#tbl-top-district td { padding: 4px 6px; border-bottom: 1px solid #1a2f42; }
+#tbl-top-district td { padding: 5px 7px; border-bottom: 1px solid #1a2f42; }
 #tbl-top-district tr:hover td { background: #1a2f42; }
 .risk-badge {
-  display: inline-block; padding: 2px 6px; border-radius: 3px;
-  font-size: 10px; font-weight: 600;
+  display: inline-block; padding: 2px 7px; border-radius: 3px;
+  font-size: 11px; font-weight: 600;
 }
+
+/* ---- Risk Criteria ---- */
+.risk-criteria-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 6px 4px; border-bottom: 1px solid #1a2f42; font-size: 12px;
+}
+.risk-criteria-row:last-child { border-bottom: none; }
+.rc-dot {
+  width: 14px; height: 14px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 2px;
+}
+.rc-text strong { display: block; font-size: 12px; color: #dce8f0; }
+.rc-text span   { font-size: 11px; color: #8aaccc; line-height: 1.4; }
 .risk-low       { background: #1a4a2e; color: #2ecc71; }
 .risk-medium    { background: #4a3a00; color: #f1c40f; }
 .risk-high      { background: #4a2a00; color: #e67e22; }

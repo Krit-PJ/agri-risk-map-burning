@@ -78,18 +78,17 @@ const App = (() => {
 
   // ── Filter Binding ────────────────────────────────────
   function _bindFilters() {
-    const provSel = document.getElementById('filter-province');
     const distSel = document.getElementById('filter-district');
 
-    provSel.addEventListener('change', () => {
-      const prov = provSel.value;
-      if (prov) MapModule.zoomToProvince(prov);
-      distSel.innerHTML = '<option value="">-- ทั้งหมด --</option>';
+    distSel.addEventListener('change', () => {
+      const dist = distSel.value;
+      if (dist) MapModule.zoomToDistrict(dist);
+      else MapModule.zoomToKPT();
     });
 
     document.getElementById('btn-reset-filter').addEventListener('click', () => {
-      provSel.value = '';
-      distSel.innerHTML = '<option value="">-- ทั้งหมด --</option>';
+      distSel.value = '';
+      MapModule.zoomToKPT();
     });
   }
 

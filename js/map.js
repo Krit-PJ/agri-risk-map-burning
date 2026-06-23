@@ -216,6 +216,32 @@ const MapModule = (() => {
     });
   }
 
+  function zoomToDistrict(distName) {
+    // Try risk_kpt layer first (has district property)
+    const src = layers.risk_kpt || layers['district_kpt'];
+    if (!src) return;
+    let bounds = null;
+    src.eachLayer(layer => {
+      const p = layer.feature.properties;
+      const d = p.district || p.AMP_NAM_T || p.AMPHOE || p.NAME_2 || '';
+      if (d === distName || d.includes(distName)) {
+        const b = layer.getBounds ? layer.getBounds() : null;
+        if (b) bounds = bounds ? bounds.extend(b) : b;
+      }
+    });
+    if (bounds) map.fitBounds(bounds, { padding: [20, 20] });
+  }
+
+  function zoomToKPT() {
+    // Zoom back to กำแพงเพชร province extent
+    const src = layers['district_kpt'] || layers.risk_kpt;
+    if (src) {
+      try { map.fitBounds(src.getBounds(), { padding: [20, 20] }); } catch(e) {}
+    } else {
+      map.setView([16.47, 99.52], 10);
+    }
+  }
+
   function getRiskLevel(score) {
     return CONFIG.RISK_LEVELS.find(l => score >= l.min && score < l.max) || CONFIG.RISK_LEVELS[0];
   }
@@ -303,5 +329,5 @@ const MapModule = (() => {
   }
 
   // ── Public API ────────────────────────────────────────
-  return { init, loadHotspot, toggleHotspotLayer, renderRiskLayer, loadRiskKpt, loadBurnScar, loadCrop, zoomToProvince, getRiskLevel, map: () => map };
+  return { init, loadHotspot, toggleHotspotLayer, renderRiskLayer, loadRiskKpt, loadBurnScar, loadCrop, zoomToProvince, zoomToDistrict, zoomToKPT, getRiskLevel, map: () => map };
 })();

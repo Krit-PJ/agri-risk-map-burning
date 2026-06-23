@@ -57,21 +57,15 @@
         </div>
 
         <div class="layer-group">
-          <label class="section-label">Hotspot รายปี</label>
-          <label class="toggle-row hs-2564">
-            <input type="checkbox" class="hs-layer" data-year="2564" /> ปี 2564
-          </label>
-          <label class="toggle-row hs-2565">
-            <input type="checkbox" class="hs-layer" data-year="2565" /> ปี 2565
-          </label>
+          <label class="section-label">Hotspot รายปี (ม.ค.–พ.ค.)</label>
           <label class="toggle-row hs-2566">
-            <input type="checkbox" class="hs-layer" data-year="2566" /> ปี 2566
+            <input type="checkbox" class="hs-layer" data-year="2566" checked /> ปี 2566 (2023)
           </label>
           <label class="toggle-row hs-2567">
-            <input type="checkbox" class="hs-layer" data-year="2567" /> ปี 2567
+            <input type="checkbox" class="hs-layer" data-year="2567" checked /> ปี 2567 (2024)
           </label>
           <label class="toggle-row hs-2568">
-            <input type="checkbox" class="hs-layer" data-year="2568" checked /> ปี 2568
+            <input type="checkbox" class="hs-layer" data-year="2568" checked /> ปี 2568 (2025)
           </label>
         </div>
 
@@ -93,12 +87,23 @@
         <h3>🔍 กรองข้อมูล</h3>
         <label>จังหวัด
           <select id="filter-province">
-            <option value="">-- ทั้งหมด --</option>
+            <option value="กำแพงเพชร" selected>กำแพงเพชร</option>
           </select>
         </label>
         <label>อำเภอ
           <select id="filter-district">
             <option value="">-- ทั้งหมด --</option>
+            <option value="เมืองกำแพงเพชร">เมืองกำแพงเพชร</option>
+            <option value="ไทรงาม">ไทรงาม</option>
+            <option value="คลองลาน">คลองลาน</option>
+            <option value="ขาณุวรลักษบุรี">ขาณุวรลักษบุรี</option>
+            <option value="คลองขลุง">คลองขลุง</option>
+            <option value="พรานกระต่าย">พรานกระต่าย</option>
+            <option value="ลานกระบือ">ลานกระบือ</option>
+            <option value="ทรายทองวัฒนา">ทรายทองวัฒนา</option>
+            <option value="ปางศิลาทอง">ปางศิลาทอง</option>
+            <option value="บึงสามัคคี">บึงสามัคคี</option>
+            <option value="โกสัมพีนคร">โกสัมพีนคร</option>
           </select>
         </label>
         <button id="btn-reset-filter" class="btn-secondary">รีเซ็ต</button>
@@ -110,6 +115,41 @@
           <label><input type="radio" name="basemap" value="osm" checked /> OpenStreetMap</label>
           <label><input type="radio" name="basemap" value="satellite" /> Satellite</label>
           <label><input type="radio" name="basemap" value="topo" /> Topo</label>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <h3>📊 หลักเกณฑ์ความเสี่ยง</h3>
+        <div class="risk-criteria-row">
+          <div class="rc-dot" style="background:#e74c3c"></div>
+          <div class="rc-text">
+            <strong>สูงมาก (≥75)</strong>
+            <span>Hotspot ≥3 ปีซ้ำ + Burn Scar<br>+ พืชเสี่ยงสูง (ข้าวโพด/อ้อย)</span>
+          </div>
+        </div>
+        <div class="risk-criteria-row">
+          <div class="rc-dot" style="background:#e67e22"></div>
+          <div class="rc-text">
+            <strong>สูง (50–74)</strong>
+            <span>Hotspot 2 ปีซ้ำ<br>+ พืชเสี่ยงสูงปานกลาง</span>
+          </div>
+        </div>
+        <div class="risk-criteria-row">
+          <div class="rc-dot" style="background:#f1c40f"></div>
+          <div class="rc-text">
+            <strong>ปานกลาง (25–49)</strong>
+            <span>Hotspot 1 ปี หรือ<br>พืชเสี่ยงปานกลาง (มัน/ข้าว)</span>
+          </div>
+        </div>
+        <div class="risk-criteria-row">
+          <div class="rc-dot" style="background:#2ecc71"></div>
+          <div class="rc-text">
+            <strong>ต่ำ (&lt;25)</strong>
+            <span>ไม่พบ Hotspot<br>หรือพืชเสี่ยงต่ำ</span>
+          </div>
+        </div>
+        <div style="margin-top:8px;padding:6px;background:#091829;border-radius:4px;font-size:11px;color:#6a8faa;line-height:1.5;">
+          สูตร: Risk = (Hotspot×0.35) + (ซ้ำ×0.25) + (พืช×0.20) + (BurnScar×0.20)
         </div>
       </section>
     </aside>
