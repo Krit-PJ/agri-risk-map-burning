@@ -13,7 +13,8 @@ const MapModule = (() => {
   async function fetchJSON(url){const r=await fetch(url); if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json();}
 
   async function init(){
-    map=L.map('map',{center:CONFIG.MAP_CENTER,zoom:CONFIG.MAP_ZOOM,minZoom:CONFIG.MAP_MIN_ZOOM,maxZoom:CONFIG.MAP_MAX_ZOOM});
+    map=L.map('map',{center:CONFIG.MAP_CENTER,zoom:CONFIG.MAP_ZOOM,minZoom:CONFIG.MAP_MIN_ZOOM,maxZoom:CONFIG.MAP_MAX_ZOOM,zoomControl:false});
+    L.control.zoom({position:'bottomright'}).addTo(map);
     Object.entries(CONFIG.BASEMAPS).forEach(([k,u])=>base[k]=L.tileLayer(u,{maxZoom:19,attribution:k==='satellite'?'Tiles © Esri':k==='topo'?'© OpenTopoMap':'© OpenStreetMap contributors'}));
     base.osm.addTo(map);
     document.querySelectorAll('input[name="basemap"]').forEach(el=>el.addEventListener('change',()=>{map.removeLayer(base[currentBasemap]);currentBasemap=el.value;base[currentBasemap].addTo(map);}));
@@ -25,7 +26,7 @@ const MapModule = (() => {
     document.getElementById('lyr-risk')?.addEventListener('change',()=>renderAux('risk'));
     document.addEventListener('change',e=>{if(e.target?.classList?.contains('hs-layer')) renderHotspots();});
 
-    [raw.district,raw.subdistrict]=await Promise.all([fetchJSON(CONFIG.DATA.district_kpt),fetchJSON(CONFIG.DATA.subdistrict_kpt)]);
+    [raw.district,raw.subdistrict,raw.risk]=await Promise.all([fetchJSON(CONFIG.DATA.district_kpt),fetchJSON(CONFIG.DATA.subdistrict_kpt),fetchJSON(CONFIG.DATA.risk_kpt).catch(err=>{console.warn(err.message);return {type:'FeatureCollection',features:[]};})]);
     await Promise.all(Object.entries(CONFIG.DATA.hotspot).map(async([y,u])=>{try{raw.hotspot[y]=await fetchJSON(u);}catch(err){console.warn(err.message);raw.hotspot[y]={type:'FeatureCollection',features:[]};}}));
     enrichHotspots();
     renderBoundaries(); renderHotspots(); zoomToKPT();
