@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agri-Risk Map Burning Dashboard</title>
+  <title>Agri-Risk Map จังหวัดกำแพงเพชร</title>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -18,6 +18,54 @@
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root { --ui-font-size: 15px; }
+    body, button, select, input { font-size: var(--ui-font-size); }
+    .panel-section h3 { font-size: 1.08rem; }
+    .field-help, .model-note { font-size: .84rem; line-height: 1.45; opacity: .86; }
+    .locked-field { opacity: .92; cursor: not-allowed; }
+    .filter-actions, .data-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .btn-primary, .btn-secondary, .btn-print {
+      border:0; border-radius:6px; padding:8px 12px; cursor:pointer; font-weight:700;
+    }
+    .btn-primary, .btn-print { background:#1976d2; color:#fff; }
+    .btn-secondary { background:#334155; color:#fff; }
+    .risk-formula { margin:10px 0; padding:10px; border-radius:7px; background:#091829; line-height:1.55; }
+    .risk-factor-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }
+    .risk-factor { padding:7px; border:1px solid rgba(148,163,184,.25); border-radius:6px; }
+    .risk-factor strong { display:block; font-size:.94rem; }
+    .risk-levels { display:grid; gap:5px; margin-top:9px; }
+    .risk-level { display:grid; grid-template-columns:12px 1fr; gap:7px; align-items:start; }
+    .risk-swatch { width:12px; height:12px; border-radius:50%; margin-top:4px; }
+    #import-status { margin-top:7px; min-height:1.2em; }
+    .print-only { display:none; }
+
+    @page { size: A4 landscape; margin: 8mm; }
+    @media print {
+      html, body { width:297mm; height:210mm; overflow:hidden !important; background:#fff !important; }
+      body { color:#111 !important; font-size:9pt !important; }
+      #app-header { height:16mm !important; padding:3mm 5mm !important; }
+      #app-header h1 { font-size:15pt !important; margin:0 !important; }
+      #app-header p { font-size:8pt !important; margin:1mm 0 0 !important; }
+      #app-body { height:178mm !important; display:grid !important; grid-template-columns:48mm 1fr 70mm !important; gap:3mm !important; }
+      #left-panel, #right-panel { overflow:hidden !important; height:178mm !important; }
+      #left-panel .panel-section { padding:2mm !important; margin-bottom:2mm !important; }
+      #left-panel .panel-section:nth-of-type(1),
+      #left-panel .panel-section:nth-of-type(5) { display:none !important; }
+      #map-container, #map { height:178mm !important; min-height:178mm !important; }
+      #right-panel { display:grid !important; grid-template-rows:auto 42mm 48mm 1fr !important; gap:2mm !important; }
+      #right-panel .chart-box { padding:2mm !important; margin:0 !important; overflow:hidden !important; }
+      #right-panel .half-charts, #right-panel .chart-box:last-child { display:none !important; }
+      #summary-cards { gap:2mm !important; }
+      .card { min-height:18mm !important; padding:2mm !important; }
+      canvas { max-height:42mm !important; }
+      .no-print, button, input[type=file] { display:none !important; }
+      .print-only { display:block !important; }
+      select { appearance:none; border:0 !important; background:transparent !important; color:#111 !important; }
+      .risk-formula, .risk-factor, .panel-section { color:#111 !important; background:#fff !important; border-color:#bbb !important; }
+      .leaflet-control-container { display:none !important; }
+    }
+  </style>
 </head>
 <body>
 
@@ -26,12 +74,13 @@
     <div class="header-left">
       <img src="assets/logo.png" alt="DOAE" id="logo" onerror="this.style.display='none'" />
       <div>
-        <h1>Agri-Risk Map Burning Dashboard</h1>
-        <p>กรมส่งเสริมการเกษตร | ระบบแผนที่ความเสี่ยงการเผาไหม้ภาคเกษตร</p>
+        <h1>Agri-Risk Map จังหวัดกำแพงเพชร</h1>
+        <p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
       </div>
     </div>
     <div class="header-right">
       <span id="last-updated"></span>
+      <button id="btn-print" class="btn-print no-print" type="button" title="พิมพ์รายงาน 1 หน้า A4">🖨️ Print A4</button>
     </div>
   </header>
 
@@ -86,9 +135,10 @@
       <section class="panel-section">
         <h3>🔍 กรองข้อมูล</h3>
         <label>จังหวัด
-          <select id="filter-province">
+          <select id="filter-province" class="locked-field" disabled aria-label="จังหวัดกำแพงเพชรเท่านั้น">
             <option value="กำแพงเพชร" selected>กำแพงเพชร</option>
           </select>
+          <span class="field-help">ระบบนี้จัดการข้อมูลเฉพาะจังหวัดกำแพงเพชร</span>
         </label>
         <label>อำเภอ
           <select id="filter-district">
@@ -106,7 +156,16 @@
             <option value="โกสัมพีนคร">โกสัมพีนคร</option>
           </select>
         </label>
-        <button id="btn-reset-filter" class="btn-secondary">รีเซ็ต</button>
+        <label>ตำบล
+          <select id="filter-subdistrict" disabled>
+            <option value="">-- เลือกอำเภอก่อน --</option>
+          </select>
+          <span class="field-help">รายชื่อตำบลโหลดจากชั้นข้อมูลขอบเขตโดยอัตโนมัติ</span>
+        </label>
+        <div class="filter-actions">
+          <button id="btn-apply-filter" class="btn-primary" type="button">ใช้ตัวกรอง</button>
+          <button id="btn-reset-filter" class="btn-secondary" type="button">รีเซ็ต</button>
+        </div>
       </section>
 
       <section class="panel-section">
@@ -118,39 +177,42 @@
         </div>
       </section>
 
-      <section class="panel-section">
-        <h3>📊 หลักเกณฑ์ความเสี่ยง</h3>
-        <div class="risk-criteria-row">
-          <div class="rc-dot" style="background:#e74c3c"></div>
-          <div class="rc-text">
-            <strong>สูงมาก (≥75)</strong>
-            <span>Hotspot ≥3 ปีซ้ำ + Burn Scar<br>+ พืชเสี่ยงสูง (ข้าวโพด/อ้อย)</span>
-          </div>
+      <section class="panel-section" id="risk-methodology">
+        <h3>📊 หลักเกณฑ์การประเมินระดับความเสี่ยง</h3>
+        <p class="model-note"><strong>Model A — Spatial MCDA</strong><br>รวมข้อมูล 4 ด้านให้อยู่ในคะแนนมาตรฐาน 0–100 เพื่อจัดลำดับพื้นที่เฝ้าระวัง</p>
+        <div class="risk-formula">
+          <strong>สูตรคำนวณ</strong><br>
+          Risk = (HotspotScore × 0.40) + (TrendScore × 0.20)<br>
+          + (CropScore × 0.20) + (AreaScore × 0.20)
         </div>
-        <div class="risk-criteria-row">
-          <div class="rc-dot" style="background:#e67e22"></div>
-          <div class="rc-text">
-            <strong>สูง (50–74)</strong>
-            <span>Hotspot 2 ปีซ้ำ<br>+ พืชเสี่ยงสูงปานกลาง</span>
-          </div>
+        <div class="risk-factor-grid">
+          <div class="risk-factor"><strong>🔥 Hotspot 40%</strong><span>ความหนาแน่นจุดความร้อนย้อนหลัง โดยให้ปีล่าสุดสำคัญกว่า เป็นหลักฐานการเกิดเหตุโดยตรงที่สุด</span></div>
+          <div class="risk-factor"><strong>📈 Trend 20%</strong><span>อัตราเพิ่มหรือลดของ Hotspot ช่วยแยกพื้นที่ที่ปัญหากำลังรุนแรงขึ้น</span></div>
+          <div class="risk-factor"><strong>🌾 Crop 20%</strong><span>ความเสี่ยงตามชนิดพืช คำนวณจาก Hotspot/Burn Scar ต่อพื้นที่ปลูก ไม่ใช้ความเชื่อเพียงอย่างเดียว</span></div>
+          <div class="risk-factor"><strong>📐 Area 20%</strong><span>ขนาดพื้นที่เกษตรที่ต้องบริหารจัดการ โดยปรับสเกลเพื่อลดอคติจากพื้นที่ขนาดใหญ่มาก</span></div>
         </div>
-        <div class="risk-criteria-row">
-          <div class="rc-dot" style="background:#f1c40f"></div>
-          <div class="rc-text">
-            <strong>ปานกลาง (25–49)</strong>
-            <span>Hotspot 1 ปี หรือ<br>พืชเสี่ยงปานกลาง (มัน/ข้าว)</span>
-          </div>
+        <div class="risk-levels" aria-label="ระดับความเสี่ยง">
+          <div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก 75–100:</strong> เฝ้าระวังเร่งด่วนและลงพื้นที่เชิงรุก</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง 50–74.99:</strong> จัดทำแผนป้องกันและติดตามถี่</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง 25–49.99:</strong> ติดตามตามรอบและเตรียมมาตรการ</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ 0–24.99:</strong> เฝ้าระวังตามปกติ</span></div>
         </div>
-        <div class="risk-criteria-row">
-          <div class="rc-dot" style="background:#2ecc71"></div>
-          <div class="rc-text">
-            <strong>ต่ำ (&lt;25)</strong>
-            <span>ไม่พบ Hotspot<br>หรือพืชเสี่ยงต่ำ</span>
-          </div>
+        <p class="model-note">หมายเหตุ: น้ำหนัก 40/20/20/20 เป็น Baseline แบบ expert-informed MCDA ต้องตรวจสอบกับ Hotspot หรือ Burn Scar ของปีถัดไป และปรับเมื่อมีหลักฐานเชิงสถิติที่ดีกว่า</p>
+      </section>
+
+      <section class="panel-section no-print" id="data-import-section">
+        <h3>➕ นำเข้าข้อมูลปีถัดไป</h3>
+        <label>ปี พ.ศ.
+          <input id="import-year" type="number" min="2569" max="2600" value="2569" />
+        </label>
+        <label>ไฟล์ Hotspot GeoJSON
+          <input id="import-hotspot" type="file" accept=".geojson,.json,application/geo+json,application/json" />
+        </label>
+        <div class="data-actions">
+          <button id="btn-import-year" class="btn-primary" type="button">นำเข้าและเพิ่มชั้นข้อมูล</button>
         </div>
-        <div style="margin-top:8px;padding:6px;background:#091829;border-radius:4px;font-size:11px;color:#6a8faa;line-height:1.5;">
-          สูตร: Risk = (Hotspot×0.35) + (ซ้ำ×0.25) + (พืช×0.20) + (BurnScar×0.20)
-        </div>
+        <div id="import-status" class="field-help" role="status"></div>
+        <p class="field-help">รูปแบบแนะนำ: <code>hotspot_2569.geojson</code> และต้องมี FeatureCollection พร้อมพิกัด WGS84 (EPSG:4326)</p>
       </section>
     </aside>
 
@@ -189,7 +251,7 @@
           <div class="card-icon">📍</div>
           <div class="card-body">
             <div class="card-value" id="card-provinces">-</div>
-            <div class="card-label">จังหวัดที่พบ</div>
+            <div class="card-label">อำเภอที่พบ Hotspot</div>
           </div>
         </div>
       </div>
@@ -245,5 +307,95 @@
   <script src="js/dashboard.js"></script>
   <script src="js/risk.js"></script>
   <script src="js/app.js"></script>
+
+  <script>
+  (() => {
+    'use strict';
+    const KPT = Object.freeze({ province: 'กำแพงเพชร', provinceCode: '62' });
+    window.AGRI_RISK_CONTEXT = KPT;
+    window.AGRI_RISK_IMPORTS = window.AGRI_RISK_IMPORTS || {};
+
+    const districtEl = document.getElementById('filter-district');
+    const subdistrictEl = document.getElementById('filter-subdistrict');
+    const provinceEl = document.getElementById('filter-province');
+    const statusEl = document.getElementById('import-status');
+    let subdistrictFeatures = [];
+
+    const prop = (obj, names) => {
+      const p = obj?.properties || {};
+      for (const n of names) if (p[n] !== undefined && p[n] !== null && String(p[n]).trim()) return String(p[n]).trim();
+      return '';
+    };
+    const districtName = f => prop(f, ['AMP_NAM_T','AMPHOE_T','amphoe_th','district','DISTRICT','อำเภอ']);
+    const subdistrictName = f => prop(f, ['TAM_NAM_T','TAMBON_T','tambon_th','subdistrict','SUBDISTRICT','ตำบล']);
+
+    async function loadSubdistrictIndex() {
+      const candidates = ['data/boundary/subdistrict_kpt.geojson','data/boundary/SubDistrict_KAMPHAENGPHET.geojson'];
+      for (const url of candidates) {
+        try {
+          const r = await fetch(url, {cache:'no-store'});
+          if (!r.ok) continue;
+          const gj = await r.json();
+          if (gj?.type === 'FeatureCollection') {
+            subdistrictFeatures = gj.features || [];
+            populateSubdistricts();
+            return;
+          }
+        } catch (_) {}
+      }
+      subdistrictEl.innerHTML = '<option value="">-- ไม่พบไฟล์ขอบเขตตำบล --</option>';
+    }
+
+    function populateSubdistricts() {
+      const district = districtEl.value;
+      const names = [...new Set(subdistrictFeatures
+        .filter(f => !district || districtName(f) === district)
+        .map(subdistrictName).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));
+      subdistrictEl.innerHTML = '<option value="">-- ทุกตำบล --</option>' + names.map(n=>`<option value="${n}">${n}</option>`).join('');
+      subdistrictEl.disabled = !district;
+    }
+
+    function emitFilter() {
+      const detail = { province: KPT.province, district: districtEl.value, subdistrict: subdistrictEl.value };
+      window.dispatchEvent(new CustomEvent('agri-risk:filter-change', {detail}));
+      [provinceEl, districtEl, subdistrictEl].forEach(el => el?.dispatchEvent(new Event('change', {bubbles:true})));
+    }
+
+    districtEl?.addEventListener('change', () => { populateSubdistricts(); subdistrictEl.value=''; });
+    document.getElementById('btn-apply-filter')?.addEventListener('click', emitFilter);
+    document.getElementById('btn-reset-filter')?.addEventListener('click', () => {
+      districtEl.value=''; subdistrictEl.value=''; subdistrictEl.disabled=true;
+      subdistrictEl.innerHTML='<option value="">-- เลือกอำเภอก่อน --</option>';
+      setTimeout(emitFilter, 0);
+    });
+    document.getElementById('btn-print')?.addEventListener('click', () => {
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(() => window.print(), 150);
+    });
+
+    document.getElementById('btn-import-year')?.addEventListener('click', async () => {
+      const year = Number(document.getElementById('import-year').value);
+      const file = document.getElementById('import-hotspot').files?.[0];
+      if (!Number.isInteger(year) || year < 2569) { statusEl.textContent='กรุณาระบุปี พ.ศ. ตั้งแต่ 2569 เป็นต้นไป'; return; }
+      if (!file) { statusEl.textContent='กรุณาเลือกไฟล์ Hotspot GeoJSON'; return; }
+      try {
+        const geojson = JSON.parse(await file.text());
+        if (geojson?.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) throw new Error('ไฟล์ต้องเป็น GeoJSON FeatureCollection');
+        window.AGRI_RISK_IMPORTS[year] = { type:'hotspot', fileName:file.name, geojson, importedAt:new Date().toISOString() };
+        let row = document.querySelector(`.hs-${year}`);
+        if (!row) {
+          row = document.createElement('label'); row.className=`toggle-row hs-${year}`;
+          row.innerHTML=`<input type="checkbox" class="hs-layer" data-year="${year}" checked> ปี ${year} (${year-543})`;
+          const group = document.querySelector('.hs-2568')?.parentElement;
+          group?.appendChild(row);
+        }
+        window.dispatchEvent(new CustomEvent('agri-risk:data-imported', {detail:{year, type:'hotspot', geojson, fileName:file.name}}));
+        statusEl.textContent=`นำเข้าปี ${year} สำเร็จ ${geojson.features.length.toLocaleString('th-TH')} จุด/รายการ`;
+      } catch (err) { statusEl.textContent=`นำเข้าไม่สำเร็จ: ${err.message}`; }
+    });
+
+    loadSubdistrictIndex();
+  })();
+  </script>
 </body>
 </html>
