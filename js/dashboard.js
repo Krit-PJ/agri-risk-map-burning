@@ -40,8 +40,8 @@ const Dashboard = (() => {
 
     const tbody=document.querySelector('#tbl-top-district tbody'); tbody.innerHTML='';
     ranked.slice(0,10).forEach(([name,n])=>{
-      const score=aggregateRiskFor(name), level=MapModule.getRiskLevel(score), tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name||'ไม่ระบุ'}</td><td>${state.district?'อ.'+state.district:'กำแพงเพชร'}</td><td>${n.toLocaleString('th-TH')}</td><td><span class="risk-badge ${level.class}" title="คะแนนความเสี่ยงเฉลี่ย ${score.toFixed(1)}">${level.label}</span></td>`;
+      const score=riskScoreFor(name), level=MapModule.getRiskLevel(score), tr=document.createElement('tr');
+      tr.innerHTML=`<td>${name||'ไม่ระบุ'}</td><td>${state.district?'อ.'+state.district:'กำแพงเพชร'}</td><td>${n.toLocaleString('th-TH')}</td><td><span class="risk-badge ${level.class}" title="คะแนนความเสี่ยง ${score.toFixed(1)} จากปีที่เลือก">${level.label}</span></td>`;
       tbody.appendChild(tr);
     });
     updateTitles(yearText);
@@ -50,8 +50,20 @@ const Dashboard = (() => {
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}
   function riskScoreOf(p){return Number(p?.risk_score??p?.RISK_SCORE??p?.risk??p?.score??0)||0;}
-  function selectedRiskFeatures(){const fc=MapModule.getData().risk;return(fc?.features||[]).filter(f=>{const p=f.properties||{},d=H().districtOf(p),t=H().subdistrictOf(p);return(!state.district||d===state.district)&&(!state.subdistrict||t===state.subdistrict);});}
-  function aggregateRiskFor(name){const rows=selectedRiskFeatures().filter(f=>state.district?H().subdistrictOf(f.properties)===name:H().districtOf(f.properties)===name);if(!rows.length)return 0;return rows.reduce((sum,f)=>sum+riskScoreOf(f.properties),0)/rows.length;}
+  function selectedRiskFeatures(){
+    const scope=state.district?'subdistrict':'district';
+    const fc=MapModule.getRiskForScope(scope);
+    return(fc?.features||[]).filter(f=>{
+      const p=f.properties||{},d=H().districtOf(p),t=H().subdistrictOf(p);
+      return(!state.district||d===state.district)&&(!state.subdistrict||t===state.subdistrict);
+    });
+  }
+  function riskScoreFor(name){
+    const scope=state.district?'subdistrict':'district';
+    const rows=selectedRiskFeatures();
+    const row=rows.find(f=>scope==='subdistrict'?H().subdistrictOf(f.properties)===name:H().districtOf(f.properties)===name);
+    return row?riskScoreOf(row.properties):0;
+  }
   function updateTitles(yearText){
     const scope=state.subdistrict?`ตำบล${state.subdistrict} อำเภอ${state.district}`:state.district?`อำเภอ${state.district}`:'จังหวัดกำแพงเพชร';
     const unit=state.district?'ตำบล':'อำเภอ';

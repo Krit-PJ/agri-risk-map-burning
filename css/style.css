@@ -270,3 +270,5 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
 .admin-login-status.error{color:#fda4af;}.admin-login-status.success{color:#86efac;}.admin-login-status.working{color:#fde68a;}
 #excel-import-section{border:1px solid rgba(103,232,249,.42);background:linear-gradient(180deg,rgba(14,68,101,.45),rgba(7,27,44,.7));}
 @media print{.admin-modal,.btn-admin,.btn-admin-logout,#excel-import-section{display:none!important;}}
+
+.btn-guide-download{display:block;margin-top:12px;padding:10px 12px;border-radius:8px;background:#0ea5e9;color:#fff!important;text-decoration:none;font-weight:800;text-align:center;border:1px solid #7dd3fc;line-height:1.35}.btn-guide-download:hover{background:#0284c7}.btn-guide-download:focus-visible{outline:3px solid #facc15;outline-offset:2px}

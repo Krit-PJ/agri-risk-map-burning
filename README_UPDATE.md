@@ -16,3 +16,9 @@
 5. กด “ดาวน์โหลด GeoJSON” เพื่อนำไฟล์ไปเก็บถาวรที่ `data/hotspot/hotspot_<ปี>.geojson`
 
 > การนำเข้าจาก Browser อยู่ในหน่วยความจำของหน้าเว็บ หากรีเฟรชจะหาย จึงต้องดาวน์โหลด GeoJSON แล้ว Commit เข้า GitHub เพื่อใช้งานถาวร
+
+## Risk alignment update
+- At province scope, the risk map is rendered by district and uses the same district Risk Score as the Top 10 district table.
+- After selecting a district, both the map and ranking switch to subdistrict Risk Scores.
+- Any Hotspot year selection triggers recalculation of district and subdistrict risk layers.
+- Added downloadable guide: `docs/risk-ranking-assessment-guide-kpp.pdf`.

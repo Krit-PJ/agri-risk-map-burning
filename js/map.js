@@ -1,7 +1,10 @@
 const MapModule = (() => {
   let map, currentBasemap = 'satellite';
   const base = {};
-  const raw = { district:null, subdistrict:null, hotspot:{}, crop:null, burnscar:null, risk:null };
+  const raw = {
+    district:null, subdistrict:null, hotspot:{}, crop:null, burnscar:null,
+    risk:null, riskDistrict:null, riskSubdistrict:null
+  };
   const shown = { province:null, district:null, subdistrict:null, hotspot:{}, crop:null, burnscar:null, risk:null };
   let state = { district:'', subdistrict:'', crop:'' };
 
@@ -71,43 +74,67 @@ const MapModule = (() => {
   function selectedYearWeights(years){
     if(!years.length) return {};
     const configured=CONFIG.RISK_MODEL.yearWeights||{};
-    let vals=years.map((y,i)=>Number(configured[y] ?? (i+1)));
-    let total=vals.reduce((a,b)=>a+b,0)||1;
+    const vals=years.map((y,i)=>Number(configured[y] ?? (i+1)));
+    const total=vals.reduce((a,b)=>a+b,0)||1;
     return Object.fromEntries(years.map((y,i)=>[y,vals[i]/total]));
   }
 
-  function computeDynamicRisk(){
-    const years=activeYears();
-    const yw=selectedYearWeights(years);
-    const factors=CONFIG.RISK_MODEL.weights;
-    const rows=(raw.subdistrict?.features||[]).map(f=>{
-      const p=f.properties||{}, d=districtOf(p), t=subdistrictOf(p), counts={};
-      let cropSum=0,cropN=0;
+  function hotspotRowsFor(level, years, yearWeights){
+    const boundaries = level==='district' ? (raw.district?.features||[]) : (raw.subdistrict?.features||[]);
+    const areaByDistrict = {};
+    (raw.subdistrict?.features||[]).forEach(f=>{
+      const d=districtOf(f.properties), a=Number(f.properties?.AREA_RAI||f.properties?.area_rai||0);
+      areaByDistrict[d]=(areaByDistrict[d]||0)+a;
+    });
+    return boundaries.map(feature=>{
+      const p=feature.properties||{}, d=districtOf(p), t=level==='subdistrict'?subdistrictOf(p):'';
+      const counts={}; let cropSum=0,cropN=0;
       years.forEach(y=>{
-        const fs=(raw.hotspot[y]?.features||[]).filter(h=>h.properties?.__province==='กำแพงเพชร'&&h.properties?.__district===d&&h.properties?.__subdistrict===t);
+        const fs=(raw.hotspot[y]?.features||[]).filter(h=>{
+          const hp=h.properties||{};
+          return hp.__province==='กำแพงเพชร' && hp.__district===d && (level==='district'||hp.__subdistrict===t);
+        });
         counts[y]=fs.length;
-        fs.forEach(h=>{ cropSum+=CONFIG.CROP_RISK[h.properties.__crop]??50; cropN++; });
+        fs.forEach(h=>{cropSum+=CONFIG.CROP_RISK[h.properties.__crop]??50;cropN++;});
       });
-      const weighted=years.reduce((s,y)=>s+(counts[y]||0)*(yw[y]||0),0);
+      const weighted=years.reduce((s,y)=>s+(counts[y]||0)*(yearWeights[y]||0),0);
       let trend=0;
       if(years.length>=2){
         const prev=counts[years[years.length-2]]||0, cur=counts[years[years.length-1]]||0;
         trend=prev===0?(cur>0?100:0):Math.max(0,Math.min(100,50+((cur-prev)/prev)*100));
       }
-      const area=Number(p.AREA_RAI||p.area_rai||0);
-      return {feature:f,d,t,counts,weighted,trend,crop:cropN?cropSum/cropN:0,area};
+      const area=level==='district' ? (areaByDistrict[d]||0) : Number(p.AREA_RAI||p.area_rai||0);
+      return {feature,d,t,counts,weighted,trend,crop:cropN?cropSum/cropN:0,area};
     });
-    const maxW=Math.max(...rows.map(r=>r.weighted),1), logs=rows.map(r=>Math.log1p(r.area)), minL=Math.min(...logs), maxL=Math.max(...logs);
-    raw.risk={
-      type:'FeatureCollection', name:`risk_kpt_dynamic_${years.join('_')||'none'}`,
+  }
+
+  function buildRiskCollection(level, years, yearWeights){
+    const factors=CONFIG.RISK_MODEL.weights;
+    const rows=hotspotRowsFor(level,years,yearWeights);
+    const maxW=Math.max(...rows.map(r=>r.weighted),1);
+    const logs=rows.map(r=>Math.log1p(r.area));
+    const minL=Math.min(...logs), maxL=Math.max(...logs);
+    return {
+      type:'FeatureCollection', name:`risk_${level}_${years.join('_')||'none'}`,
       features:rows.map((r,i)=>{
         const hs=r.weighted/maxW*100;
         const area=maxL===minL?0:(logs[i]-minL)/(maxL-minL)*100;
         const score=hs*factors.hotspot+r.trend*factors.trend+r.crop*factors.crop+area*factors.area;
         const hsFields=Object.fromEntries(years.map(y=>[`hs_${y}`,r.counts[y]||0]));
-        return { type:'Feature', geometry:r.feature.geometry, properties:{...r.feature.properties,district:r.d,subdistrict:r.t,risk_score:+score.toFixed(2),hotspot_score:+hs.toFixed(2),trend_score:+r.trend.toFixed(2),crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),risk_years:years.join(','),...hsFields} };
+        return {
+          type:'Feature', geometry:r.feature.geometry,
+          properties:{...r.feature.properties,district:r.d,subdistrict:r.t,risk_level_scope:level,risk_score:+score.toFixed(2),hotspot_score:+hs.toFixed(2),trend_score:+r.trend.toFixed(2),crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),risk_years:years.join(','),...hsFields}
+        };
       })
     };
+  }
+
+  function computeDynamicRisk(){
+    const years=activeYears();
+    const yw=selectedYearWeights(years);
+    raw.riskDistrict=buildRiskCollection('district',years,yw);
+    raw.riskSubdistrict=buildRiskCollection('subdistrict',years,yw);
+    raw.risk=state.district?raw.riskSubdistrict:raw.riskDistrict;
     return raw.risk;
   }
 
@@ -138,14 +165,30 @@ const MapModule = (() => {
     remove(shown[type]);
     const checked=document.getElementById(type==='burnscar'?'lyr-burnscar':'lyr-risk')?.checked; if(!checked)return;
     if(type==='burnscar')await ensureAux(type);
-    const fs=(raw[type]?.features||[]).filter(f=>matchesBoundary(f,'subdistrict'));
-    shown[type]=L.geoJSON({type:'FeatureCollection',features:fs},{style:type==='burnscar'?{color:'#dc2626',fillColor:'#ef4444',weight:.8,fillOpacity:.4}:f=>{const l=getRiskLevel(Number(f.properties?.risk_score||0));return{color:l.color,fillColor:l.color,weight:1,fillOpacity:.56};},onEachFeature:type==='risk'?(f,l)=>l.bindTooltip(`ต.${subdistrictOf(f.properties)}<br>คะแนน ${Number(f.properties.risk_score).toFixed(1)} (${getRiskLevel(Number(f.properties.risk_score)).label})`):undefined}).addTo(map);
+    let collection, level='subdistrict';
+    if(type==='risk'){
+      level=state.district?'subdistrict':'district';
+      collection=level==='district'?raw.riskDistrict:raw.riskSubdistrict;
+    }else collection=raw[type];
+    const fs=(collection?.features||[]).filter(f=>matchesBoundary(f,level));
+    shown[type]=L.geoJSON({type:'FeatureCollection',features:fs},{
+      style:type==='burnscar'?{color:'#dc2626',fillColor:'#ef4444',weight:.8,fillOpacity:.4}:f=>{const l=getRiskLevel(Number(f.properties?.risk_score||0));return{color:l.color,fillColor:l.color,weight:1.4,fillOpacity:.62};},
+      onEachFeature:type==='risk'?(f,l)=>{
+        const p=f.properties||{}, score=Number(p.risk_score||0), name=level==='district'?`อ.${districtOf(p)}`:`ต.${subdistrictOf(p)}`;
+        l.bindTooltip(`${name}<br>คะแนน ${score.toFixed(1)} (${getRiskLevel(score).label})<br>ปี ${p.risk_years||'-'}`);
+      }:undefined
+    }).addTo(map);
   }
 
-  function applyFilter(next){ state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||''}; renderBoundaries();renderHotspots();renderCrop();renderAux('burnscar');renderAux('risk');focusSelection(); }
+  function applyFilter(next){
+    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||''};
+    raw.risk=state.district?raw.riskSubdistrict:raw.riskDistrict;
+    renderBoundaries();renderHotspots();renderCrop();renderAux('burnscar');renderAux('risk');focusSelection();
+  }
   function focusSelection(){ let src=null; if(state.subdistrict)src=raw.subdistrict.features.filter(f=>districtOf(f.properties)===state.district&&subdistrictOf(f.properties)===state.subdistrict); else if(state.district)src=raw.district.features.filter(f=>districtOf(f.properties)===state.district); if(src?.length)map.fitBounds(L.geoJSON({type:'FeatureCollection',features:src}).getBounds(),{padding:[20,20]}); else zoomToKPT(); }
   function zoomToKPT(){ if(raw.district?.features?.length)map.fitBounds(L.geoJSON(raw.district).getBounds(),{padding:[20,20]}); else map.setView(CONFIG.MAP_CENTER,CONFIG.MAP_ZOOM); }
   function getRiskLevel(score){ return CONFIG.RISK_LEVELS.find(x=>score>=x.min&&score<x.max)||CONFIG.RISK_LEVELS[0]; }
+  function getRiskForScope(level){ return level==='district'?raw.riskDistrict:raw.riskSubdistrict; }
 
   function importHotspots(year,fc){
     const y=String(year);
@@ -154,5 +197,5 @@ const MapModule = (() => {
     return raw.hotspot[y];
   }
 
-  return { init,applyFilter,zoomToKPT,getRiskLevel,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop} };
+  return { init,applyFilter,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop} };
 })();
