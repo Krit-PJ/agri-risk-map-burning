@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agri-Risk Map จังหวัดกำแพงเพชร</title>
+  <title>Agri-Risk Map Burning | จังหวัดกำแพงเพชร</title>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -19,6 +19,17 @@
 
   <link rel="stylesheet" href="css/style.css" />
   <style>
+    :root { --ui-font-size: 15px; --header-green:#14532d; --header-gold:#d4a72c; }
+    .brand-logos { display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+    .brand-logo { width:58px; height:58px; object-fit:contain; background:#fff; border-radius:50%; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,.22); }
+    .brand-title h1 { line-height:1.15; }
+    .download-guide { display:inline-flex; align-items:center; gap:6px; margin-top:8px; padding:7px 10px; border-radius:6px; background:#0f766e; color:#fff; text-decoration:none; font-weight:700; }
+    .download-guide:hover { filter:brightness(1.08); }
+    .crop-filter-wrap { margin-top:7px; padding-left:22px; }
+    .crop-filter-wrap select { width:100%; }
+    .scope-caption { margin:4px 0 8px; font-size:.86rem; opacity:.8; }
+    .chart-box.chart-crop-full { margin-top:10px; }
+    .chart-box.chart-crop-full canvas { max-height:190px; }
     :root { --ui-font-size: 15px; }
     body, button, select, input { font-size: var(--ui-font-size); }
     .panel-section h3 { font-size: 1.08rem; }
@@ -72,9 +83,12 @@
   <!-- HEADER -->
   <header id="app-header">
     <div class="header-left">
-      <img src="assets/logo.png" alt="DOAE" id="logo" onerror="this.style.display='none'" />
-      <div>
-        <h1>Agri-Risk Map จังหวัดกำแพงเพชร</h1>
+      <div class="brand-logos" aria-label="ตราหน่วยงาน">
+        <img src="assets/logo-doae.png" alt="ตรากรมส่งเสริมการเกษตร" class="brand-logo" />
+        <img src="assets/logo-kpp.jpg" alt="ตราจังหวัดกำแพงเพชร" class="brand-logo" />
+      </div>
+      <div class="brand-title">
+        <h1>Agri-Risk Map Burning</h1>
         <p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
       </div>
     </div>
@@ -129,6 +143,17 @@
           <label class="toggle-row">
             <input type="checkbox" id="lyr-crop" /> พื้นที่เพาะปลูก
           </label>
+          <div class="crop-filter-wrap">
+            <label for="filter-crop">ชนิดพืช</label>
+            <select id="filter-crop" disabled>
+              <option value="">-- ทุกชนิดพืช --</option>
+              <option value="ข้าว">ข้าว</option>
+              <option value="อ้อย">อ้อย</option>
+              <option value="ข้าวโพด">ข้าวโพด</option>
+              <option value="มันสำปะหลัง">มันสำปะหลัง</option>
+              <option value="อื่นๆ">พืชอื่น ๆ</option>
+            </select>
+          </div>
         </div>
       </section>
 
@@ -179,25 +204,20 @@
 
       <section class="panel-section" id="risk-methodology">
         <h3>📊 หลักเกณฑ์การประเมินระดับความเสี่ยง</h3>
-        <p class="model-note"><strong>Model A — Spatial MCDA</strong><br>รวมข้อมูล 4 ด้านให้อยู่ในคะแนนมาตรฐาน 0–100 เพื่อจัดลำดับพื้นที่เฝ้าระวัง</p>
         <div class="risk-formula">
-          <strong>สูตรคำนวณ</strong><br>
+          <strong>สูตร Model A - Spatial MCDA</strong><br>
           Risk = (HotspotScore × 0.40) + (TrendScore × 0.20)<br>
           + (CropScore × 0.20) + (AreaScore × 0.20)
         </div>
-        <div class="risk-factor-grid">
-          <div class="risk-factor"><strong>🔥 Hotspot 40%</strong><span>ความหนาแน่นจุดความร้อนย้อนหลัง โดยให้ปีล่าสุดสำคัญกว่า เป็นหลักฐานการเกิดเหตุโดยตรงที่สุด</span></div>
-          <div class="risk-factor"><strong>📈 Trend 20%</strong><span>อัตราเพิ่มหรือลดของ Hotspot ช่วยแยกพื้นที่ที่ปัญหากำลังรุนแรงขึ้น</span></div>
-          <div class="risk-factor"><strong>🌾 Crop 20%</strong><span>ความเสี่ยงตามชนิดพืช คำนวณจาก Hotspot/Burn Scar ต่อพื้นที่ปลูก ไม่ใช้ความเชื่อเพียงอย่างเดียว</span></div>
-          <div class="risk-factor"><strong>📐 Area 20%</strong><span>ขนาดพื้นที่เกษตรที่ต้องบริหารจัดการ โดยปรับสเกลเพื่อลดอคติจากพื้นที่ขนาดใหญ่มาก</span></div>
-        </div>
         <div class="risk-levels" aria-label="ระดับความเสี่ยง">
-          <div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก 75–100:</strong> เฝ้าระวังเร่งด่วนและลงพื้นที่เชิงรุก</span></div>
-          <div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง 50–74.99:</strong> จัดทำแผนป้องกันและติดตามถี่</span></div>
-          <div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง 25–49.99:</strong> ติดตามตามรอบและเตรียมมาตรการ</span></div>
-          <div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ 0–24.99:</strong> เฝ้าระวังตามปกติ</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก:</strong> 75-100 คะแนน</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง:</strong> 50-74.99 คะแนน</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.99 คะแนน</span></div>
+          <div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.99 คะแนน</span></div>
         </div>
-        <p class="model-note">หมายเหตุ: น้ำหนัก 40/20/20/20 เป็น Baseline แบบ expert-informed MCDA ต้องตรวจสอบกับ Hotspot หรือ Burn Scar ของปีถัดไป และปรับเมื่อมีหลักฐานเชิงสถิติที่ดีกว่า</p>
+        <a class="download-guide no-print" href="docs/risk-assessment-guide-kpp.pdf" download>
+          📥 ดาวน์โหลดคู่มือและรายละเอียดสูตร
+        </a>
       </section>
 
       <section class="panel-section no-print" id="data-import-section">
@@ -258,35 +278,35 @@
 
       <!-- Charts -->
       <div class="chart-box">
-        <h4>Hotspot รายปี (Trend)</h4>
+        <h4 id="title-trend">Hotspot รายปี (Trend) - ทุกอำเภอ</h4>
+        <div id="scope-caption" class="scope-caption">ขอบเขตวิเคราะห์: จังหวัดกำแพงเพชร</div>
         <canvas id="chart-trend" height="160"></canvas>
       </div>
 
       <div class="chart-box">
-        <h4>Top 5 อำเภอ</h4>
+        <h4 id="title-top5">Top 5 อำเภอ</h4>
         <canvas id="chart-top-district" height="180"></canvas>
       </div>
 
-      <div class="chart-box half-charts">
-        <div>
-          <h4>ประเภทพืช</h4>
-          <canvas id="chart-crop" height="150"></canvas>
-        </div>
-        <div>
-          <h4>ระดับความเสี่ยง</h4>
-          <canvas id="chart-risk" height="150"></canvas>
-        </div>
+      <div class="chart-box">
+        <h4>ระดับความเสี่ยง</h4>
+        <canvas id="chart-risk" height="150"></canvas>
       </div>
 
       <!-- Top Districts Table -->
       <div class="chart-box">
-        <h4>Top 10 อำเภอ (Hotspot สูงสุด)</h4>
+        <h4 id="title-top10">Top 10 อำเภอ (Hotspot สูงสุด)</h4>
         <table id="tbl-top-district">
           <thead>
-            <tr><th>อำเภอ</th><th>จังหวัด</th><th>Hotspot</th><th>ความเสี่ยง</th></tr>
+            <tr><th id="rank-area-header">อำเภอ</th><th>จังหวัด</th><th>Hotspot</th><th>ความเสี่ยง</th></tr>
           </thead>
           <tbody></tbody>
         </table>
+      </div>
+
+      <div class="chart-box chart-crop-full">
+        <h4 id="title-crop">ประเภทพืชในขอบเขตที่เลือก</h4>
+        <canvas id="chart-crop" height="180"></canvas>
       </div>
 
     </aside>
@@ -319,6 +339,8 @@
     const subdistrictEl = document.getElementById('filter-subdistrict');
     const provinceEl = document.getElementById('filter-province');
     const statusEl = document.getElementById('import-status');
+    const cropEl = document.getElementById('filter-crop');
+    const cropLayerEl = document.getElementById('lyr-crop');
     let subdistrictFeatures = [];
 
     const prop = (obj, names) => {
@@ -355,16 +377,48 @@
       subdistrictEl.disabled = !district;
     }
 
-    function emitFilter() {
-      const detail = { province: KPT.province, district: districtEl.value, subdistrict: subdistrictEl.value };
-      window.dispatchEvent(new CustomEvent('agri-risk:filter-change', {detail}));
-      [provinceEl, districtEl, subdistrictEl].forEach(el => el?.dispatchEvent(new Event('change', {bubbles:true})));
+
+    function updateScopeUI(detail) {
+      const district = detail.district;
+      const subdistrict = detail.subdistrict;
+      const crop = detail.crop;
+      const scope = subdistrict ? `ตำบล${subdistrict} อำเภอ${district}` : district ? `อำเภอ${district}` : 'จังหวัดกำแพงเพชร';
+      const rankUnit = district ? 'ตำบล' : 'อำเภอ';
+      const cropSuffix = crop ? ` - ${crop}` : '';
+      document.getElementById('scope-caption').textContent = `ขอบเขตวิเคราะห์: ${scope}${cropSuffix}`;
+      document.getElementById('title-trend').textContent = `Hotspot รายปี (Trend) - ${scope}`;
+      document.getElementById('title-top5').textContent = `Top 5 ${rankUnit} ใน${scope}`;
+      document.getElementById('title-top10').textContent = `Top 10 ${rankUnit} (Hotspot สูงสุด) - ${scope}`;
+      document.getElementById('rank-area-header').textContent = rankUnit;
+      document.getElementById('title-crop').textContent = `ประเภทพืช - ${scope}`;
+      const provinceLayer = document.getElementById('lyr-province');
+      const districtLayer = document.getElementById('lyr-district');
+      const subdistrictLayer = document.getElementById('lyr-subdistrict');
+      if (subdistrict) {
+        provinceLayer.checked = false; districtLayer.checked = false; subdistrictLayer.checked = true;
+      } else if (district) {
+        provinceLayer.checked = false; districtLayer.checked = true; subdistrictLayer.checked = false;
+      } else {
+        provinceLayer.checked = true; districtLayer.checked = false; subdistrictLayer.checked = false;
+      }
+      window.dispatchEvent(new CustomEvent('agri-risk:boundary-focus', {detail:{...detail, scope}}));
     }
 
-    districtEl?.addEventListener('change', () => { populateSubdistricts(); subdistrictEl.value=''; });
+    function emitFilter() {
+      const detail = { province: KPT.province, district: districtEl.value, subdistrict: subdistrictEl.value, crop: cropEl?.value || '' };
+      window.dispatchEvent(new CustomEvent('agri-risk:filter-change', {detail}));
+      updateScopeUI(detail);
+      [provinceEl, districtEl, subdistrictEl, cropEl].forEach(el => el?.dispatchEvent(new Event('change', {bubbles:true})));
+      window.dispatchEvent(new CustomEvent('agri-risk:request-refresh', {detail}));
+    }
+
+    districtEl?.addEventListener('change', () => { populateSubdistricts(); subdistrictEl.value=''; setTimeout(emitFilter,0); });
+    subdistrictEl?.addEventListener('change', emitFilter);
+    cropLayerEl?.addEventListener('change', () => { cropEl.disabled = !cropLayerEl.checked; if (!cropLayerEl.checked) cropEl.value=''; emitFilter(); });
+    cropEl?.addEventListener('change', emitFilter);
     document.getElementById('btn-apply-filter')?.addEventListener('click', emitFilter);
     document.getElementById('btn-reset-filter')?.addEventListener('click', () => {
-      districtEl.value=''; subdistrictEl.value=''; subdistrictEl.disabled=true;
+      districtEl.value=''; subdistrictEl.value=''; subdistrictEl.disabled=true; cropEl.value=''; cropEl.disabled=!cropLayerEl.checked;
       subdistrictEl.innerHTML='<option value="">-- เลือกอำเภอก่อน --</option>';
       setTimeout(emitFilter, 0);
     });
@@ -395,6 +449,7 @@
     });
 
     loadSubdistrictIndex();
+    updateScopeUI({province:KPT.province,district:'',subdistrict:'',crop:''});
   })();
   </script>
 </body>

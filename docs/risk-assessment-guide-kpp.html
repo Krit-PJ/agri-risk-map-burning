@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="th"><head><meta charset="utf-8"><title>คู่มือหลักเกณฑ์การประเมินระดับความเสี่ยง</title>
+<style>
+@page{size:A4;margin:16mm 17mm 18mm} body{font-family:'Noto Sans Thai','Garuda',sans-serif;color:#1f2937;font-size:11pt;line-height:1.55;margin:0} h1{color:#14532d;font-size:22pt;text-align:center;line-height:1.25;margin:10mm 0 2mm} h2{color:#14532d;font-size:16pt;margin:8mm 0 3mm;break-after:avoid} h3{font-size:12.5pt;margin:5mm 0 2mm} p{margin:0 0 3mm} .subtitle{text-align:center;color:#64748b;font-size:12pt}.logos{display:flex;justify-content:center;gap:30mm;margin-top:7mm}.logos img{width:34mm;height:34mm;object-fit:contain}.formula{border:1px solid #86efac;background:#ecfdf5;padding:5mm;text-align:center;font-weight:700;font-size:13pt;margin:5mm 0}.note{background:#fff7ed;border-left:4px solid #f97316;padding:3mm 4mm}.page-break{break-before:page} table{width:100%;border-collapse:collapse;margin:3mm 0 6mm;font-size:9.5pt} th,td{border:1px solid #94a3b8;padding:2.5mm;vertical-align:top} th{background:#dcfce7;text-align:left}.levels th{background:#f1f5f9}.refs{font-size:9pt;color:#475569}.footer{position:fixed;bottom:-12mm;left:0;right:0;text-align:center;color:#64748b;font-size:8pt}
+</style></head><body>
+<div class="footer">Agri-Risk Map Burning - จังหวัดกำแพงเพชร</div>
+<div class="logos"><img src="../assets/logo-doae.png"><img src="../assets/logo-kpp.jpg"></div>
+<h1>คู่มือหลักเกณฑ์การประเมินระดับความเสี่ยงการเผาในพื้นที่เกษตร</h1>
+<div class="subtitle">Agri-Risk Map Burning - จังหวัดกำแพงเพชร</div>
+<p style="margin-top:10mm">เอกสารนี้อธิบายสูตร Model A - Spatial Multi-Criteria Decision Analysis (MCDA) วิธีจัดทำคะแนนย่อย การตีความผล และข้อจำกัด เพื่อให้เจ้าหน้าที่ตรวจสอบย้อนกลับและปรับปรุงแบบจำลองได้อย่างเป็นระบบ</p>
+<h2>สูตรคะแนนรวม</h2>
+<div class="formula">Risk = (HotspotScore × 0.40) + (TrendScore × 0.20) + (CropScore × 0.20) + (AreaScore × 0.20)</div>
+<p>คะแนนย่อยทุกตัวต้องแปลงให้อยู่ในช่วง 0-100 ก่อนคูณน้ำหนัก เมื่อรวมแล้ว Risk Score จะอยู่ในช่วง 0-100 เช่นเดียวกัน</p>
+<h2>1. เหตุผลในการเลือก Model A</h2>
+<p><b>Hotspot 40%</b> ได้รับน้ำหนักสูงสุด เพราะเป็นหลักฐานเชิงสังเกตของเหตุการณ์ความร้อนที่ตรวจพบจริง ส่วน Trend, Crop และ Area ช่วยอธิบายทิศทาง ระบบการผลิต และขนาดพื้นที่สัมผัสความเสี่ยง จึงกำหนดน้ำหนักรองด้านละ 20%</p>
+<table><tr><th>ปัจจัย</th><th>น้ำหนัก</th><th>ความหมาย</th><th>หลักเกณฑ์แนะนำ</th></tr>
+<tr><td>HotspotScore</td><td>40%</td><td>ความถี่หรือความหนาแน่น Hotspot ย้อนหลัง โดยให้ปีล่าสุดสำคัญกว่า</td><td>ใช้จำนวนจุดต่อพื้นที่เกษตร 10,000 ไร่ เพื่อลดอคติจากขนาดพื้นที่</td></tr>
+<tr><td>TrendScore</td><td>20%</td><td>ทิศทางการเพิ่มหรือลดของ Hotspot</td><td>คำนวณอัตราการเปลี่ยนแปลงหรือ slope ไม่ใช้โบนัสคงที่</td></tr>
+<tr><td>CropScore</td><td>20%</td><td>ความเสี่ยงตามชนิดพืชและเศษวัสดุหลังเก็บเกี่ยว</td><td>ใช้ Hotspot หรือ Burn Scar ต่อพื้นที่ปลูกของพืชแต่ละชนิด</td></tr>
+<tr><td>AreaScore</td><td>20%</td><td>ขนาดพื้นที่เกษตรที่ต้องบริหารจัดการ</td><td>ใช้ log transformation หรือ percentile ลดอิทธิพลของพื้นที่ใหญ่มาก</td></tr></table>
+<div class="note"><b>ข้อควรระวัง:</b> น้ำหนัก 40/20/20/20 เป็น Baseline แบบ expert-informed MCDA ไม่ใช่ค่ามาตรฐานตายตัว ต้องทดสอบกับ Hotspot หรือ Burn Scar ของปีถัดไปและปรับตามหลักฐาน</div>
+
+<h2 class="page-break">2. วิธีคำนวณคะแนนย่อย</h2>
+<h3>2.1 HotspotScore</h3><p>คำนวณ Hotspot ย้อนหลังแบบถ่วงน้ำหนัก เช่น WeightedHS = 0.25×HS2566 + 0.35×HS2567 + 0.40×HS2568 แล้วหารด้วยพื้นที่เกษตร ก่อนแปลงเป็นคะแนน 0-100</p>
+<h3>2.2 TrendScore</h3><p>แนะนำให้ใช้ TrendRate = (HSปีล่าสุด - HSปีก่อน) / max(HSปีก่อน,1) แล้วจัดช่วงหรือทำ percentile เป็น 0-100 เพื่อแยกพื้นที่ที่สถานการณ์กำลังเพิ่มขึ้นออกจากพื้นที่ที่ลดลง</p>
+<h3>2.3 CropScore</h3><p>คำนวณจากอัตรา Hotspot หรือ Burn Scar ต่อพื้นที่ปลูกพืชชนิดนั้น ไม่ควรกำหนดจากความเชื่อว่าพืชชนิดใดเสี่ยงสูงโดยไม่มีข้อมูลรองรับ</p>
+<h3>2.4 AreaScore</h3><p>คำนวณจากขนาดพื้นที่เกษตร โดยใช้ ln(Area+1) หรือ percentile rank เพื่อไม่ให้ตำบลขนาดใหญ่มากครอบงำคะแนน</p>
+<h2>3. ระดับคะแนนและการนำไปใช้</h2>
+<table class="levels"><tr><th>ระดับ</th><th>ช่วงคะแนน</th><th>แนวทางการจัดการ</th></tr>
+<tr><td>สูงมาก</td><td>75-100</td><td>เฝ้าระวังเร่งด่วน ลงพื้นที่เชิงรุก ประสานท้องถิ่นและชุมชน</td></tr>
+<tr><td>สูง</td><td>50-74.99</td><td>จัดทำแผนป้องกัน ติดตามถี่ และเตรียมกำลังสนับสนุน</td></tr>
+<tr><td>ปานกลาง</td><td>25-49.99</td><td>ติดตามตามรอบ สื่อสารเกษตรกร และเตรียมมาตรการลดการเผา</td></tr>
+<tr><td>ต่ำ</td><td>0-24.99</td><td>เฝ้าระวังตามปกติและรักษามาตรการป้องกันเดิม</td></tr></table>
+<p>ระดับคะแนนนี้เป็นเกณฑ์แสดงผลเบื้องต้น หากมีข้อมูลหลายปีควรเปรียบเทียบกับ quantile, Jenks natural breaks หรือ threshold จาก ROC/PR curve</p>
+<h2>4. การตรวจสอบความน่าเชื่อถือ</h2>
+<table><tr><th>การทดสอบ</th><th>วัตถุประสงค์</th></tr>
+<tr><td>Leave-One-Year-Out</td><td>ตรวจว่าคะแนนจากอดีตทำนายปีใหม่ได้หรือไม่</td></tr>
+<tr><td>Spatial Block Validation</td><td>ลด spatial leakage จากพื้นที่ใกล้กัน</td></tr>
+<tr><td>Sensitivity Analysis</td><td>ตรวจว่าเปลี่ยนน้ำหนัก ±5% หรือ ±10% แล้วอันดับพื้นที่เปลี่ยนมากหรือไม่</td></tr>
+<tr><td>Recall ของพื้นที่เสี่ยงสูง</td><td>วัดว่าพื้นที่คะแนนสูงครอบคลุม Burn Scar ปีถัดไปได้กี่เปอร์เซ็นต์</td></tr></table>
+<h2>5. เอกสารอ้างอิง</h2>
+<div class="refs">
+<p>1) รายงานการวิเคราะห์และเสนอแนวทางการประเมินพื้นที่เสี่ยงเผาในพื้นที่การเกษตร อำเภอคลองขลุง จังหวัดกำแพงเพชร, กลุ่มอารักขาพืช สำนักงานเกษตรจังหวัดกำแพงเพชร, 2569.</p>
+<p>2) NASA FIRMS. VIIRS 375 m Active Fire Data. https://firms.modaps.eosdis.nasa.gov</p>
+<p>3) Schroeder, W. et al. (2014). The New VIIRS 375 m Active Fire Detection Data Product. Remote Sensing of Environment, 143, 85-96.</p>
+<p>4) FAO (2006). Fire Management: Global Assessment 2006. FAO Forestry Paper 151.</p>
+<p>5) Malczewski, J. (2006). GIS-based multicriteria decision analysis: a survey of the literature. International Journal of Geographical Information Science, 20(7), 703-726.</p>
+<p>6) Roberts, D.R. et al. (2017). Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure. Ecography, 40, 913-929.</p>
+</div></body></html>
