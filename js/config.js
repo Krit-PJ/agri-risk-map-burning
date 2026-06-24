@@ -25,7 +25,7 @@ const CONFIG = {
     {label:'สูง',class:'risk-high',color:'#e67e22',min:50,max:75},
     {label:'สูงมาก',class:'risk-very-high',color:'#e74c3c',min:75,max:101}
   ],
-  RISK_MODEL:{years:[2567,2568,2569],yearWeights:{2567:0.25,2568:0.35,2569:0.40},weights:{hotspot:0.40,trend:0.20,crop:0.20,area:0.20}},
+  RISK_MODEL:{yearWeights:{2566:0.15,2567:0.25,2568:0.35,2569:0.40},weights:{hotspot:0.40,trend:0.20,crop:0.20,area:0.20}},
   CROP_RISK:{'ข้าว':70,'ข้าวโพด':90,'อ้อย':80,'มันสำปะหลัง':75,'อื่นๆ':50},
   VISITOR_COUNTER:{endpoint:''}
 };

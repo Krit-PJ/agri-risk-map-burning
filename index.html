@@ -74,7 +74,7 @@
       .leaflet-control-container { display:none !important; }
     }
   </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script></head>
 <body>
 <!-- HEADER -->
 <header id="app-header">
@@ -90,6 +90,8 @@
 </div>
 <div class="header-right"><span class="visitor-counter" title="นับการเข้าชมบนอุปกรณ์นี้; รองรับ endpoint กลางเมื่อกำหนดใน config.js">👥 ผู้เข้าชม: <strong id="visitor-count">-</strong></span>
 <span id="last-updated"></span>
+<button class="btn-admin no-print" id="btn-admin-login" type="button" aria-haspopup="dialog">🔐 Admin</button>
+<button class="btn-admin-logout no-print hidden" id="btn-admin-logout" type="button">ออกจากระบบ</button>
 <button class="btn-print no-print" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ Print A4</button>
 </div>
 </header>
@@ -149,7 +151,6 @@
 </section>
 <section class="panel-section">
 <h3>🔍 กรองข้อมูล</h3>
-
 <label>อำเภอ
           <select id="filter-district">
 <option value="">-- ทั้งหมด --</option>
@@ -185,18 +186,15 @@
 <label><input name="basemap" type="radio" value="topo"/> Topo</label>
 </div>
 </section>
-<section class="panel-section" id="risk-methodology">
+<section class="panel-section no-print admin-only hidden" id="excel-import-section" aria-hidden="true"><h3>📥 นำเข้า Hotspot จาก Excel</h3><p class="field-help">รองรับไฟล์ .xlsx/.xls ที่มีตารางรายละเอียด hsID, Date, Province, LandType และ Maps/X/Y</p><label>ปีข้อมูล (พ.ศ.)<input id="import-year" inputmode="numeric" max="2600" min="2566" type="number" value="2570"/></label><label>ไฟล์ Excel<input accept=".xlsx,.xls" id="import-excel" type="file"/></label><div class="data-actions"><button class="btn-primary" id="btn-import-excel" type="button">ตรวจสอบและนำเข้า</button><button class="btn-secondary" disabled="" id="btn-download-import" type="button">ดาวน์โหลด GeoJSON</button></div><div aria-live="polite" class="import-status" id="import-status" role="status">ยังไม่ได้เลือกไฟล์</div></section><section class="panel-section" id="risk-methodology">
 <h3>📊 หลักเกณฑ์การประเมินระดับความเสี่ยง</h3>
-
 <div aria-label="ระดับความเสี่ยง" class="risk-levels">
 <div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก:</strong> 75-100 คะแนน</span></div>
 <div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง:</strong> 50-74.99 คะแนน</span></div>
 <div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.99 คะแนน</span></div>
 <div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.99 คะแนน</span></div>
 </div>
-
 </section>
-
 </aside>
 <!-- CENTER: Map -->
 <main id="map-container">
@@ -217,10 +215,9 @@
 <div class="card-icon">🔥</div>
 <div class="card-body">
 <div class="card-value" id="card-total">-</div>
-<div class="card-label">Hotspot ทั้งหมด</div>
+<div class="card-label" id="card-total-label">Hotspot ทั้งหมด (ปี 2569)</div>
 </div>
 </div>
-
 <div class="card card-province">
 <div class="card-icon">📍</div>
 <div class="card-body">
@@ -240,7 +237,7 @@
 <canvas height="180" id="chart-top-district"></canvas>
 </div>
 <div class="chart-box">
-<h4>ระดับความเสี่ยง</h4>
+<h4 id="title-risk">ระดับความเสี่ยงตามปีที่เลือก</h4>
 <canvas height="150" id="chart-risk"></canvas>
 </div>
 <!-- Top Districts Table -->
@@ -260,6 +257,24 @@
 <button id="detail-close">✕</button>
 <h3 id="detail-title">รายละเอียด</h3>
 <div id="detail-content"></div>
+</div>
+<div class="admin-modal hidden" id="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+  <div class="admin-modal-card">
+    <button class="admin-modal-close" id="admin-modal-close" type="button" aria-label="ปิด">×</button>
+    <h2 id="admin-modal-title">เข้าสู่ระบบผู้ดูแล</h2>
+    <p>เฉพาะผู้ดูแลระบบเท่านั้นที่สามารถนำเข้าข้อมูล Hotspot จาก Excel</p>
+    <form id="admin-login-form" autocomplete="off">
+      <label for="admin-username">ชื่อผู้ใช้</label>
+      <input id="admin-username" name="username" type="text" autocomplete="username" required />
+      <label for="admin-password">รหัสผ่าน</label>
+      <input id="admin-password" name="password" type="password" autocomplete="current-password" required />
+      <div class="admin-login-actions">
+        <button class="btn-primary" type="submit">เข้าสู่ระบบ</button>
+        <button class="btn-secondary" id="admin-cancel" type="button">ยกเลิก</button>
+      </div>
+      <div class="admin-login-status" id="admin-login-status" role="status" aria-live="polite"></div>
+    </form>
+  </div>
 </div>
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
