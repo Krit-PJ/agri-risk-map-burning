@@ -1,24 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agri-Risk Map Burning | จังหวัดกำแพงเพชร</title>
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" onerror="this.onerror=null;this.src='https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js'"></script>
-
-  <!-- Leaflet MarkerCluster -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
-  <link rel="stylesheet" href="css/style.css" />
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Agri-Risk Map Burning | จังหวัดกำแพงเพชร</title>
+<!-- Leaflet -->
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Chart.js -->
+<script onerror="this.onerror=null;this.src='https://unpkg.com/chart.js@4.4.0/dist/chart.umd.js'" src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Leaflet MarkerCluster -->
+<link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<link href="css/style.css" rel="stylesheet"/>
+<style>
     :root { --ui-font-size: 15px; --header-green:#14532d; --header-gold:#d4a72c; }
     .brand-logos { display:flex; align-items:center; gap:10px; flex:0 0 auto; }
     .brand-logo { width:58px; height:58px; object-fit:contain; background:#fff; border-radius:50%; padding:3px; box-shadow:0 2px 8px rgba(0,0,0,.22); }
@@ -79,250 +76,197 @@
   </style>
 </head>
 <body>
+<!-- HEADER -->
+<header id="app-header">
+<div class="header-left">
+<div aria-label="ตราหน่วยงาน" class="brand-logos">
+<img alt="ตรากรมส่งเสริมการเกษตร" class="brand-logo" src="assets/logo-doae.png"/>
+<img alt="ตราจังหวัดกำแพงเพชร" class="brand-logo" src="assets/logo-kpp.jpg"/>
+</div>
+<div class="brand-title">
+<h1>Agri-Risk Map Burning</h1>
+<p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
+</div>
+</div>
+<div class="header-right"><span class="visitor-counter" title="นับการเข้าชมบนอุปกรณ์นี้; รองรับ endpoint กลางเมื่อกำหนดใน config.js">👥 ผู้เข้าชม: <strong id="visitor-count">-</strong></span>
+<span id="last-updated"></span>
+<button class="btn-print no-print" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ Print A4</button>
+</div>
+</header>
+<!-- MAIN LAYOUT -->
+<div id="app-body">
+<!-- LEFT PANEL: Controls -->
+<aside id="left-panel">
+<section class="panel-section">
+<h3>🗺️ ชั้นข้อมูล</h3>
+<div class="layer-group">
+<label class="section-label">ขอบเขต</label>
+<label class="toggle-row">
+<input checked="" id="lyr-province" type="checkbox"/> จังหวัด
+          </label>
+<label class="toggle-row">
+<input checked="" id="lyr-district" type="checkbox"/> อำเภอ
+          </label>
+<label class="toggle-row">
+<input id="lyr-subdistrict" type="checkbox"/> ตำบล
+          </label>
+</div>
+<div class="layer-group">
+<label class="section-label">Hotspot รายปี (ม.ค.–พ.ค.)</label>
+<label class="toggle-row hs-2566">
+<input class="hs-layer" data-year="2566" type="checkbox"/> ปี 2566 (2023)
+          </label>
+<label class="toggle-row hs-2567">
+<input class="hs-layer" data-year="2567" type="checkbox"/> ปี 2567 (2024)
+          </label>
+<label class="toggle-row hs-2568">
+<input class="hs-layer" data-year="2568" type="checkbox"/> ปี 2568 (2025)
+          </label><label class="toggle-row hs-2569"><input checked="" class="hs-layer" data-year="2569" type="checkbox"/> ปี 2569 (2026)</label>
+</div>
+<div class="layer-group">
+<label class="section-label">ความเสี่ยง &amp; เพิ่มเติม</label>
+<label class="toggle-row">
+<input checked="" id="lyr-risk" type="checkbox"/> แผนที่ความเสี่ยง (ตำบล)
+          </label>
+<label class="toggle-row">
+<input id="lyr-burnscar" type="checkbox"/> Burn Scar (แผลไฟ)
+          </label>
+<label class="toggle-row">
+<input id="lyr-crop" type="checkbox"/> พื้นที่เพาะปลูก
+          </label>
+<div class="crop-filter-wrap">
+<label for="filter-crop">ชนิดพืช</label>
+<select disabled="" id="filter-crop">
+<option value="">-- ทุกชนิดพืช --</option>
+<option value="ข้าว">ข้าว</option>
+<option value="อ้อย">อ้อย</option>
+<option value="ข้าวโพด">ข้าวโพด</option>
+<option value="มันสำปะหลัง">มันสำปะหลัง</option>
+<option value="อื่นๆ">พืชอื่น ๆ</option>
+</select>
+</div>
+</div>
+</section>
+<section class="panel-section">
+<h3>🔍 กรองข้อมูล</h3>
 
-  <!-- HEADER -->
-  <header id="app-header">
-    <div class="header-left">
-      <div class="brand-logos" aria-label="ตราหน่วยงาน">
-        <img src="assets/logo-doae.png" alt="ตรากรมส่งเสริมการเกษตร" class="brand-logo" />
-        <img src="assets/logo-kpp.jpg" alt="ตราจังหวัดกำแพงเพชร" class="brand-logo" />
-      </div>
-      <div class="brand-title">
-        <h1>Agri-Risk Map Burning</h1>
-        <p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
-      </div>
-    </div>
-    <div class="header-right">
-      <span id="last-updated"></span>
-      <button id="btn-print" class="btn-print no-print" type="button" title="พิมพ์รายงาน 1 หน้า A4">🖨️ Print A4</button>
-    </div>
-  </header>
-
-  <!-- MAIN LAYOUT -->
-  <div id="app-body">
-
-    <!-- LEFT PANEL: Controls -->
-    <aside id="left-panel">
-      <section class="panel-section">
-        <h3>🗺️ ชั้นข้อมูล</h3>
-
-        <div class="layer-group">
-          <label class="section-label">ขอบเขต</label>
-          <label class="toggle-row">
-            <input type="checkbox" id="lyr-province" checked /> จังหวัด
-          </label>
-          <label class="toggle-row">
-            <input type="checkbox" id="lyr-district" /> อำเภอ
-          </label>
-          <label class="toggle-row">
-            <input type="checkbox" id="lyr-subdistrict" /> ตำบล
-          </label>
-        </div>
-
-        <div class="layer-group">
-          <label class="section-label">Hotspot รายปี (ม.ค.–พ.ค.)</label>
-          <label class="toggle-row hs-2566">
-            <input type="checkbox" class="hs-layer" data-year="2566" checked /> ปี 2566 (2023)
-          </label>
-          <label class="toggle-row hs-2567">
-            <input type="checkbox" class="hs-layer" data-year="2567" checked /> ปี 2567 (2024)
-          </label>
-          <label class="toggle-row hs-2568">
-            <input type="checkbox" class="hs-layer" data-year="2568" checked /> ปี 2568 (2025)
-          </label>
-        </div>
-
-        <div class="layer-group">
-          <label class="section-label">ความเสี่ยง & เพิ่มเติม</label>
-          <label class="toggle-row">
-            <input type="checkbox" id="lyr-risk" /> แผนที่ความเสี่ยง (ตำบล)
-          </label>
-          <label class="toggle-row">
-            <input type="checkbox" id="lyr-burnscar" /> Burn Scar (แผลไฟ)
-          </label>
-          <label class="toggle-row">
-            <input type="checkbox" id="lyr-crop" /> พื้นที่เพาะปลูก
-          </label>
-          <div class="crop-filter-wrap">
-            <label for="filter-crop">ชนิดพืช</label>
-            <select id="filter-crop" disabled>
-              <option value="">-- ทุกชนิดพืช --</option>
-              <option value="ข้าว">ข้าว</option>
-              <option value="อ้อย">อ้อย</option>
-              <option value="ข้าวโพด">ข้าวโพด</option>
-              <option value="มันสำปะหลัง">มันสำปะหลัง</option>
-              <option value="อื่นๆ">พืชอื่น ๆ</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <section class="panel-section">
-        <h3>🔍 กรองข้อมูล</h3>
-        <label>จังหวัด
-          <select id="filter-province" class="locked-field" disabled aria-label="จังหวัดกำแพงเพชรเท่านั้น">
-            <option value="กำแพงเพชร" selected>กำแพงเพชร</option>
-          </select>
-          <span class="field-help">ระบบนี้จัดการข้อมูลเฉพาะจังหวัดกำแพงเพชร</span>
-        </label>
-        <label>อำเภอ
+<label>อำเภอ
           <select id="filter-district">
-            <option value="">-- ทั้งหมด --</option>
-            <option value="เมืองกำแพงเพชร">เมืองกำแพงเพชร</option>
-            <option value="ไทรงาม">ไทรงาม</option>
-            <option value="คลองลาน">คลองลาน</option>
-            <option value="ขาณุวรลักษบุรี">ขาณุวรลักษบุรี</option>
-            <option value="คลองขลุง">คลองขลุง</option>
-            <option value="พรานกระต่าย">พรานกระต่าย</option>
-            <option value="ลานกระบือ">ลานกระบือ</option>
-            <option value="ทรายทองวัฒนา">ทรายทองวัฒนา</option>
-            <option value="ปางศิลาทอง">ปางศิลาทอง</option>
-            <option value="บึงสามัคคี">บึงสามัคคี</option>
-            <option value="โกสัมพีนคร">โกสัมพีนคร</option>
-          </select>
-        </label>
-        <label>ตำบล
-          <select id="filter-subdistrict" disabled>
-            <option value="">-- เลือกอำเภอก่อน --</option>
-          </select>
-          <span class="field-help">รายชื่อตำบลโหลดจากชั้นข้อมูลขอบเขตโดยอัตโนมัติ</span>
-        </label>
-        <div class="filter-actions">
-          <button id="btn-apply-filter" class="btn-primary" type="button">ใช้ตัวกรอง</button>
-          <button id="btn-reset-filter" class="btn-secondary" type="button">รีเซ็ต</button>
-        </div>
-      </section>
+<option value="">-- ทั้งหมด --</option>
+<option value="เมืองกำแพงเพชร">เมืองกำแพงเพชร</option>
+<option value="ไทรงาม">ไทรงาม</option>
+<option value="คลองลาน">คลองลาน</option>
+<option value="ขาณุวรลักษบุรี">ขาณุวรลักษบุรี</option>
+<option value="คลองขลุง">คลองขลุง</option>
+<option value="พรานกระต่าย">พรานกระต่าย</option>
+<option value="ลานกระบือ">ลานกระบือ</option>
+<option value="ทรายทองวัฒนา">ทรายทองวัฒนา</option>
+<option value="ปางศิลาทอง">ปางศิลาทอง</option>
+<option value="บึงสามัคคี">บึงสามัคคี</option>
+<option value="โกสัมพีนคร">โกสัมพีนคร</option>
+</select>
+</label>
+<label>ตำบล
+          <select disabled="" id="filter-subdistrict">
+<option value="">-- เลือกอำเภอก่อน --</option>
+</select>
+<span class="field-help">รายชื่อตำบลโหลดจากชั้นข้อมูลขอบเขตโดยอัตโนมัติ</span>
+</label>
+<div class="filter-actions">
+<button class="btn-primary" id="btn-apply-filter" type="button">ใช้ตัวกรอง</button>
+<button class="btn-secondary" id="btn-reset-filter" type="button">รีเซ็ต</button>
+</div>
+</section>
+<section class="panel-section">
+<h3>🗃️ Basemap</h3>
+<div class="radio-group">
+<label><input name="basemap" type="radio" value="osm"/> OpenStreetMap</label>
+<label><input checked="" name="basemap" type="radio" value="satellite"/> Satellite</label>
+<label><input name="basemap" type="radio" value="topo"/> Topo</label>
+</div>
+</section>
+<section class="panel-section" id="risk-methodology">
+<h3>📊 หลักเกณฑ์การประเมินระดับความเสี่ยง</h3>
 
-      <section class="panel-section">
-        <h3>🗃️ Basemap</h3>
-        <div class="radio-group">
-          <label><input type="radio" name="basemap" value="osm" checked /> OpenStreetMap</label>
-          <label><input type="radio" name="basemap" value="satellite" /> Satellite</label>
-          <label><input type="radio" name="basemap" value="topo" /> Topo</label>
-        </div>
-      </section>
+<div aria-label="ระดับความเสี่ยง" class="risk-levels">
+<div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก:</strong> 75-100 คะแนน</span></div>
+<div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง:</strong> 50-74.99 คะแนน</span></div>
+<div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.99 คะแนน</span></div>
+<div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.99 คะแนน</span></div>
+</div>
 
-      <section class="panel-section" id="risk-methodology">
-        <h3>📊 หลักเกณฑ์การประเมินระดับความเสี่ยง</h3>
-        <div class="risk-formula">
-          <strong>สูตร Model A - Spatial MCDA</strong><br>
-          Risk = (HotspotScore × 0.40) + (TrendScore × 0.20)<br>
-          + (CropScore × 0.20) + (AreaScore × 0.20)
-        </div>
-        <div class="risk-levels" aria-label="ระดับความเสี่ยง">
-          <div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก:</strong> 75-100 คะแนน</span></div>
-          <div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง:</strong> 50-74.99 คะแนน</span></div>
-          <div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.99 คะแนน</span></div>
-          <div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.99 คะแนน</span></div>
-        </div>
-        <a class="download-guide no-print" href="docs/risk-assessment-guide-kpp.pdf" download>
-          📥 ดาวน์โหลดคู่มือและรายละเอียดสูตร
-        </a>
-      </section>
+</section>
 
-      <section class="panel-section no-print" id="data-import-section">
-        <h3>➕ นำเข้าข้อมูลปีถัดไป</h3>
-        <label>ปี พ.ศ.
-          <input id="import-year" type="number" min="2569" max="2600" value="2569" />
-        </label>
-        <label>ไฟล์ Hotspot GeoJSON
-          <input id="import-hotspot" type="file" accept=".geojson,.json,application/geo+json,application/json" />
-        </label>
-        <div class="data-actions">
-          <button id="btn-import-year" class="btn-primary" type="button">นำเข้าและเพิ่มชั้นข้อมูล</button>
-        </div>
-        <div id="import-status" class="field-help" role="status"></div>
-        <p class="field-help">รูปแบบแนะนำ: <code>hotspot_2569.geojson</code> และต้องมี FeatureCollection พร้อมพิกัด WGS84 (EPSG:4326)</p>
-      </section>
-    </aside>
+</aside>
+<!-- CENTER: Map -->
+<main id="map-container">
+<div id="map"></div>
+<div id="map-legend">
+<strong>ระดับความเสี่ยง</strong>
+<div><span class="dot low"></span> ต่ำ</div>
+<div><span class="dot medium"></span> ปานกลาง</div>
+<div><span class="dot high"></span> สูง</div>
+<div><span class="dot very-high"></span> สูงมาก</div>
+</div>
+</main>
+<!-- RIGHT PANEL: Dashboard -->
+<aside id="right-panel">
+<!-- Summary Cards -->
+<div id="summary-cards">
+<div class="card card-total">
+<div class="card-icon">🔥</div>
+<div class="card-body">
+<div class="card-value" id="card-total">-</div>
+<div class="card-label">Hotspot ทั้งหมด</div>
+</div>
+</div>
 
-    <!-- CENTER: Map -->
-    <main id="map-container">
-      <div id="map"></div>
-      <div id="map-legend">
-        <strong>ระดับความเสี่ยง</strong>
-        <div><span class="dot low"></span> ต่ำ</div>
-        <div><span class="dot medium"></span> ปานกลาง</div>
-        <div><span class="dot high"></span> สูง</div>
-        <div><span class="dot very-high"></span> สูงมาก</div>
-      </div>
-    </main>
-
-    <!-- RIGHT PANEL: Dashboard -->
-    <aside id="right-panel">
-
-      <!-- Summary Cards -->
-      <div id="summary-cards">
-        <div class="card card-total">
-          <div class="card-icon">🔥</div>
-          <div class="card-body">
-            <div class="card-value" id="card-total">-</div>
-            <div class="card-label">Hotspot ทั้งหมด</div>
-          </div>
-        </div>
-        <div class="card card-high">
-          <div class="card-icon">⚠️</div>
-          <div class="card-body">
-            <div class="card-value" id="card-high-risk">-</div>
-            <div class="card-label">พื้นที่เสี่ยงสูง</div>
-          </div>
-        </div>
-        <div class="card card-province">
-          <div class="card-icon">📍</div>
-          <div class="card-body">
-            <div class="card-value" id="card-provinces">-</div>
-            <div class="card-label">อำเภอที่พบ Hotspot</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts -->
-      <div class="chart-box">
-        <h4 id="title-trend">Hotspot รายปี (Trend) - ทุกอำเภอ</h4>
-        <div id="scope-caption" class="scope-caption">ขอบเขตวิเคราะห์: จังหวัดกำแพงเพชร</div>
-        <canvas id="chart-trend" height="160"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <h4 id="title-top5">Top 5 อำเภอ</h4>
-        <canvas id="chart-top-district" height="180"></canvas>
-      </div>
-
-      <div class="chart-box">
-        <h4>ระดับความเสี่ยง</h4>
-        <canvas id="chart-risk" height="150"></canvas>
-      </div>
-
-      <!-- Top Districts Table -->
-      <div class="chart-box">
-        <h4 id="title-top10">Top 10 อำเภอ (Hotspot สูงสุด)</h4>
-        <table id="tbl-top-district">
-          <thead>
-            <tr><th id="rank-area-header">อำเภอ</th><th>จังหวัด</th><th>Hotspot</th><th>ความเสี่ยง</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-
-
-    </aside>
-  </div>
-
-  <!-- POPUP Detail Panel -->
-  <div id="detail-panel" class="hidden">
-    <button id="detail-close">✕</button>
-    <h3 id="detail-title">รายละเอียด</h3>
-    <div id="detail-content"></div>
-  </div>
-
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
-  <script src="js/config.js"></script>
-  <script src="js/map.js"></script>
-  <script src="js/dashboard.js"></script>
-  <script src="js/risk.js"></script>
-  <script src="js/app.js"></script>
-
+<div class="card card-province">
+<div class="card-icon">📍</div>
+<div class="card-body">
+<div class="card-value" id="card-provinces">-</div>
+<div class="card-label">อำเภอที่พบ Hotspot</div>
+</div>
+</div>
+</div>
+<!-- Charts -->
+<div class="chart-box">
+<h4 id="title-trend">Hotspot รายปี (Trend) - ทุกอำเภอ</h4>
+<div class="scope-caption" id="scope-caption">ขอบเขตวิเคราะห์: จังหวัดกำแพงเพชร</div>
+<canvas height="160" id="chart-trend"></canvas>
+</div>
+<div class="chart-box">
+<h4 id="title-top5">Top 5 อำเภอ</h4>
+<canvas height="180" id="chart-top-district"></canvas>
+</div>
+<div class="chart-box">
+<h4>ระดับความเสี่ยง</h4>
+<canvas height="150" id="chart-risk"></canvas>
+</div>
+<!-- Top Districts Table -->
+<div class="chart-box">
+<h4 id="title-top10">Top 10 อำเภอ (Hotspot สูงสุด)</h4>
+<table id="tbl-top-district">
+<thead>
+<tr><th id="rank-area-header">อำเภอ</th><th>จังหวัด</th><th>Hotspot</th><th>ความเสี่ยง</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</aside>
+</div>
+<!-- POPUP Detail Panel -->
+<div class="hidden" id="detail-panel">
+<button id="detail-close">✕</button>
+<h3 id="detail-title">รายละเอียด</h3>
+<div id="detail-content"></div>
+</div>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/map.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/risk.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

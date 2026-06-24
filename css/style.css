@@ -191,3 +191,8 @@ select {
 
 /* Place Leaflet zoom control immediately above the risk legend. */
 #map-container .leaflet-bottom.leaflet-right .leaflet-control-zoom{margin-right:16px;margin-bottom:132px;}
+
+/* 2569 update */
+#summary-cards{grid-template-columns:repeat(2,minmax(0,1fr));}
+.visitor-counter{font-size:12px;color:#c7e7ff;white-space:nowrap;padding:5px 8px;border:1px solid rgba(56,189,248,.35);border-radius:6px;background:rgba(2,20,38,.35);}
+#risk-methodology .risk-levels{margin-top:0;}

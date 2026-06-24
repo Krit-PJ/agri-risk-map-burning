@@ -18,7 +18,7 @@ const Dashboard=(()=>{
     charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]);charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]);charts.top.update('none');
     const riskFeatures=selectedRiskFeatures();
     const risk=[0,0,0,0];riskFeatures.forEach(f=>{const score=riskScoreOf(f.properties);const idx=CONFIG.RISK_LEVELS.findIndex(x=>score>=x.min&&score<x.max);risk[Math.max(idx,0)]++;});charts.risk.data.datasets[0].data=risk;charts.risk.update('none');
-    document.getElementById('card-total').textContent=fs.length.toLocaleString('th-TH');document.getElementById('card-provinces').textContent=new Set(fs.map(f=>f.properties.__district).filter(Boolean)).size;document.getElementById('card-high-risk').textContent=(risk[2]+risk[3]).toLocaleString('th-TH');
+    document.getElementById('card-total').textContent=fs.length.toLocaleString('th-TH');document.getElementById('card-provinces').textContent=new Set(fs.map(f=>f.properties.__district).filter(Boolean)).size;
     const tbody=document.querySelector('#tbl-top-district tbody');tbody.innerHTML='';ranked.slice(0,10).forEach(([name,n])=>{const score=aggregateRiskFor(name),level=MapModule.getRiskLevel(score),tr=document.createElement('tr');tr.innerHTML=`<td>${name||'ไม่ระบุ'}</td><td>${state.district?'อ.'+state.district:'กำแพงเพชร'}</td><td>${n.toLocaleString('th-TH')}</td><td><span class="risk-badge ${level.class}" title="คะแนนความเสี่ยงเฉลี่ย ${score.toFixed(1)}">${level.label}</span></td>`;tbody.appendChild(tr);});
     updateTitles();
   }
