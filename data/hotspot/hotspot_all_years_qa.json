@@ -1,0 +1,16 @@
+{
+  "province": "กำแพงเพชร",
+  "assessment_method_single_year": "Unified Annual Evidence Gate",
+  "annual_thresholds": {
+    "0-2": "ต่ำ",
+    "3-5": "ปานกลาง",
+    "6-10": "สูง",
+    ">10": "สูงมาก"
+  },
+  "datasets": {
+    "2566": {"features": 916, "geometry": "Point", "subdistrict_assignment": "spatial join with source-name fallback"},
+    "2567": {"features": 682, "geometry": "Point", "converted_from_single-point_multipoint": 682},
+    "2568": {"features": 547, "geometry": "Point", "outside_province_removed": 9},
+    "2569": {"features": 513, "geometry": "Point", "subdistrict_assignment": "spatial join"}
+  }
+}

@@ -31,6 +31,28 @@ const MapModule = (() => {
       .map(el => Number(el.dataset.year)).filter(Number.isFinite).sort((a,b)=>a-b);
   }
 
+  function asPointFeature(feature){
+    if(!feature?.geometry) return feature;
+    if(feature.geometry.type==='Point') return feature;
+    if(feature.geometry.type==='MultiPoint' && Array.isArray(feature.geometry.coordinates) && feature.geometry.coordinates.length===1){
+      return {...feature,geometry:{type:'Point',coordinates:feature.geometry.coordinates[0]}};
+    }
+    return feature;
+  }
+
+  function annualEvidenceScore(count, cropScore, areaScore){
+    const exposure=Math.max(0,Math.min(100,(Number(cropScore||0)+Number(areaScore||0))/2));
+    let score=0;
+    if(count<=0) score=0;
+    else if(count<=2) score=5+(count-1)*10+exposure*0.09;          // remains 5-24.99
+    else if(count<=5) score=25+((count-3)/2)*15+exposure*0.09;    // remains 25-49.99
+    else if(count<=10) score=50+((count-6)/4)*15+exposure*0.09;   // remains 50-74.99
+    else score=75+Math.min(20,Math.log1p(count-10)*7)+exposure*0.05;
+    const cap=count<=2?24.99:count<=5?49.99:count<=10?74.99:100;
+    const floor=count<=0?0:count<=2?0:count<=5?25:count<=10?50:75;
+    return Math.max(floor,Math.min(cap,score));
+  }
+
   async function init(){
     map = L.map('map',{ center:CONFIG.MAP_CENTER, zoom:CONFIG.MAP_ZOOM, minZoom:CONFIG.MAP_MIN_ZOOM, maxZoom:CONFIG.MAP_MAX_ZOOM, zoomControl:false });
     L.control.zoom({position:'bottomright'}).addTo(map);
@@ -54,7 +76,10 @@ const MapModule = (() => {
 
     [raw.district,raw.subdistrict] = await Promise.all([fetchJSON(CONFIG.DATA.district_kpt),fetchJSON(CONFIG.DATA.subdistrict_kpt)]);
     await Promise.all(Object.entries(CONFIG.DATA.hotspot).map(async([y,u])=>{
-      try { raw.hotspot[y]=await fetchJSON(u); }
+      try {
+        const fc=await fetchJSON(u);
+        raw.hotspot[y]={...fc,features:(fc.features||[]).map(asPointFeature)};
+      }
       catch(err){ console.warn(err.message); raw.hotspot[y]={type:'FeatureCollection',features:[]}; }
     }));
     enrichHotspots();
@@ -63,17 +88,18 @@ const MapModule = (() => {
     return { district:raw.district, subdistrict:raw.subdistrict, hotspot:raw.hotspot, risk:raw.risk };
   }
 
-  function enrichFeature(f){
+  function enrichFeature(input){
+    const f=asPointFeature(input);
     const p=f.properties||(f.properties={});
     let d=districtOf(p), t=subdistrictOf(p), prov=provinceOf(p);
-    if((!d || !t || prov!=='กำแพงเพชร') && window.turf && f.geometry){
+    if(window.turf && f.geometry?.type==='Point'){
       const hit=(raw.subdistrict?.features||[]).find(poly=>{ try{return turf.booleanPointInPolygon(f,poly);}catch{return false;} });
       if(hit){ d=districtOf(hit.properties); t=subdistrictOf(hit.properties); prov='กำแพงเพชร'; }
     }
-    p.__district=d; p.__subdistrict=t; p.__crop=cropOf(p); p.__province=prov;
+    p.__district=d; p.__subdistrict=t; p.__crop=cropOf(p); p.__province=prov||'กำแพงเพชร';
     return f;
   }
-  function enrichHotspots(){ Object.values(raw.hotspot).forEach(fc=>(fc.features||[]).forEach(enrichFeature)); }
+  function enrichHotspots(){ Object.values(raw.hotspot).forEach(fc=>{fc.features=(fc.features||[]).map(enrichFeature).filter(f=>f.properties?.__province==='กำแพงเพชร');}); }
 
   function selectedYearWeights(years){
     if(!years.length) return {};
@@ -158,16 +184,9 @@ const MapModule = (() => {
         const selectedCount=years.reduce((sum,y)=>sum+(r.counts[y]||0),0);
         let score=0, method='No hotspot year selected';
         if(years.length===1){
-          // Annual situation model: actual hotspot evidence determines the class.
-          // Crop and area only adjust the score inside that class and cannot promote it.
-          const exposure=(r.crop+area)/2;
-          if(selectedCount===0) score=0;
-          else if(selectedCount<=2) score=5+((selectedCount-1)/1)*10+exposure*0.09;       // 5-24
-          else if(selectedCount<=5) score=25+((selectedCount-3)/2)*15+exposure*0.09;     // 25-49
-          else if(selectedCount<=10) score=50+((selectedCount-6)/4)*15+exposure*0.09;    // 50-74
-          else score=75+Math.min(20,Math.log1p(selectedCount-10)*7)+exposure*0.05;         // 75-100
-          score=Math.max(0,Math.min(100,score));
-          method='Annual evidence-gated situation model';
+          // One common annual method for every year and every administrative level.
+          score=annualEvidenceScore(selectedCount,r.crop,area);
+          method='Unified annual evidence-gate model';
         }else if(years.length>=2){
           score=hs*factors.hotspot+trend*factors.trend+r.crop*factors.crop+area*factors.area;
           method='Multi-year Model A';
@@ -271,10 +290,10 @@ const MapModule = (() => {
 
   function importHotspots(year,fc){
     const y=String(year);
-    raw.hotspot[y]={type:'FeatureCollection',features:(fc?.features||[]).map(enrichFeature)};
+    raw.hotspot[y]={type:'FeatureCollection',features:(fc?.features||[]).map(asPointFeature).map(enrichFeature).filter(f=>f.properties?.__province==='กำแพงเพชร')};
     computeDynamicRisk(); renderHotspots(); renderAux('risk');
     return raw.hotspot[y];
   }
 
-  return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop} };
+  return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop,annualEvidenceScore} };
 })();
