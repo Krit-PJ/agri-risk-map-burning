@@ -360,3 +360,11 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
   .risk-high{background:#ffedd5!important;color:#7c2d12!important;}
   .risk-very-high{background:#fee2e2!important;color:#7f1d1d!important;}
 }
+
+
+/* ===== 2567/2568 dynamic risk refresh + print Top-5 contrast ===== */
+@media print{
+  #title-top5,#title-trend,#title-risk,#title-top10{color:#111827!important;font-weight:900!important;}
+  #chart-top-district,#chart-trend{background:#fff!important;}
+  .chart-box h3,.chart-box .chart-title{color:#111827!important;text-shadow:none!important;}
+}

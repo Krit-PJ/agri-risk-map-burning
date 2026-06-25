@@ -21,6 +21,7 @@ const App=(()=>{
   function bindPrint(){
     const prepare=()=>{
       document.body.classList.add('print-preparing');
+      try{Dashboard.setPrintMode?.(true);}catch(err){console.warn('[Print] chart contrast:',err.message);}
       const refit=()=>{
         const map=MapModule.map?.();
         if(!map)return;
@@ -32,6 +33,7 @@ const App=(()=>{
     };
     const restore=()=>{
       document.body.classList.remove('print-preparing');
+      try{Dashboard.setPrintMode?.(false);}catch(err){console.warn('[Print] chart restore:',err.message);}
       setTimeout(()=>{MapModule.map()?.invalidateSize({pan:false});MapModule.focusSelection?.({padding:[20,20]});},180);
     };
     window.addEventListener('beforeprint',prepare);

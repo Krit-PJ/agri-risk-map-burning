@@ -107,5 +107,22 @@ const Dashboard = (() => {
     document.getElementById('title-top10').textContent=`Top 10 ${unit} (Hotspot สูงสุด) - ${yearText}`;
     document.getElementById('rank-area-header').textContent=unit;
   }
-  return{init,setData,setYearData,applyFilter,refresh};
+
+  function setPrintMode(enabled){
+    const color=enabled?'#111827':'#d7e8f6';
+    const grid=enabled?'rgba(17,24,39,.18)':'rgba(96,165,250,.16)';
+    ['trend','top'].forEach(key=>{
+      const chart=charts[key]; if(!chart)return;
+      ['x','y'].forEach(axis=>{
+        if(!chart.options.scales?.[axis])return;
+        chart.options.scales[axis].ticks.color=color;
+        chart.options.scales[axis].ticks.font={...(chart.options.scales[axis].ticks.font||{}),size:enabled?13:12,weight:enabled?'700':'normal'};
+        chart.options.scales[axis].grid.color=grid;
+        chart.options.scales[axis].border={...(chart.options.scales[axis].border||{}),color:enabled?'#374151':'rgba(96,165,250,.35)'};
+      });
+      if(chart.options.plugins?.legend?.labels) chart.options.plugins.legend.labels.color=color;
+      chart.update('none');
+    });
+  }
+  return{init,setData,setYearData,applyFilter,refresh,setPrintMode};
 })();
