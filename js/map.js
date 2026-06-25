@@ -197,5 +197,5 @@ const MapModule = (() => {
     return raw.hotspot[y];
   }
 
-  return { init,applyFilter,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop} };
+  return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop} };
 })();

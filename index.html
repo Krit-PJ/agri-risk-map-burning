@@ -73,7 +73,18 @@
       .risk-formula, .risk-factor, .panel-section { color:#111 !important; background:#fff !important; border-color:#bbb !important; }
       .leaflet-control-container { display:none !important; }
     }
-  </style>
+  
+    /* Header readability and centered print map */
+    .brand-title h1{font-size:24px!important;margin:0 0 2px!important;}
+    .brand-title .system-subtitle{font-size:15px!important;line-height:1.25;margin:0!important;color:#d7ecfa!important;}
+    .brand-title .developer-credit{font-size:14px!important;line-height:1.25;margin:2px 0 0!important;color:#fde68a!important;font-weight:700;}
+    .header-right{gap:8px!important;}
+    @media print{
+      #map-container{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;}
+      #map{width:100%!important;height:100%!important;margin:auto!important;}
+      .brand-title .developer-credit{color:#333!important;font-size:8pt!important;}
+    }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script></head>
 <body>
 <!-- HEADER -->
@@ -85,14 +96,15 @@
 </div>
 <div class="brand-title">
 <h1>Agri-Risk Map Burning</h1>
-<p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
+<p class="system-subtitle">ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
+<p class="developer-credit">พัฒนาโดย ดร. กิตติ&nbsp;&nbsp;โพธิ์จวง กลุ่มอารักขาพืช สำนักงานเกษตรจังหวัดกำแพงเพชร</p>
 </div>
 </div>
 <div class="header-right"><span class="visitor-counter" title="นับการเข้าชมบนอุปกรณ์นี้; รองรับ endpoint กลางเมื่อกำหนดใน config.js">👥 ผู้เข้าชม: <strong id="visitor-count">-</strong></span>
 <span id="last-updated"></span>
-<button class="btn-admin no-print" id="btn-admin-login" type="button" aria-haspopup="dialog">🔐 Admin</button>
+<button class="btn-print no-print" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ พิมพ์รายงาน</button>
+<button class="btn-admin no-print" id="btn-admin-login" type="button" aria-haspopup="dialog">🔐 Login</button>
 <button class="btn-admin-logout no-print hidden" id="btn-admin-logout" type="button">ออกจากระบบ</button>
-<button class="btn-print no-print" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ Print A4</button>
 </div>
 </header>
 <!-- MAIN LAYOUT -->

@@ -272,3 +272,22 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
 @media print{.admin-modal,.btn-admin,.btn-admin-logout,#excel-import-section{display:none!important;}}
 
 .btn-guide-download{display:block;margin-top:12px;padding:10px 12px;border-radius:8px;background:#0ea5e9;color:#fff!important;text-decoration:none;font-weight:800;text-align:center;border:1px solid #7dd3fc;line-height:1.35}.btn-guide-download:hover{background:#0284c7}.btn-guide-download:focus-visible{outline:3px solid #facc15;outline-offset:2px}
+
+
+/* ===== Header, report and risk donut refinement ===== */
+#app-header{min-height:78px;height:78px;}
+#app-body{height:calc(100vh - 78px);margin-top:78px;}
+.brand-title{min-width:0;}
+.brand-title h1{font-size:24px!important;line-height:1.1;margin:0 0 2px!important;}
+.brand-title .system-subtitle{font-size:15px!important;line-height:1.25;margin:0!important;color:#d7ecfa!important;}
+.brand-title .developer-credit{font-size:14px!important;line-height:1.25;margin:2px 0 0!important;color:#fde68a!important;font-weight:700;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.btn-print,.btn-admin{white-space:nowrap;}
+@media print{
+  #app-header{height:20mm!important;min-height:20mm!important;}
+  #app-body{height:174mm!important;margin-top:20mm!important;}
+  #map-container{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;}
+  #map{width:100%!important;height:100%!important;margin:auto!important;}
+  .brand-title .system-subtitle{font-size:8.5pt!important;color:#222!important;}
+  .brand-title .developer-credit{font-size:8pt!important;color:#333!important;}
+}
