@@ -18,7 +18,26 @@ const App=(()=>{
   function current(){return{district:document.getElementById('filter-district').value,subdistrict:document.getElementById('filter-subdistrict').value,crop:document.getElementById('filter-crop').value};}
   function applyCurrent(){const s=current();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}}
   function bindFilters(){const d=document.getElementById('filter-district'),t=document.getElementById('filter-subdistrict'),c=document.getElementById('filter-crop'),cropLayer=document.getElementById('lyr-crop');d.addEventListener('change',()=>{populateSubdistricts();applyCurrent();});t.addEventListener('change',applyCurrent);c.addEventListener('change',applyCurrent);cropLayer.addEventListener('change',()=>{c.disabled=!cropLayer.checked;if(!cropLayer.checked)c.value='';applyCurrent();});document.getElementById('btn-apply-filter').addEventListener('click',applyCurrent);document.getElementById('btn-reset-filter').addEventListener('click',()=>{d.value='';populateSubdistricts();t.value='';c.value='';applyCurrent();});}
-  function bindPrint(){const prepare=()=>{MapModule.map()?.invalidateSize();MapModule.focusSelection?.();setTimeout(()=>{MapModule.map()?.invalidateSize();MapModule.focusSelection?.();},120);};window.addEventListener('beforeprint',prepare);window.addEventListener('afterprint',()=>{setTimeout(()=>{MapModule.map()?.invalidateSize();MapModule.focusSelection?.();},150);});document.getElementById('btn-print')?.addEventListener('click',()=>{prepare();setTimeout(()=>window.print(),450);});}
+  function bindPrint(){
+    const prepare=()=>{
+      document.body.classList.add('print-preparing');
+      const refit=()=>{
+        const map=MapModule.map?.();
+        if(!map)return;
+        map.invalidateSize({pan:false});
+        MapModule.focusSelection?.({padding:[10,10],maxZoom:12});
+      };
+      refit();
+      [120,320,650].forEach(ms=>setTimeout(refit,ms));
+    };
+    const restore=()=>{
+      document.body.classList.remove('print-preparing');
+      setTimeout(()=>{MapModule.map()?.invalidateSize({pan:false});MapModule.focusSelection?.({padding:[20,20]});},180);
+    };
+    window.addEventListener('beforeprint',prepare);
+    window.addEventListener('afterprint',restore);
+    document.getElementById('btn-print')?.addEventListener('click',()=>{prepare();setTimeout(()=>window.print(),850);});
+  }
 
   function initAdminAccess(){
     const loginBtn=document.getElementById('btn-admin-login');

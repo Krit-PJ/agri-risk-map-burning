@@ -24,7 +24,9 @@ const MapModule = (() => {
   const provinceOf = p => clean(p?.__province || p?.province || p?.Province || p?.ProvinceN || p?.PROV_NAMT || p?.PROV_NAM_T || p?.Prov || p?.NAME_1);
   async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); }
   function remove(layer){ if(layer && map.hasLayer(layer)) map.removeLayer(layer); }
+  function hotspotEnabled(){ return document.getElementById('lyr-hotspot')?.checked !== false; }
   function activeYears(){
+    if(!hotspotEnabled()) return [];
     return [...document.querySelectorAll('.hs-layer:checked')]
       .map(el => Number(el.dataset.year)).filter(Number.isFinite).sort((a,b)=>a-b);
   }
@@ -41,11 +43,13 @@ const MapModule = (() => {
     document.getElementById('lyr-burnscar')?.addEventListener('change',()=>renderAux('burnscar'));
     document.getElementById('lyr-risk')?.addEventListener('change',()=>renderAux('risk'));
     document.addEventListener('change',e=>{
-      if(!e.target?.classList?.contains('hs-layer')) return;
+      const isYear=e.target?.classList?.contains('hs-layer');
+      const isMaster=e.target?.id==='lyr-hotspot';
+      if(!isYear&&!isMaster) return;
       computeDynamicRisk();
       renderHotspots();
       renderAux('risk');
-      document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:activeYears()}}));
+      document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:activeYears(),hotspotEnabled:hotspotEnabled()}}));
     });
 
     [raw.district,raw.subdistrict] = await Promise.all([fetchJSON(CONFIG.DATA.district_kpt),fetchJSON(CONFIG.DATA.subdistrict_kpt)]);
@@ -151,6 +155,7 @@ const MapModule = (() => {
 
   function renderHotspots(){
     Object.values(shown.hotspot).forEach(remove); shown.hotspot={};
+    if(!hotspotEnabled()) return;
     Object.entries(raw.hotspot).forEach(([year,fc])=>{
       const cb=document.querySelector(`.hs-layer[data-year="${year}"]`); if(cb&&!cb.checked)return;
       const filtered=(fc.features||[]).filter(matchesFeature), group=L.markerClusterGroup({disableClusteringAtZoom:11});
@@ -185,8 +190,21 @@ const MapModule = (() => {
     raw.risk=state.district?raw.riskSubdistrict:raw.riskDistrict;
     renderBoundaries();renderHotspots();renderCrop();renderAux('burnscar');renderAux('risk');focusSelection();
   }
-  function focusSelection(){ let src=null; if(state.subdistrict)src=raw.subdistrict.features.filter(f=>districtOf(f.properties)===state.district&&subdistrictOf(f.properties)===state.subdistrict); else if(state.district)src=raw.district.features.filter(f=>districtOf(f.properties)===state.district); if(src?.length)map.fitBounds(L.geoJSON({type:'FeatureCollection',features:src}).getBounds(),{padding:[20,20]}); else zoomToKPT(); }
-  function zoomToKPT(){ if(raw.district?.features?.length)map.fitBounds(L.geoJSON(raw.district).getBounds(),{padding:[20,20]}); else map.setView(CONFIG.MAP_CENTER,CONFIG.MAP_ZOOM); }
+  function focusSelection(options={}){
+    let src=null;
+    if(state.subdistrict) src=raw.subdistrict.features.filter(f=>districtOf(f.properties)===state.district&&subdistrictOf(f.properties)===state.subdistrict);
+    else if(state.district) src=raw.district.features.filter(f=>districtOf(f.properties)===state.district);
+    const fitOptions={padding:options.padding||[20,20],animate:false};
+    if(Number.isFinite(options.maxZoom)) fitOptions.maxZoom=options.maxZoom;
+    if(src?.length) map.fitBounds(L.geoJSON({type:'FeatureCollection',features:src}).getBounds(),fitOptions);
+    else zoomToKPT(options);
+  }
+  function zoomToKPT(options={}){
+    const fitOptions={padding:options.padding||[20,20],animate:false};
+    if(Number.isFinite(options.maxZoom)) fitOptions.maxZoom=options.maxZoom;
+    if(raw.district?.features?.length) map.fitBounds(L.geoJSON(raw.district).getBounds(),fitOptions);
+    else map.setView(CONFIG.MAP_CENTER,CONFIG.MAP_ZOOM,{animate:false});
+  }
   function getRiskLevel(score){ return CONFIG.RISK_LEVELS.find(x=>score>=x.min&&score<x.max)||CONFIG.RISK_LEVELS[0]; }
   function getRiskForScope(level){ return level==='district'?raw.riskDistrict:raw.riskSubdistrict; }
 

@@ -84,6 +84,47 @@
       #map{width:100%!important;height:100%!important;margin:auto!important;}
       .brand-title .developer-credit{color:#333!important;font-size:8pt!important;}
     }
+
+    /* Professional refinement: hierarchy, hotspot master switch and A4 report */
+    .brand-title h1{font-size:24px!important;}
+    .brand-title .system-subtitle{font-size:14px!important;line-height:1.25!important;}
+    .brand-title .developer-credit{font-size:12px!important;line-height:1.2!important;}
+    .hotspot-master-row{margin-bottom:6px;background:rgba(14,116,144,.18);border:1px solid rgba(103,232,249,.25);font-weight:800;}
+
+    @media print{
+      @page{size:A4 landscape;margin:7mm;}
+      html,body{width:297mm!important;height:210mm!important;overflow:hidden!important;background:#fff!important;}
+      body{font-size:8pt!important;color:#111!important;}
+      #app-header{height:18mm!important;min-height:18mm!important;padding:2mm 4mm!important;position:fixed!important;}
+      #app-header h1{font-size:14pt!important;}
+      .brand-title .system-subtitle{font-size:8pt!important;color:#222!important;}
+      .brand-title .developer-credit{font-size:7pt!important;color:#333!important;}
+      .brand-logo{width:12mm!important;height:12mm!important;}
+      #app-body{margin-top:18mm!important;height:178mm!important;display:grid!important;grid-template-columns:minmax(0,1fr) 78mm!important;gap:3mm!important;}
+      #left-panel{display:none!important;}
+      #map-container{height:178mm!important;min-height:178mm!important;display:block!important;position:relative!important;overflow:hidden!important;border:1px solid #888!important;}
+      #map{width:100%!important;height:100%!important;min-height:178mm!important;margin:0!important;}
+      #right-panel{height:178mm!important;overflow:hidden!important;padding:0!important;background:#fff!important;color:#111!important;display:grid!important;grid-template-rows:20mm 36mm 48mm 1fr!important;gap:2mm!important;}
+      #summary-cards{display:grid!important;grid-template-columns:1fr 1fr!important;gap:2mm!important;margin:0!important;}
+      .card{min-height:20mm!important;padding:2mm!important;background:#fff!important;color:#111!important;border:1px solid #777!important;}
+      .card-value,.card-label{color:#111!important;}
+      #right-panel .chart-box{display:block!important;margin:0!important;padding:2mm!important;overflow:hidden!important;background:#fff!important;color:#111!important;border:1px solid #999!important;}
+      #right-panel .chart-box:nth-of-type(2){display:none!important;} /* ซ่อน Top 5 เพื่อคงตาราง Top 10 */
+      #right-panel .chart-box:last-child{display:block!important;}
+      #right-panel .chart-box h4,.scope-caption{color:#111!important;font-size:7.5pt!important;margin-bottom:1mm!important;}
+      #chart-trend{max-height:27mm!important;}
+      #chart-risk{max-height:34mm!important;}
+      .risk-chart-layout{grid-template-columns:32mm 1fr!important;gap:2mm!important;min-height:0!important;}
+      .risk-legend-list{padding:1.5mm!important;gap:1mm!important;background:#fff!important;}
+      .risk-legend-item{font-size:7pt!important;grid-template-columns:4mm 1fr auto!important;gap:1mm!important;}
+      #tbl-top-district{font-size:6.8pt!important;}
+      #tbl-top-district th,#tbl-top-district td{padding:1.1mm 1mm!important;color:#111!important;background:#fff!important;border-color:#bbb!important;}
+      #tbl-top-district th{font-weight:800!important;}
+      .risk-badge{font-size:6.4pt!important;padding:.5mm 1mm!important;}
+      #map-legend{font-size:7pt!important;padding:1.5mm 2mm!important;bottom:4mm!important;right:4mm!important;}
+      .leaflet-control-container,.no-print,button,input[type=file]{display:none!important;}
+    }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://cdn.jsdelivr.net/npm/proj4@2.11.0/dist/proj4.js"></script></head>
 <body>
@@ -138,7 +179,10 @@
           </label><label class="toggle-row hs-2569"><input checked="" class="hs-layer" data-year="2569" type="checkbox"/> ปี 2569 (2026)</label>
 </div>
 <div class="layer-group">
-<label class="section-label">ความเสี่ยง &amp; เพิ่มเติม</label>
+<label class="section-label">แผนที่ความเสี่ยงและชนิดพืช</label>
+<label class="toggle-row hotspot-master-row">
+<input checked="" id="lyr-hotspot" type="checkbox"/> ข้อมูล Hotspot ตามปีที่เลือก
+</label>
 <label class="toggle-row">
 <input checked="" id="lyr-risk" type="checkbox"/> แผนที่ความเสี่ยง (ตำบล)
           </label>
