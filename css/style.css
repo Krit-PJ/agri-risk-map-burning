@@ -305,3 +305,58 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
 #card-area-label{line-height:1.35;}
 @media(max-width:1450px){.risk-chart-layout{grid-template-columns:1fr;gap:8px}.risk-legend-list{display:grid;grid-template-columns:1fr 1fr}.risk-canvas-wrap canvas{max-height:150px}}
 @media print{.risk-legend-list{background:#fff;border-color:#777}.risk-legend-item,.risk-legend-name,.risk-legend-pct{color:#111!important;text-shadow:none}.risk-legend-swatch{border-color:#333}}
+
+/* ===== Risk consistency and high-contrast legend update ===== */
+:root{
+  --risk-low:#22c55e;
+  --risk-medium:#facc15;
+  --risk-high:#f97316;
+  --risk-very-high:#ef4444;
+}
+#map-legend{
+  color:#ffffff!important;
+  background:rgba(2,18,32,.97)!important;
+  border:2px solid #7dd3fc!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.45)!important;
+  min-width:132px;
+}
+#map-legend strong{color:#ffffff!important;text-shadow:0 1px 2px #000!important;}
+#map-legend div{color:#f8fafc!important;font-weight:800!important;text-shadow:0 1px 2px #000!important;}
+#map-legend .dot,
+.risk-legend-swatch{
+  border:2px solid #ffffff!important;
+  box-shadow:0 0 0 1px #0f172a,0 1px 3px rgba(0,0,0,.5)!important;
+  flex:0 0 auto;
+  -webkit-print-color-adjust:exact!important;
+  print-color-adjust:exact!important;
+}
+.risk-chart-layout{grid-template-columns:minmax(170px,1fr) minmax(165px,1fr)!important;}
+.risk-legend-list{
+  background:#031525!important;
+  border:2px solid #4aa8d8!important;
+  box-shadow:0 4px 12px rgba(0,0,0,.28);
+}
+.risk-legend-item{color:#ffffff!important;font-size:16px!important;}
+.risk-legend-name,.risk-legend-pct{color:#ffffff!important;text-shadow:0 1px 2px #000!important;}
+.risk-legend-pct{font-size:16px!important;}
+.risk-badge{border:1px solid currentColor;font-weight:900!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+.risk-low{background:#14532d!important;color:#dcfce7!important;}
+.risk-medium{background:#713f12!important;color:#fef9c3!important;}
+.risk-high{background:#7c2d12!important;color:#ffedd5!important;}
+.risk-very-high{background:#7f1d1d!important;color:#fee2e2!important;}
+
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+  #map-legend{
+    color:#111!important;background:#ffffff!important;border:1.5px solid #222!important;
+    box-shadow:none!important;
+  }
+  #map-legend strong,#map-legend div{color:#111!important;text-shadow:none!important;}
+  #map-legend .dot,.risk-legend-swatch{border:1.5px solid #111!important;box-shadow:none!important;}
+  .risk-legend-list{background:#ffffff!important;border:1.5px solid #333!important;box-shadow:none!important;}
+  .risk-legend-item,.risk-legend-name,.risk-legend-pct{color:#111!important;text-shadow:none!important;font-weight:800!important;}
+  .risk-low{background:#dcfce7!important;color:#14532d!important;}
+  .risk-medium{background:#fef9c3!important;color:#713f12!important;}
+  .risk-high{background:#ffedd5!important;color:#7c2d12!important;}
+  .risk-very-high{background:#fee2e2!important;color:#7f1d1d!important;}
+}

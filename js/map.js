@@ -118,16 +118,50 @@ const MapModule = (() => {
     const maxW=Math.max(...rows.map(r=>r.weighted),1);
     const logs=rows.map(r=>Math.log1p(r.area));
     const minL=Math.min(...logs), maxL=Math.max(...logs);
+
+    // Step 1: calculate the transparent Model-A component score.
+    // When only one year is selected, Trend has no previous year to compare with;
+    // use a neutral score (50) instead of 0 so a valid current-year Hotspot is not
+    // automatically pushed into the lowest class.
+    const calculated=rows.map((r,i)=>{
+      const hs=r.weighted/maxW*100;
+      const trend=years.length>=2?r.trend:(years.length===1?50:0);
+      const area=maxL===minL?0:(logs[i]-minL)/(maxL-minL)*100;
+      const rawScore=years.length
+        ? hs*factors.hotspot+trend*factors.trend+r.crop*factors.crop+area*factors.area
+        : 0;
+      return {...r,hs,trend,area,rawScore};
+    });
+
+    // Step 2: normalize the composite result across the current analysis scope.
+    // This removes score compression (for example every area becoming Low/Medium)
+    // and keeps the map, donut and Top-10 badges on the same 0-100 scale.
+    const active=calculated.filter(r=>r.weighted>0);
+    const minRaw=active.length?Math.min(...active.map(r=>r.rawScore)):0;
+    const maxRaw=active.length?Math.max(...active.map(r=>r.rawScore)):0;
+    const minMaxScore=r=>{
+      if(!years.length||r.weighted<=0)return 0;
+      if(maxRaw===minRaw)return 100;
+      return (r.rawScore-minRaw)/(maxRaw-minRaw)*100;
+    };
+
     return {
       type:'FeatureCollection', name:`risk_${level}_${years.join('_')||'none'}`,
-      features:rows.map((r,i)=>{
-        const hs=r.weighted/maxW*100;
-        const area=maxL===minL?0:(logs[i]-minL)/(maxL-minL)*100;
-        const score=hs*factors.hotspot+r.trend*factors.trend+r.crop*factors.crop+area*factors.area;
+      features:calculated.map(r=>{
+        const score=minMaxScore(r);
         const hsFields=Object.fromEntries(years.map(y=>[`hs_${y}`,r.counts[y]||0]));
         return {
           type:'Feature', geometry:r.feature.geometry,
-          properties:{...r.feature.properties,district:r.d,subdistrict:r.t,risk_level_scope:level,risk_score:+score.toFixed(2),hotspot_score:+hs.toFixed(2),trend_score:+r.trend.toFixed(2),crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),risk_years:years.join(','),...hsFields}
+          properties:{
+            ...r.feature.properties,
+            district:r.d,subdistrict:r.t,risk_level_scope:level,
+            risk_score:+score.toFixed(2),
+            risk_raw_score:+r.rawScore.toFixed(2),
+            hotspot_score:+r.hs.toFixed(2),trend_score:+r.trend.toFixed(2),
+            crop_score:+r.crop.toFixed(2),area_score:+r.area.toFixed(2),
+            risk_years:years.join(','),risk_method:'Model A + scope min-max normalization',
+            ...hsFields
+          }
         };
       })
     };
