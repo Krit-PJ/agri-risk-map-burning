@@ -1,56 +1,18 @@
-<!DOCTYPE html><html lang="th"><head><meta charset="utf-๘"><title>คู่มือการจัดลำดับชั้นและการประเมินพื้นที่เสี่ยง</title>
-<style>
-@page{size:A๔;margin:๑๕mm ๑๖mm ๑๗mm}body{font-family:'Noto Sans Thai','Garuda',sans-serif;color:#๑๗๒๐๓๓;font-size:๑๐.๗pt;line-height:๑.๕๕;margin:๐}h๑{color:#๐f๕๑๓๒;font-size:๒๑pt;text-align:center;line-height:๑.๒๕;margin:๘mm ๐ ๒mm}h๒{color:#๐f๕๑๓๒;font-size:๑๕pt;margin:๗mm ๐ ๒.๕mm;break-after:avoid}h๓{font-size:๑๒pt;margin:๔mm ๐ ๑.๕mm}p{margin:๐ ๐ ๒.๗mm}.subtitle{text-align:center;color:#๕๒๖๒๗๓;font-size:๑๑.๕pt}.logos{display:flex;justify-content:center;gap:๒๕mm;margin-top:๔mm}.logos img{width:๓๐mm;height:๓๐mm;object-fit:contain}.formula{border:๑px solid #๕cc๙๘a;background:#effcf๔;padding:๔mm;text-align:center;font-weight:๗๐๐;font-size:๑๒pt;margin:๔mm ๐}.note{background:#fff๖e๘;border-left:๔px solid #f๒๘c๒๘;padding:๓mm ๔mm}.page-break{break-before:page}table{width:๑๐๐ เปอร์เซ็นต์;border-collapse:collapse;margin:๓mm ๐ ๕mm;font-size:๙.๒pt}th,td{border:๑px solid #๘fa๑b๔;padding:๒.๓mm;vertical-align:top}th{background:#dcfce๗;text-align:left}.levels th{background:#edf๒f๗}.refs{font-size:๘.๘pt;color:#๔๕๕๕๖๕}.footer{position:fixed;bottom:-๑๑mm;left:๐;right:๐;text-align:center;color:#๖๔๗๔๘b;font-size:๘pt}.flow{display:grid;grid-template-columns:๑fr ๑fr;gap:๓mm}.box{border:๑px solid #b๖c๗d๘;border-radius:๖px;padding:๓mm;background:#f๘fbfd}.tag{display:inline-block;padding:๑mm ๒.๕mm;border-radius:๑๒px;background:#e๐f๒fe;color:#๐๗๕๙๘๕;font-weight:๗๐๐}
-</style></head><body>
-<div class="footer">Agri-Risk Map Burning - จังหวัดกำแพงเพชร</div>
-<div class="logos"><img src="../assets/logo-doae.png"><img src="../assets/logo-kpp.jpg"></div>
-<h๑>คู่มือการจัดลำดับชั้นและการประเมินพื้นที่เสี่ยงการเผา</h๑>
-<div class="subtitle">Agri-Risk Map Burning - จังหวัดกำแพงเพชร</div>
-<p style="margin-top:๘mm">คู่มือนี้อธิบายความสัมพันธ์ระหว่างระดับจังหวัด อำเภอ และตำบล รวมถึงวิธีคำนวณคะแนนความเสี่ยงให้สอดคล้องกับปี Hotspot ที่ผู้ใช้เลือกในระบบ</p>
-<h๒>๑. หลักการจัดลำดับชั้นของระบบ</h๒>
-<div class="flow">
-<div class="box"><span class="tag">ระดับจังหวัด</span><p>เมื่อยังไม่เลือกอำเภอ ระบบจัดอันดับอำเภอและระบายสีแผนที่ตามคะแนนความเสี่ยงระดับอำเภอ</p></div>
-<div class="box"><span class="tag">ระดับอำเภอ</span><p>เมื่อเลือกอำเภอ ระบบเปลี่ยนหน่วยวิเคราะห์เป็นตำบล แสดง Top ๕/Top ๑๐ ตำบล และระบายสีตำบลด้วยคะแนนชุดเดียวกัน</p></div>
-<div class="box"><span class="tag">ระดับตำบล</span><p>เมื่อเลือกตำบล ระบบแสดง Hotspot และคะแนนเฉพาะตำบลนั้น พร้อม Zoom ไปยังขอบเขตที่เลือก</p></div>
-<div class="box"><span class="tag">ปีที่เลือก</span><p>ทุกครั้งที่เปิดหรือปิดปี Hotspot ระบบจะคำนวณคะแนนใหม่ทั้งแผนที่ กราฟ และตาราง</p></div>
-</div>
-<div class="note"><b>หลักความสอดคล้อง:</b> สีบนแผนที่และระดับความเสี่ยงในตารางต้องมาจาก Risk Score ชุดเดียวกันและหน่วยพื้นที่เดียวกัน ห้ามใช้คะแนนตำบลเฉลี่ยไปเทียบกับยอด Hotspot ระดับอำเภอโดยตรง</div>
-<h๒>๒. สูตรคะแนนรวม</h๒>
-<div class="formula">Risk = (HotspotScore คูณ ๐.๔๐) + (TrendScore คูณ ๐.๒๐) + (CropScore คูณ ๐.๒๐) + (AreaScore คูณ ๐.๒๐)</div>
-<p>คะแนนย่อยทุกตัวถูกปรับให้อยู่ในช่วง ๐-๑๐๐ ก่อนคูณน้ำหนัก คะแนนรวมจึงอยู่ในช่วง ๐-๑๐๐</p>
-<table><tr><th>ปัจจัย</th><th>น้ำหนัก</th><th>ความหมาย</th></tr>
-<tr><td>HotspotScore</td><td>๔๐ เปอร์เซ็นต์</td><td>จำนวน Hotspot แบบถ่วงน้ำหนักตามปีที่เลือก แล้วปรับเทียบกับพื้นที่อื่นในระดับเดียวกัน</td></tr>
-<tr><td>TrendScore</td><td>๒๐ เปอร์เซ็นต์</td><td>ทิศทางการเพิ่มหรือลดระหว่างสองปีล่าสุดที่เลือก</td></tr>
-<tr><td>CropScore</td><td>๒๐ เปอร์เซ็นต์</td><td>คะแนนความเสี่ยงตามชนิดพืชของจุด Hotspot ในพื้นที่</td></tr>
-<tr><td>AreaScore</td><td>๒๐ เปอร์เซ็นต์</td><td>ขนาดพื้นที่เกษตรที่ต้องบริหารจัดการ โดยลดอิทธิพลของพื้นที่ใหญ่มากด้วย log normalization</td></tr></table>
-
-<h๒ class="page-break">๓. วิธีคำนวณตามปีที่เลือก</h๒>
-<h๓>๓.๑ การถ่วงน้ำหนักปี</h๓>
-<p>ระบบใช้เฉพาะปีที่ถูกเลือก และปรับน้ำหนักรวมให้เท่ากับ ๑.๐๐ ตัวอย่างเมื่อเลือกปี ๒๕๖๗, ๒๕๖๘ และ ๒๕๖๙ จะให้น้ำหนักปีล่าสุดสูงกว่า</p>
-<div class="formula">WeightedHS = Σ(จำนวน Hotspot ปี y คูณ น้ำหนักปี y ที่ปรับมาตรฐานแล้ว)</div>
-<h๓>๓.๒ HotspotScore</h๓><p>พื้นที่ที่มี WeightedHS สูงสุดในระดับเดียวกันได้ ๑๐๐ คะแนน ส่วนพื้นที่อื่นคิดเป็นสัดส่วนเทียบกับค่าสูงสุด</p>
-<h๓>๓.๓ TrendScore</h๓><p>หากเลือกอย่างน้อยสองปี ระบบเปรียบเทียบสองปีล่าสุดที่เลือก หากเลือกเพียงปีเดียว TrendScore จะเป็น ๐ เพื่อไม่สร้างแนวโน้มเทียม</p>
-<h๓>๓.๔ การคำนวณระดับอำเภอและตำบล</h๓>
-<table><tr><th>ขอบเขตหน้าจอ</th><th>หน่วยคำนวณ</th><th>แผนที่</th><th>ตาราง</th></tr>
-<tr><td>ยังไม่เลือกอำเภอ</td><td>อำเภอ</td><td>สีความเสี่ยงรายอำเภอ</td><td>Top ๑๐ อำเภอ พร้อมคะแนนอำเภอ</td></tr>
-<tr><td>เลือกอำเภอ</td><td>ตำบลภายในอำเภอ</td><td>สีความเสี่ยงรายตำบล</td><td>Top ๑๐ ตำบล พร้อมคะแนนตำบล</td></tr>
-<tr><td>เลือกตำบล</td><td>ตำบลที่เลือก</td><td>สีและรายละเอียดตำบลเดียว</td><td>ข้อมูลเฉพาะตำบลนั้น</td></tr></table>
-<h๒>๔. ช่วงคะแนน</h๒>
-<table class="levels"><tr><th>ระดับ</th><th>ช่วงคะแนน</th><th>สี</th></tr>
-<tr><td>สูงมาก</td><td>๗๕-๑๐๐</td><td>แดง</td></tr>
-<tr><td>สูง</td><td>๕๐-๗๔.๙๙</td><td>ส้ม</td></tr>
-<tr><td>ปานกลาง</td><td>๒๕-๔๙.๙๙</td><td>เหลือง</td></tr>
-<tr><td>ต่ำ</td><td>๐-๒๔.๙๙</td><td>เขียว</td></tr></table>
-
-<h๒ class="page-break">๕. การตรวจสอบความสอดคล้องก่อนเผยแพร่</h๒>
-<table><tr><th>รายการตรวจ</th><th>เกณฑ์ผ่าน</th></tr>
-<tr><td>ปี Hotspot</td><td>Card, Trend, Top ๕, Top ๑๐ และ Risk Map ใช้ปีที่เลือกชุดเดียวกัน</td></tr>
-<tr><td>หน่วยพื้นที่</td><td>หน้า Province ใช้คะแนนอำเภอ; หน้า District ใช้คะแนนตำบล</td></tr>
-<tr><td>สีและ Badge</td><td>สีแผนที่และ Badge ตารางอ้างอิง Risk Score เดียวกัน</td></tr>
-<tr><td>การกรอง</td><td>การเลือกอำเภอ/ตำบลต้องอัปเดตแผนที่ กราฟ ตาราง และ Card พร้อมกัน</td></tr>
-<tr><td>ข้อมูลปีใหม่</td><td>ตรวจ duplicate, ชื่อพื้นที่, พิกัด และช่วงเดือน ม.ค.-พ.ค. ก่อนนำเข้า</td></tr></table>
-<h๒>๖. ข้อจำกัดและการตีความ</h๒>
-<p>จำนวน Hotspot สูงไม่ได้แปลว่าทุกตำบลในอำเภอนั้นต้องมีความเสี่ยงสูงเท่ากัน หาก Hotspot กระจุกในบางตำบล ระบบระดับตำบลจะแสดงความแตกต่างภายในอำเภอ อย่างไรก็ตาม เมื่อมองระดับจังหวัด ตารางอำเภอและสีอำเภอจะใช้คะแนนระดับอำเภอเดียวกันเพื่อให้เปรียบเทียบได้ถูกต้อง</p>
-<h๒>๗. เอกสารอ้างอิง</h๒>
-<div class="refs"><p>๑) รายงานการวิเคราะห์และเสนอแนวทางการประเมินพื้นที่เสี่ยงเผาในพื้นที่การเกษตร อำเภอคลองขลุง จังหวัดกำแพงเพชร, ๒๕๖๙.</p><p>๒) NASA FIRMS. VIIRS ๓๗๕ m Active Fire Data.</p><p>๓) Malczewski, J. (๒๐๐๖). GIS-based multicriteria decision analysis: a survey of the literature.</p><p>๔) Roberts, D.R. et al. (๒๐๑๗). Cross-validation strategies for data with temporal and spatial structure.</p></div>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><title>คู่มือการใช้งานและการประเมินพื้นที่เสี่ยง</title>
+<style>@page{size:A4;margin:14mm 15mm}body{font-family:"Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;color:#172033;font-size:11pt;line-height:1.55;margin:0}h1{font-size:22pt;color:#0f5132;text-align:center;margin:4mm 0 1mm}h2{font-size:15pt;color:#0f5132;margin:7mm 0 2mm;break-after:avoid}h3{font-size:12pt;margin:4mm 0 1mm}.sub{text-align:center;color:#526273}.formula{border:1px solid #5cc98a;background:#effcf4;padding:4mm;text-align:center;font-weight:700;margin:3mm 0}.note{background:#fff6e8;border-left:4px solid #f28c28;padding:3mm 4mm}.warn{background:#fef2f2;border-left:4px solid #dc2626;padding:3mm 4mm}table{border-collapse:collapse;width:100%;margin:3mm 0 5mm;font-size:10pt}th,td{border:1px solid #94a3b8;padding:2.3mm;vertical-align:top}th{background:#dcfce7}.logos{display:flex;justify-content:center;gap:20mm}.logos img{width:26mm;height:26mm;object-fit:contain}.page{break-before:page}.footer{position:fixed;bottom:-9mm;left:0;right:0;text-align:center;font-size:8pt;color:#64748b}</style></head><body>
+<div class="footer">Agri-Risk Map Burning - จังหวัดกำแพงเพชร</div><div class="logos"><img src="../assets/logo-doae.png"><img src="../assets/logo-kpp.jpg"></div>
+<h1>คู่มือการใช้งานและการประเมินพื้นที่เสี่ยงการเผา</h1><div class="sub">Agri-Risk Map Burning - จังหวัดกำแพงเพชร</div>
+<h2>1. หลักการสำคัญ</h2><p>ระบบแยกการประเมินเป็น 2 กรณี เพื่อให้สีบนแผนที่สอดคล้องกับหลักฐาน Hotspot จริง และไม่ให้ปัจจัยพื้นที่หรือชนิดพืชยกระดับพื้นที่ที่มีเหตุการณ์น้อยเกินไป</p>
+<table><tr><th>การเลือกปี</th><th>ชื่อผลลัพธ์</th><th>วิธีประเมิน</th></tr><tr><td>เลือก 1 ปี</td><td>ระดับสถานการณ์ Hotspot</td><td>ใช้จำนวน Hotspot ของปีนั้นเป็นหลัก และใช้ชนิดพืช/ขนาดพื้นที่เป็นตัวปรับภายในระดับเท่านั้น</td></tr><tr><td>เลือก 2 ปีขึ้นไป</td><td>ระดับความเสี่ยงสะสม</td><td>ใช้ Model A รวม Hotspot, แนวโน้ม, ชนิดพืช และขนาดพื้นที่</td></tr></table>
+<h2>2. เกณฑ์กรณีเลือกปีเดียว</h2><div class="formula">จำนวน Hotspot เป็น Evidence Gate กำหนดระดับสูงสุดและช่วงคะแนน</div>
+<table><tr><th>Hotspot ในปีที่เลือก</th><th>ระดับ</th><th>ช่วงคะแนน</th></tr><tr><td>0-2 จุด</td><td>ต่ำ</td><td>0-24.99</td></tr><tr><td>3-5 จุด</td><td>ปานกลาง</td><td>25-49.99</td></tr><tr><td>6-10 จุด</td><td>สูง</td><td>50-74.99</td></tr><tr><td>มากกว่า 10 จุด</td><td>สูงมาก</td><td>75-100</td></tr></table>
+<div class="note"><b>การปรับภายในระดับ:</b> ชนิดพืชและขนาดพื้นที่ช่วยปรับคะแนนภายในช่วงของระดับนั้น แต่ไม่สามารถเลื่อนจาก “ต่ำ” ไป “ปานกลาง” ได้ หากหลักฐาน Hotspot มีเพียง 1-2 จุด</div>
+<div class="warn"><b>ตัวอย่าง:</b> อำเภอปางศิลาทอง ปี 2569 พบ 1 จุด ระบบต้องแสดงระดับ “ต่ำ” ไม่ใช่ “ปานกลาง”</div>
+<h2>3. เกณฑ์กรณีเลือกหลายปี</h2><div class="formula">Risk = (HotspotScore x 0.40) + (TrendScore x 0.20) + (CropScore x 0.20) + (AreaScore x 0.20)</div>
+<p>ระบบใช้ปีที่เลือกทั้งหมด โดยให้น้ำหนักปีล่าสุดมากกว่า และคำนวณแนวโน้มจาก 2 ปีล่าสุดที่เลือก คะแนนอยู่ในช่วง 0-100</p>
+<table><tr><th>ปัจจัย</th><th>น้ำหนัก</th><th>ความหมาย</th></tr><tr><td>HotspotScore</td><td>40%</td><td>จำนวน Hotspot แบบถ่วงน้ำหนักตามปี</td></tr><tr><td>TrendScore</td><td>20%</td><td>การเพิ่มหรือลดระหว่าง 2 ปีล่าสุด</td></tr><tr><td>CropScore</td><td>20%</td><td>ความเสี่ยงตามชนิดพืช</td></tr><tr><td>AreaScore</td><td>20%</td><td>ขนาดพื้นที่เกษตรที่ต้องบริหารจัดการ</td></tr></table>
+<h2 class="page">4. ลำดับชั้นการแสดงผล</h2><table><tr><th>ขอบเขต</th><th>หน่วยประเมิน</th><th>ผลที่แสดง</th></tr><tr><td>จังหวัด</td><td>อำเภอ</td><td>สีอำเภอ, Top 5/Top 10 อำเภอ</td></tr><tr><td>เลือกอำเภอ</td><td>ตำบล</td><td>สีตำบล, Top 5/Top 10 ตำบล</td></tr><tr><td>เลือกตำบล</td><td>ตำบลที่เลือก</td><td>ข้อมูล Hotspot และคะแนนเฉพาะตำบล</td></tr></table>
+<h2>5. ความสอดคล้องของระบบ</h2><p>สีบนแผนที่, Donut ระดับความเสี่ยง, Badge ใน Top 10, Tooltip และรายงานพิมพ์ ต้องใช้ค่า <b>risk_score</b> ชุดเดียวกัน และต้องคำนวณใหม่ทุกครั้งที่เปลี่ยนปี อำเภอ ตำบล หรือชนิดพืช</p>
+<h2>6. วิธีใช้งาน</h2><ol><li>เลือกปี Hotspot ที่ต้องการ</li><li>เลือกอำเภอและตำบลตามลำดับ</li><li>ตรวจ Card จำนวน Hotspot และพื้นที่ที่พบ</li><li>ตรวจสีแผนที่ Top 5 Top 10 และ Donut ให้สอดคล้องกัน</li><li>ใช้ปุ่มพิมพ์รายงานเพื่อจัดทำรายงาน A4</li></ol>
+<h2>7. ข้อควรระวัง</h2><p>Hotspot เป็นจุดตรวจจับความร้อนจากดาวเทียม ไม่ใช่ขอบเขตพื้นที่ไหม้จริง การประเมินนี้ใช้เพื่อจัดลำดับเฝ้าระวังและวางแผน ไม่ควรใช้แทนการตรวจสอบภาคสนาม</p>
 </body></html>

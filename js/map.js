@@ -153,11 +153,25 @@ const MapModule = (() => {
       type:'FeatureCollection', name:`risk_${level}_${years.join('_')||'none'}`,
       features:rows.map((r,i)=>{
         const hs=years.length?Math.max(0,Math.min(100,r.weighted/referenceMax*100)):0;
-        const trend=years.length>=2?r.trend:(years.length===1?50:0);
+        const trend=years.length>=2?r.trend:0;
         const area=maxL===minL?(rows.length===1?50:0):(logs[i]-minL)/(maxL-minL)*100;
-        const score=years.length
-          ? hs*factors.hotspot+trend*factors.trend+r.crop*factors.crop+area*factors.area
-          : 0;
+        const selectedCount=years.reduce((sum,y)=>sum+(r.counts[y]||0),0);
+        let score=0, method='No hotspot year selected';
+        if(years.length===1){
+          // Annual situation model: actual hotspot evidence determines the class.
+          // Crop and area only adjust the score inside that class and cannot promote it.
+          const exposure=(r.crop+area)/2;
+          if(selectedCount===0) score=0;
+          else if(selectedCount<=2) score=5+((selectedCount-1)/1)*10+exposure*0.09;       // 5-24
+          else if(selectedCount<=5) score=25+((selectedCount-3)/2)*15+exposure*0.09;     // 25-49
+          else if(selectedCount<=10) score=50+((selectedCount-6)/4)*15+exposure*0.09;    // 50-74
+          else score=75+Math.min(20,Math.log1p(selectedCount-10)*7)+exposure*0.05;         // 75-100
+          score=Math.max(0,Math.min(100,score));
+          method='Annual evidence-gated situation model';
+        }else if(years.length>=2){
+          score=hs*factors.hotspot+trend*factors.trend+r.crop*factors.crop+area*factors.area;
+          method='Multi-year Model A';
+        }
         const hsFields=Object.fromEntries(years.map(y=>[`hs_${y}`,r.counts[y]||0]));
         return {
           type:'Feature', geometry:r.feature.geometry,
@@ -169,7 +183,8 @@ const MapModule = (() => {
             hotspot_score:+hs.toFixed(2),trend_score:+trend.toFixed(2),
             crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),
             risk_years:years.join(','),
-            risk_method:'Model A with fixed historical hotspot reference',
+            risk_method:method,
+            selected_hotspot_count:selectedCount,
             risk_reference_max:referenceMax,
             ...hsFields
           }

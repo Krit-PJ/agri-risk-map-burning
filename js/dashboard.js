@@ -103,7 +103,7 @@ const Dashboard = (() => {
     document.getElementById('scope-caption').textContent=`ขอบเขตวิเคราะห์: ${scope} | ${yearText}${state.crop?' | พืช: '+state.crop:''}`;
     document.getElementById('title-trend').textContent=`Hotspot รายปี - ${scope}`;
     document.getElementById('title-top5').textContent=`Top 5 ${unit} - ${yearText}`;
-    document.getElementById('title-risk').textContent=`ระดับความเสี่ยง - ${yearText}`;
+    document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับสถานการณ์ Hotspot':'ระดับความเสี่ยงสะสม'} - ${yearText}`;
     document.getElementById('title-top10').textContent=`Top 10 ${unit} (Hotspot สูงสุด) - ${yearText}`;
     document.getElementById('rank-area-header').textContent=unit;
   }
