@@ -291,3 +291,17 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
   .brand-title .system-subtitle{font-size:8.5pt!important;color:#222!important;}
   .brand-title .developer-credit{font-size:8pt!important;color:#333!important;}
 }
+
+
+/* ===== Hierarchy-aware coverage card and accessible risk legend ===== */
+.risk-chart-layout{display:grid;grid-template-columns:minmax(150px,1fr) minmax(145px,.95fr);gap:14px;align-items:center;min-height:170px;}
+.risk-canvas-wrap{min-width:0;display:flex;align-items:center;justify-content:center;}
+.risk-canvas-wrap canvas{max-width:100%;max-height:190px;}
+.risk-legend-list{display:flex;flex-direction:column;gap:9px;padding:10px 11px;border-radius:8px;background:#06192a;border:1px solid #3979a5;}
+.risk-legend-item{display:grid;grid-template-columns:20px 1fr auto;gap:8px;align-items:center;color:#fff;font-size:15px;line-height:1.25;}
+.risk-legend-swatch{width:18px;height:13px;border:1px solid #fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.25);}
+.risk-legend-name{color:#f8fafc;font-weight:700;text-shadow:0 1px 1px #000;}
+.risk-legend-pct{color:#ffffff;font-size:15px;font-weight:900;letter-spacing:.1px;}
+#card-area-label{line-height:1.35;}
+@media(max-width:1450px){.risk-chart-layout{grid-template-columns:1fr;gap:8px}.risk-legend-list{display:grid;grid-template-columns:1fr 1fr}.risk-canvas-wrap canvas{max-height:150px}}
+@media print{.risk-legend-list{background:#fff;border-color:#777}.risk-legend-item,.risk-legend-name,.risk-legend-pct{color:#111!important;text-shadow:none}.risk-legend-swatch{border-color:#333}}

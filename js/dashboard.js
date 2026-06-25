@@ -12,7 +12,7 @@ const Dashboard = (() => {
   }
   function opts(legend=false){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:legend,position:'right',labels:{color:'#e5f3ff',font:{size:13,weight:'600'}}},tooltip:{backgroundColor:'#071827',titleFont:{size:14},bodyFont:{size:13}}},scales:legend?{}:{x:{ticks:{color:'#d7e8f6',font:{size:12}},grid:{color:'rgba(96,165,250,.16)'}},y:{ticks:{color:'#d7e8f6',font:{size:12}},grid:{color:'rgba(96,165,250,.16)'}}}};}
   const riskPercentPlugin={id:'riskPercentPlugin',afterDatasetsDraw(chart){const ds=chart.data.datasets?.[0];if(!ds)return;const total=ds.data.reduce((a,b)=>a+(Number(b)||0),0);if(!total)return;const ctx=chart.ctx,meta=chart.getDatasetMeta(0);ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 13px sans-serif';meta.data.forEach((arc,i)=>{const v=Number(ds.data[i])||0;if(!v)return;const pct=v/total*100;if(pct<4)return;const pos=arc.tooltipPosition();ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.65)';ctx.fillStyle='#fff';const text=pct.toFixed(pct>=10?0:1)+'%';ctx.strokeText(text,pos.x,pos.y);ctx.fillText(text,pos.x,pos.y);});ctx.restore();}};
-  function riskOpts(){const o=opts(true);o.plugins.legend.labels.generateLabels=(chart)=>{const ds=chart.data.datasets[0],total=ds.data.reduce((a,b)=>a+(Number(b)||0),0);return chart.data.labels.map((label,i)=>({text:`${label} ${total?((Number(ds.data[i])||0)*100/total).toFixed(1):'0.0'}%`,fillStyle:ds.backgroundColor[i],strokeStyle:'#fff',lineWidth:1,index:i}));};o.plugins.tooltip.callbacks={label:(ctx)=>{const data=ctx.dataset.data,total=data.reduce((a,b)=>a+(Number(b)||0),0),v=Number(ctx.raw)||0,p=total?v*100/total:0;return ` ${ctx.label}: ${v} พื้นที่ (${p.toFixed(1)}%)`;}};return o;}
+  function riskOpts(){const o=opts(false);o.plugins.legend.labels.generateLabels=(chart)=>{const ds=chart.data.datasets[0],total=ds.data.reduce((a,b)=>a+(Number(b)||0),0);return chart.data.labels.map((label,i)=>({text:`${label} ${total?((Number(ds.data[i])||0)*100/total).toFixed(1):'0.0'}%`,fillStyle:ds.backgroundColor[i],strokeStyle:'#fff',lineWidth:1,index:i}));};o.plugins.tooltip.callbacks={label:(ctx)=>{const data=ctx.dataset.data,total=data.reduce((a,b)=>a+(Number(b)||0),0),v=Number(ctx.raw)||0,p=total?v*100/total:0;return ` ${ctx.label}: ${v} พื้นที่ (${p.toFixed(1)}%)`;}};return o;}
   function setData(hotspot){Object.assign(store,hotspot);refresh();}
   function setYearData(year,fc){store[String(year)]=fc;refresh();}
   function applyFilter(s){state={...state,...s};refresh();}
@@ -34,9 +34,10 @@ const Dashboard = (() => {
     const riskFeatures=selectedRiskFeatures(), risk=[0,0,0,0];
     riskFeatures.forEach(f=>{const score=riskScoreOf(f.properties);const idx=CONFIG.RISK_LEVELS.findIndex(x=>score>=x.min&&score<x.max);risk[Math.max(idx,0)]++;});
     charts.risk.data.datasets[0].data=risk; charts.risk.update('none');
+    updateRiskLegend(risk);
 
     document.getElementById('card-total').textContent=fs.length.toLocaleString('th-TH');
-    document.getElementById('card-provinces').textContent=new Set(fs.map(f=>f.properties.__district).filter(Boolean)).size;
+    updateAreaCoverageCard(fs);
     const yearText=formatYears(years);
     document.getElementById('card-total-label').textContent=`Hotspot ทั้งหมด (${yearText})`;
 
@@ -48,6 +49,36 @@ const Dashboard = (() => {
     });
     updateTitles(yearText);
   }
+
+  function updateAreaCoverageCard(fs){
+    const valueEl=document.getElementById('card-provinces');
+    const labelEl=document.getElementById('card-area-label');
+    if(!valueEl||!labelEl)return;
+    if(state.subdistrict){
+      const hasHotspot=fs.length>0;
+      valueEl.textContent=hasHotspot?'พบ':'ไม่พบ';
+      labelEl.textContent='สถานะ Hotspot ในตำบลที่เลือก';
+      valueEl.title='ตรวจจากข้อมูล Hotspot ของปีและชนิดพืชที่เลือก';
+      return;
+    }
+    const key=state.district?'__subdistrict':'__district';
+    const count=new Set(fs.map(f=>f.properties?.[key]).filter(Boolean)).size;
+    valueEl.textContent=count.toLocaleString('th-TH');
+    labelEl.textContent=state.district?'ตำบลที่พบ Hotspot':'อำเภอที่พบ Hotspot';
+    valueEl.title=`นับจำนวน${state.district?'ตำบล':'อำเภอ'}ที่มี Hotspot อย่างน้อย 1 จุด จากปีและตัวกรองที่เลือก`;
+  }
+
+  function updateRiskLegend(values){
+    const host=document.getElementById('risk-legend-list');
+    if(!host)return;
+    const total=values.reduce((a,b)=>a+(Number(b)||0),0);
+    host.innerHTML=CONFIG.RISK_LEVELS.map((level,i)=>{
+      const value=Number(values[i])||0;
+      const pct=total?(value*100/total):0;
+      return `<div class="risk-legend-item"><span class="risk-legend-swatch" style="background:${level.color}"></span><span class="risk-legend-name">${level.label}</span><strong class="risk-legend-pct">${pct.toFixed(1)}%</strong></div>`;
+    }).join('');
+  }
+
   function matchesState(f){const p=f.properties||{};return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop);}
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}

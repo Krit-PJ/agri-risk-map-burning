@@ -235,7 +235,7 @@
 <div class="card-icon">📍</div>
 <div class="card-body">
 <div class="card-value" id="card-provinces">-</div>
-<div class="card-label">อำเภอที่พบ Hotspot</div>
+<div class="card-label" id="card-area-label">อำเภอที่พบ Hotspot</div>
 </div>
 </div>
 </div>
@@ -251,7 +251,10 @@
 </div>
 <div class="chart-box">
 <h4 id="title-risk">ระดับความเสี่ยงตามปีที่เลือก</h4>
-<canvas height="150" id="chart-risk"></canvas>
+<div class="risk-chart-layout">
+  <div class="risk-canvas-wrap"><canvas height="150" id="chart-risk"></canvas></div>
+  <div id="risk-legend-list" class="risk-legend-list" aria-label="คำอธิบายระดับความเสี่ยง"></div>
+</div>
 </div>
 <!-- Top Districts Table -->
 <div class="chart-box">
