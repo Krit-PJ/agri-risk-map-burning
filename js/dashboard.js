@@ -25,7 +25,7 @@ const Dashboard = (() => {
     const years=activeYears(), fs=selected();
     charts.trend.data.labels=years;
     charts.trend.data.datasets[0].data=years.map(y=>(store[y]?.features||[]).filter(f=>matchesState(f)).length);
-    charts.trend.data.datasets[0].backgroundColor=years.map(y=>CONFIG.YEAR_COLORS[y]||'#38bdf8');
+    charts.trend.data.datasets[0].backgroundColor=years.map(y=>CONFIG.YEAR_COLORS[y]||'#ef4444');
     charts.trend.update('none');
 
     const unit=state.district?'__subdistrict':'__district', counts=countBy(fs,unit), ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]);

@@ -204,7 +204,7 @@ const MapModule = (() => {
     Object.entries(raw.hotspot).forEach(([year,fc])=>{
       const cb=document.querySelector(`.hs-layer[data-year="${year}"]`); if(cb&&!cb.checked)return;
       const filtered=(fc.features||[]).filter(matchesFeature), group=L.markerClusterGroup({disableClusteringAtZoom:11});
-      L.geoJSON({type:'FeatureCollection',features:filtered},{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:5,fillColor:CONFIG.YEAR_COLORS[year]||'#ef4444',color:'#fff',weight:.7,fillOpacity:.95}),onEachFeature:(f,l)=>l.bindPopup(`<b>Hotspot ปี ${year}</b><br>อ.${f.properties.__district||'-'} ต.${f.properties.__subdistrict||'-'}<br>พืช: ${f.properties.__crop||'-'}`)}).addTo(group);
+      L.geoJSON({type:'FeatureCollection',features:filtered},{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:5.5,fillColor:CONFIG.YEAR_COLORS[year]||'#ef4444',color:'#ffffff',weight:1.4,fillOpacity:.96}),onEachFeature:(f,l)=>l.bindPopup(`<b>Hotspot ปี ${year}</b><br>อ.${f.properties.__district||'-'} ต.${f.properties.__subdistrict||'-'}<br>พืช: ${f.properties.__crop||'-'}`)}).addTo(group);
       group.addTo(map); shown.hotspot[year]=group;
     });
   }

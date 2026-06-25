@@ -234,7 +234,14 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
 #map-legend strong{font-size:14px;color:#7dd3fc;}
 #map-legend .dot{width:13px;height:13px;}
 .leaflet-tooltip,.leaflet-popup-content{font-size:14px!important;}
-.hs-2569{border-left:3px solid #38bdf8;padding-left:5px;}
+.hs-2566{border-left:4px solid #8b5cf6;padding-left:7px;}
+.hs-2567{border-left:4px solid #06b6d4;padding-left:7px;}
+.hs-2568{border-left:4px solid #f59e0b;padding-left:7px;}
+.hs-2569{border-left:4px solid #ef4444;padding-left:7px;}
+.hs-2566 input{accent-color:#8b5cf6;}
+.hs-2567 input{accent-color:#06b6d4;}
+.hs-2568 input{accent-color:#f59e0b;}
+.hs-2569 input{accent-color:#ef4444;}
 #excel-import-section{border:1px solid rgba(56,189,248,.35);background:rgba(11,38,62,.55);padding:10px;border-radius:8px;}
 #import-year{max-width:130px;}
 .data-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
@@ -367,4 +374,132 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
   #title-top5,#title-trend,#title-risk,#title-top10{color:#111827!important;font-weight:900!important;}
   #chart-top-district,#chart-trend{background:#fff!important;}
   .chart-box h3,.chart-box .chart-title{color:#111827!important;text-shadow:none!important;}
+}
+
+
+/* =====================================================
+   2026 Responsive UI + Thai typography + yearly colors
+   ===================================================== */
+:root{
+  --font-ui:"Noto Sans Thai","Noto Sans","Leelawadee UI",Tahoma,sans-serif;
+  --header-h:76px;
+  --mobile-toolbar-h:48px;
+  --hotspot-current:#dc2626;
+  --hotspot-y1:#f59e0b;
+  --hotspot-y2:#0891b2;
+  --hotspot-y3:#7c3aed;
+}
+html,body,button,input,select,textarea,.leaflet-container,.chart-box,#tbl-top-district{
+  font-family:var(--font-ui)!important;
+  font-variant-numeric:tabular-nums;
+}
+body{font-size:16px!important;line-height:1.45;}
+#app-header{height:var(--header-h)!important;min-height:var(--header-h)!important;padding:8px 14px!important;}
+#app-body{height:calc(100vh - var(--header-h))!important;margin-top:var(--header-h)!important;}
+.brand-title h1{font-size:24px!important;line-height:1.08!important;letter-spacing:.1px;}
+.brand-title .system-subtitle{font-size:14px!important;line-height:1.25!important;}
+.brand-title .developer-credit{font-size:12px!important;line-height:1.2!important;}
+.panel-section h3{font-size:15px!important;}
+.section-label,label,.toggle-row,select,button{font-size:14px!important;}
+.card-label,.chart-box h4,.scope-caption{font-size:12px!important;}
+.card-value{font-size:24px!important;}
+#tbl-top-district{font-size:13px!important;}
+#tbl-top-district th,#tbl-top-district td{padding:7px 8px!important;}
+
+/* One semantic palette used by checkbox accents, map points and trend chart */
+.hs-2569{border-left:5px solid var(--hotspot-current)!important;padding-left:7px!important;}
+.hs-2568{border-left:5px solid var(--hotspot-y1)!important;padding-left:7px!important;}
+.hs-2567{border-left:5px solid var(--hotspot-y2)!important;padding-left:7px!important;}
+.hs-2566{border-left:5px solid var(--hotspot-y3)!important;padding-left:7px!important;}
+.hs-2569 input{accent-color:var(--hotspot-current)!important;}
+.hs-2568 input{accent-color:var(--hotspot-y1)!important;}
+.hs-2567 input{accent-color:var(--hotspot-y2)!important;}
+.hs-2566 input{accent-color:var(--hotspot-y3)!important;}
+.hs-layer:focus-visible,.toggle-row:focus-within{outline:2px solid #7dd3fc;outline-offset:2px;}
+
+#mobile-toolbar,#mobile-overlay{display:none;}
+
+/* Tablet: preserve map priority while keeping usable controls */
+@media (max-width:1180px) and (min-width:769px){
+  #app-body{grid-template-columns:240px minmax(0,1fr) 320px!important;}
+  .brand-logo{width:52px!important;height:52px!important;}
+  .header-right{flex-wrap:wrap;justify-content:flex-end;}
+  #last-updated{display:none;}
+}
+
+/* Smartphone layout: map stays primary; controls and dashboard become drawers */
+@media (max-width:768px){
+  :root{--header-h:112px;}
+  html,body{min-width:0!important;overflow:hidden!important;}
+  #app-header{
+    position:fixed!important;height:var(--header-h)!important;min-height:var(--header-h)!important;
+    padding:7px 10px!important;align-items:flex-start!important;gap:6px!important;flex-wrap:wrap!important;
+  }
+  .header-left{min-width:0!important;flex:1 1 100%!important;gap:8px!important;}
+  .brand-logos{gap:5px!important;flex:0 0 auto;}
+  .brand-logo{width:42px!important;height:42px!important;padding:2px!important;}
+  .brand-title{min-width:0;overflow:hidden;}
+  .brand-title h1{font-size:18px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand-title .system-subtitle{font-size:11.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand-title .developer-credit{font-size:10.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .header-right{width:100%!important;display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;}
+  .visitor-counter,#last-updated{font-size:10px!important;}
+  #last-updated{display:none!important;}
+  .header-right button{min-height:34px!important;padding:5px 9px!important;font-size:12px!important;white-space:nowrap;}
+
+  #mobile-toolbar{
+    display:grid!important;grid-template-columns:1fr 1fr;gap:8px;position:fixed;z-index:1100;
+    top:var(--header-h);left:0;right:0;height:var(--mobile-toolbar-h);padding:6px 10px;
+    background:#091827;border-bottom:1px solid #2a6496;
+  }
+  #mobile-toolbar button{min-height:36px;border:1px solid #38bdf8;border-radius:8px;background:#12304b;color:#fff;font-weight:700;}
+  #mobile-overlay{position:fixed;z-index:1150;inset:calc(var(--header-h) + var(--mobile-toolbar-h)) 0 0;background:rgba(2,8,23,.58);}
+  #mobile-overlay:not([hidden]){display:block!important;}
+
+  #app-body{
+    display:block!important;height:calc(100vh - var(--header-h) - var(--mobile-toolbar-h))!important;
+    margin-top:calc(var(--header-h) + var(--mobile-toolbar-h))!important;overflow:hidden!important;
+  }
+  #map-container{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;}
+  #map{height:100%!important;min-height:0!important;}
+  #left-panel,#right-panel{
+    position:fixed!important;z-index:1200!important;top:calc(var(--header-h) + var(--mobile-toolbar-h))!important;
+    bottom:0!important;width:min(88vw,380px)!important;height:auto!important;max-height:none!important;
+    overflow-y:auto!important;padding:14px!important;transition:transform .24s ease,visibility .24s ease;
+    box-shadow:0 10px 35px rgba(0,0,0,.5);
+  }
+  #left-panel{left:0!important;transform:translateX(-105%);border-right:1px solid #38bdf8!important;}
+  #right-panel{right:0!important;left:auto!important;transform:translateX(105%);border-left:1px solid #38bdf8!important;}
+  #left-panel.mobile-open,#right-panel.mobile-open{transform:translateX(0)!important;visibility:visible!important;}
+  .panel-section h3{font-size:16px!important;}
+  .toggle-row,label,select,.btn-secondary,.btn-primary{font-size:15px!important;}
+  .toggle-row{min-height:42px;padding:8px!important;}
+  select,button,input[type=file]{min-height:44px;}
+  #summary-cards{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;}
+  .card{min-height:72px!important;padding:10px!important;}
+  .card-value{font-size:22px!important;}
+  .chart-box{padding:12px!important;margin-bottom:12px!important;}
+  .chart-box h4{font-size:13px!important;}
+  #tbl-top-district{font-size:12px!important;}
+  #tbl-top-district th,#tbl-top-district td{padding:7px 5px!important;}
+  #map-legend{right:8px!important;bottom:8px!important;font-size:11px!important;padding:7px 9px!important;max-width:150px;}
+  .leaflet-control-zoom{margin-right:8px!important;margin-bottom:92px!important;}
+  #detail-panel{left:10px!important;right:10px!important;bottom:10px!important;width:auto!important;max-height:45vh!important;}
+}
+
+@media (max-width:420px){
+  :root{--header-h:108px;}
+  .brand-logo{width:36px!important;height:36px!important;}
+  .brand-title h1{font-size:16px!important;}
+  .brand-title .system-subtitle{font-size:10.5px!important;}
+  .brand-title .developer-credit{font-size:9.5px!important;}
+  .visitor-counter{display:none!important;}
+  .header-right button{font-size:11px!important;padding:4px 7px!important;}
+  #summary-cards{grid-template-columns:1fr!important;}
+  #map-legend{font-size:10px!important;}
+}
+
+@media print{
+  #mobile-toolbar,#mobile-overlay{display:none!important;}
+  html,body,button,input,select,textarea{font-family:var(--font-ui)!important;}
 }

@@ -199,14 +199,40 @@ const App=(()=>{
   function ensureYearCheckbox(year){
     let cb=document.querySelector(`.hs-layer[data-year="${year}"]`);if(cb)return cb;
     const group=document.querySelector('.hs-layer')?.closest('.layer-group');
-    const label=document.createElement('label');label.className=`toggle-row hs-${year}`;label.style.borderLeft=`3px solid ${CONFIG.YEAR_COLORS[year]||'#a78bfa'}`;
+    const label=document.createElement('label');label.className=`toggle-row hs-${year}`;label.style.borderLeft=`3px solid ${CONFIG.YEAR_COLORS[year]||'#14b8a6'}`;
     label.innerHTML=`<input type="checkbox" class="hs-layer" data-year="${year}"> ปี ${year} (${year-543})`;
     group?.appendChild(label);cb=label.querySelector('input');
-    if(!CONFIG.YEAR_COLORS[year])CONFIG.YEAR_COLORS[year]='#a78bfa';
+    if(!CONFIG.YEAR_COLORS[year]){const d=Math.max(0,(CONFIG.CURRENT_YEAR_BE||year)-year);CONFIG.YEAR_COLORS[year]=(CONFIG.YEAR_COLOR_FALLBACK||[])[d]||'#14b8a6';label.style.borderLeft=`3px solid ${CONFIG.YEAR_COLORS[year]}`;}
     return cb;
   }
   function downloadImportedGeoJSON(){if(!lastImported)return;const blob=new Blob([JSON.stringify(lastImported.geojson,null,2)],{type:'application/geo+json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=lastImported.fileName;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
   function setStatus(text,type){const el=document.getElementById('import-status');if(!el)return;el.textContent=text;el.className=`import-status ${type||''}`;}
+
+
+
+  function initMobilePanels(){
+    const left=document.getElementById('left-panel');
+    const right=document.getElementById('right-panel');
+    const overlay=document.getElementById('mobile-overlay');
+    const btnLeft=document.getElementById('mobile-toggle-layers');
+    const btnRight=document.getElementById('mobile-toggle-dashboard');
+    if(!left||!right||!overlay||!btnLeft||!btnRight)return;
+    const closeAll=()=>{
+      left.classList.remove('mobile-open');right.classList.remove('mobile-open');overlay.hidden=true;
+      btnLeft.setAttribute('aria-expanded','false');btnRight.setAttribute('aria-expanded','false');
+      setTimeout(()=>MapModule.map()?.invalidateSize?.(),260);
+    };
+    const openPanel=(panel,button)=>{
+      const wasOpen=panel.classList.contains('mobile-open');closeAll();
+      if(!wasOpen){panel.classList.add('mobile-open');overlay.hidden=false;button.setAttribute('aria-expanded','true');}
+    };
+    btnLeft.addEventListener('click',()=>openPanel(left,btnLeft));
+    btnRight.addEventListener('click',()=>openPanel(right,btnRight));
+    overlay.addEventListener('click',closeAll);
+    window.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll();});
+    window.addEventListener('resize',()=>{if(window.innerWidth>768)closeAll();setTimeout(()=>MapModule.map()?.invalidateSize?.(),120);});
+    document.addEventListener('agri-risk:filter-change',()=>{if(window.innerWidth<=768)closeAll();});
+  }
 
   async function initVisitorCounter(){const el=document.getElementById('visitor-count');if(!el)return;const key='agri-risk-pageviews';let local=Number(localStorage.getItem(key)||0)+1;localStorage.setItem(key,String(local));const endpoint=CONFIG.VISITOR_COUNTER?.endpoint;if(endpoint){try{const r=await fetch(endpoint,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();el.textContent=Number(j.count??j.value??local).toLocaleString('th-TH');return;}catch(e){console.warn('[Counter]',e.message);}}el.textContent=local.toLocaleString('th-TH');}
   return{init};

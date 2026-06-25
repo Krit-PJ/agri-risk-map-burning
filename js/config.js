@@ -18,7 +18,8 @@ const CONFIG = {
     satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     topo:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
   },
-  YEAR_COLORS:{2566:'#ef4444',2567:'#facc15',2568:'#22c55e',2569:'#38bdf8'},
+  YEAR_COLORS:{2566:'#8b5cf6',2567:'#06b6d4',2568:'#f59e0b',2569:'#ef4444'},
+  YEAR_COLOR_FALLBACK:['#ef4444','#f59e0b','#06b6d4','#8b5cf6','#14b8a6'],
   RISK_LEVELS:[
     {label:'ต่ำ',class:'risk-low',color:'#2ecc71',min:0,max:25},
     {label:'ปานกลาง',class:'risk-medium',color:'#f1c40f',min:25,max:50},
