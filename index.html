@@ -154,6 +154,34 @@
 </div>
 <div id="mobile-overlay" class="no-print" hidden></div>
 
+<section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
+  <div class="timeline-year-wrap">
+    <label for="timeline-year">ปี พ.ศ.</label>
+    <select id="timeline-year" aria-label="เลือกปีสำหรับเส้นเวลา">
+      <option value="2566">2566</option><option value="2567">2567</option>
+      <option value="2568">2568</option><option value="2569" selected>2569</option>
+    </select>
+  </div>
+  <div class="timeline-track-wrap">
+    <button class="timeline-all active" type="button" data-month="" aria-pressed="true">ทั้งปี</button>
+    <div class="timeline-track" role="list" aria-label="เลือกเดือน">
+      <button type="button" data-month="1" role="listitem">ม.ค.</button>
+      <button type="button" data-month="2" role="listitem">ก.พ.</button>
+      <button type="button" data-month="3" role="listitem">มี.ค.</button>
+      <button type="button" data-month="4" role="listitem">เม.ย.</button>
+      <button type="button" data-month="5" role="listitem">พ.ค.</button>
+      <button type="button" data-month="6" role="listitem">มิ.ย.</button>
+      <button type="button" data-month="7" role="listitem">ก.ค.</button>
+      <button type="button" data-month="8" role="listitem">ส.ค.</button>
+      <button type="button" data-month="9" role="listitem">ก.ย.</button>
+      <button type="button" data-month="10" role="listitem">ต.ค.</button>
+      <button type="button" data-month="11" role="listitem">พ.ย.</button>
+      <button type="button" data-month="12" role="listitem">ธ.ค.</button>
+    </div>
+  </div>
+  <div class="timeline-status" id="timeline-status">ปี 2569 · ทุกเดือน</div>
+</section>
+
 <!-- MAIN LAYOUT -->
 <div id="app-body">
 <!-- LEFT PANEL: Controls -->
@@ -173,7 +201,7 @@
           </label>
 </div>
 <div class="layer-group">
-<label class="section-label">Hotspot รายปี (ม.ค.–พ.ค.)</label>
+<label class="section-label">Hotspot รายปี</label>
 <label class="toggle-row hs-2566">
 <input class="hs-layer" data-year="2566" type="checkbox"/> ปี 2566 (2023)
           </label>
@@ -212,7 +240,44 @@
 </div>
 </section>
 <section class="panel-section">
-<h3>🔍 กรองข้อมูล</h3>
+<h3>🗓️ กรองช่วงเวลา Hotspot</h3>
+<div class="date-filter-grid">
+<label>ปี พ.ศ.
+<select id="filter-year">
+<option value="">-- ทุกปีที่เลือก --</option>
+<option value="2566">2566 (2023)</option>
+<option value="2567">2567 (2024)</option>
+<option value="2568">2568 (2025)</option>
+<option value="2569" selected>2569 (2026)</option>
+</select>
+</label>
+<label>เดือน
+<select id="filter-month">
+<option value="">-- ทุกเดือน --</option>
+<option value="1">มกราคม</option>
+<option value="2">กุมภาพันธ์</option>
+<option value="3">มีนาคม</option>
+<option value="4">เมษายน</option>
+<option value="5">พฤษภาคม</option>
+<option value="6">มิถุนายน</option>
+<option value="7">กรกฎาคม</option>
+<option value="8">สิงหาคม</option>
+<option value="9">กันยายน</option>
+<option value="10">ตุลาคม</option>
+<option value="11">พฤศจิกายน</option>
+<option value="12">ธันวาคม</option>
+</select>
+</label>
+<label>วันที่
+<select id="filter-day" disabled>
+<option value="">-- เลือกเดือนก่อน --</option>
+</select>
+</label>
+</div>
+<p class="field-help" id="date-filter-help">ปีจะเชื่อมโยงกับชั้น Hotspot รายปี ส่วนเดือนและวันที่จะกรองข้อมูลทุกส่วนพร้อมกัน</p>
+</section>
+<section class="panel-section">
+<h3>🔍 กรองพื้นที่และชนิดพืช</h3>
 <label>อำเภอ
           <select id="filter-district">
 <option value="">-- ทั้งหมด --</option>
@@ -272,34 +337,36 @@
 </main>
 <!-- RIGHT PANEL: Dashboard -->
 <aside id="right-panel">
-<!-- Summary Cards -->
-<div id="summary-cards">
-<div class="card card-total">
-<div class="card-icon">🔥</div>
-<div class="card-body">
-<div class="card-value" id="card-total">-</div>
-<div class="card-label" id="card-total-label">Hotspot ทั้งหมด (ปี 2569)</div>
-</div>
-</div>
-<div class="card card-province">
-<div class="card-icon">📍</div>
-<div class="card-body">
-<div class="card-value" id="card-provinces">-</div>
-<div class="card-label" id="card-area-label">อำเภอที่พบ Hotspot</div>
-</div>
-</div>
+<!-- Hotspot comparison table -->
+<div class="chart-box comparison-box" id="hotspot-comparison-box">
+  <div class="comparison-heading">
+    <h4 id="title-comparison">เปรียบเทียบ Hotspot รายพื้นที่</h4>
+    <span id="comparison-period">-</span>
+  </div>
+  <div class="comparison-table-wrap">
+    <table id="tbl-hotspot-comparison">
+      <thead><tr>
+        <th id="comparison-area-header">อำเภอ</th>
+        <th id="comparison-current-header">ปีที่เลือก</th>
+        <th id="comparison-previous-header">ปีก่อน</th>
+        <th>เพิ่ม/ลด</th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><th>รวม</th><th id="comparison-current-total">0</th><th id="comparison-previous-total">0</th><th id="comparison-change-total">0%</th></tr></tfoot>
+    </table>
+  </div>
 </div>
 <!-- Charts -->
-<div class="chart-box">
+<div class="chart-box" id="trend-box">
 <h4 id="title-trend">Hotspot รายปี (Trend) - ทุกอำเภอ</h4>
 <div class="scope-caption" id="scope-caption">ขอบเขตวิเคราะห์: จังหวัดกำแพงเพชร</div>
 <canvas height="160" id="chart-trend"></canvas>
 </div>
-<div class="chart-box">
+<div class="chart-box" id="top5-box">
 <h4 id="title-top5">Top 5 อำเภอ</h4>
 <canvas height="180" id="chart-top-district"></canvas>
 </div>
-<div class="chart-box">
+<div class="chart-box" id="risk-box">
 <h4 id="title-risk">ระดับความเสี่ยงตามปีที่เลือก</h4>
 <div class="risk-chart-layout">
   <div class="risk-canvas-wrap"><canvas height="150" id="chart-risk"></canvas></div>
@@ -307,7 +374,7 @@
 </div>
 </div>
 <!-- Top Districts Table -->
-<div class="chart-box">
+<div class="chart-box" id="top10-box">
 <h4 id="title-top10">Top 10 อำเภอ (Hotspot สูงสุด)</h4>
 <table id="tbl-top-district">
 <thead>

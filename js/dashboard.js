@@ -1,6 +1,6 @@
 const Dashboard = (() => {
   const charts={}, store={};
-  let state={district:'',subdistrict:'',crop:''};
+  let state={district:'',subdistrict:'',crop:'',month:'',day:''};
   const H=()=>MapModule.helpers;
 
   function init(){
@@ -19,12 +19,12 @@ const Dashboard = (() => {
   function activeYears(){return MapModule.activeYears().map(String);}
   function selected(){
     const years=activeYears();
-    return years.flatMap(y=>(store[y]?.features||[])).filter(f=>{const p=f.properties||{};return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop);});
+    return years.flatMap(y=>(store[y]?.features||[])).filter(matchesState);
   }
   function refresh(){
     const years=activeYears(), fs=selected();
     charts.trend.data.labels=years;
-    charts.trend.data.datasets[0].data=years.map(y=>(store[y]?.features||[]).filter(f=>matchesState(f)).length);
+    charts.trend.data.datasets[0].data=years.map(y=>(store[y]?.features||[]).filter(matchesState).length);
     charts.trend.data.datasets[0].backgroundColor=years.map(y=>CONFIG.YEAR_COLORS[y]||'#ef4444');
     charts.trend.update('none');
 
@@ -36,10 +36,8 @@ const Dashboard = (() => {
     charts.risk.data.datasets[0].data=risk; charts.risk.update('none');
     updateRiskLegend(risk);
 
-    document.getElementById('card-total').textContent=fs.length.toLocaleString('th-TH');
-    updateAreaCoverageCard(fs);
     const yearText=formatYears(years);
-    document.getElementById('card-total-label').textContent=`Hotspot ทั้งหมด (${yearText})`;
+    updateComparisonTable(years);
 
     const tbody=document.querySelector('#tbl-top-district tbody'); tbody.innerHTML='';
     ranked.slice(0,10).forEach(([name,n])=>{
@@ -50,22 +48,45 @@ const Dashboard = (() => {
     updateTitles(yearText);
   }
 
-  function updateAreaCoverageCard(fs){
-    const valueEl=document.getElementById('card-provinces');
-    const labelEl=document.getElementById('card-area-label');
-    if(!valueEl||!labelEl)return;
-    if(state.subdistrict){
-      const hasHotspot=fs.length>0;
-      valueEl.textContent=hasHotspot?'พบ':'ไม่พบ';
-      labelEl.textContent='สถานะ Hotspot ในตำบลที่เลือก';
-      valueEl.title='ตรวจจากข้อมูล Hotspot ของปีและชนิดพืชที่เลือก';
-      return;
+  function pctChange(current,previous){
+    if(previous===0)return current===0?{text:'0.0%',cls:'change-flat'}:{text:'ใหม่',cls:'change-new'};
+    const pct=(current-previous)*100/previous;
+    return {text:`${pct>0?'+':''}${pct.toFixed(1)}%`,cls:pct>0?'change-up':pct<0?'change-down':'change-flat'};
+  }
+  function yearFeatures(year){return(store[String(year)]?.features||[]).filter(matchesState);}
+  function updateComparisonTable(years){
+    const selectedYear=Number(years.slice(-1)[0]||CONFIG.CURRENT_YEAR_BE||2569);
+    const previousYear=selectedYear-1;
+    const currentFs=yearFeatures(selectedYear),previousFs=yearFeatures(previousYear);
+    const unit=state.district?'__subdistrict':'__district';
+    let names=[];
+    if(state.subdistrict)names=[state.subdistrict];
+    else if(state.district){
+      const boundary=MapModule.getRiskForScope('subdistrict')?.features||[];
+      names=[...new Set(boundary.filter(f=>H().districtOf(f.properties)===state.district).map(f=>H().subdistrictOf(f.properties)).filter(Boolean))];
+    }else{
+      const boundary=MapModule.getRiskForScope('district')?.features||[];
+      names=[...new Set(boundary.map(f=>H().districtOf(f.properties)).filter(Boolean))];
     }
-    const key=state.district?'__subdistrict':'__district';
-    const count=new Set(fs.map(f=>f.properties?.[key]).filter(Boolean)).size;
-    valueEl.textContent=count.toLocaleString('th-TH');
-    labelEl.textContent=state.district?'ตำบลที่พบ Hotspot':'อำเภอที่พบ Hotspot';
-    valueEl.title=`นับจำนวน${state.district?'ตำบล':'อำเภอ'}ที่มี Hotspot อย่างน้อย 1 จุด จากปีและตัวกรองที่เลือก`;
+    const cur=countBy(currentFs,unit),prev=countBy(previousFs,unit);
+    names=[...new Set([...names,...Object.keys(cur),...Object.keys(prev)].filter(n=>n&&n!=='ไม่ระบุ'))]
+      .sort((a,b)=>(cur[b]||0)-(cur[a]||0)||a.localeCompare(b,'th'));
+    const body=document.querySelector('#tbl-hotspot-comparison tbody');if(!body)return;body.innerHTML='';
+    names.forEach(name=>{
+      const c=cur[name]||0,p=prev[name]||0,change=pctChange(c,p),tr=document.createElement('tr');
+      tr.innerHTML=`<td>${name}</td><td>${c.toLocaleString('th-TH')}</td><td>${p.toLocaleString('th-TH')}</td><td><span class="change-badge ${change.cls}">${change.text}</span></td>`;
+      body.appendChild(tr);
+    });
+    const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);
+    document.getElementById('comparison-current-total').textContent=ct.toLocaleString('th-TH');
+    document.getElementById('comparison-previous-total').textContent=pt.toLocaleString('th-TH');
+    const totalEl=document.getElementById('comparison-change-total');totalEl.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
+    const unitLabel=state.district?'ตำบล':'อำเภอ';
+    document.getElementById('comparison-area-header').textContent=unitLabel;
+    document.getElementById('comparison-current-header').textContent=`พ.ศ. ${selectedYear}`;
+    document.getElementById('comparison-previous-header').textContent=`พ.ศ. ${previousYear}`;
+    document.getElementById('title-comparison').textContent=`เปรียบเทียบ Hotspot ราย${unitLabel}`;
+    document.getElementById('comparison-period').textContent=`${temporalText()} · ${state.crop||'ทุกชนิดพืช'}`;
   }
 
   function updateRiskLegend(values){
@@ -79,7 +100,17 @@ const Dashboard = (() => {
     }).join('');
   }
 
-  function matchesState(f){const p=f.properties||{};return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop);}
+  function matchesState(f){
+    const p=f.properties||{},parts=H().datePartsOf(f),month=Number(state.month||0),day=Number(state.day||0);
+    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop)&&(!month||parts.month===month)&&(!day||parts.day===day);
+  }
+  function temporalText(){
+    const month=Number(state.month||0),day=Number(state.day||0);
+    const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    if(month&&day)return`วันที่ ${day} ${names[month]}`;
+    if(month)return`เดือน${names[month]}`;
+    return'ทุกเดือน';
+  }
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}
   function riskScoreOf(p){return Number(p?.risk_score??p?.RISK_SCORE??p?.risk??p?.score??0)||0;}
@@ -100,11 +131,11 @@ const Dashboard = (() => {
   function updateTitles(yearText){
     const scope=state.subdistrict?`ตำบล${state.subdistrict} อำเภอ${state.district}`:state.district?`อำเภอ${state.district}`:'จังหวัดกำแพงเพชร';
     const unit=state.district?'ตำบล':'อำเภอ';
-    document.getElementById('scope-caption').textContent=`ขอบเขตวิเคราะห์: ${scope} | ${yearText}${state.crop?' | พืช: '+state.crop:''}`;
+    document.getElementById('scope-caption').textContent=`ขอบเขตวิเคราะห์: ${scope} | ${yearText} | ${temporalText()}${state.crop?' | พืช: '+state.crop:''}`;
     document.getElementById('title-trend').textContent=`Hotspot รายปี - ${scope}`;
-    document.getElementById('title-top5').textContent=`Top 5 ${unit} - ${yearText}`;
-    document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับสถานการณ์ Hotspot':'ระดับความเสี่ยงสะสม'} - ${yearText}`;
-    document.getElementById('title-top10').textContent=`Top 10 ${unit} (Hotspot สูงสุด) - ${yearText}`;
+    document.getElementById('title-top5').textContent=`Top 5 ${unit} - ${yearText} (${temporalText()})`;
+    document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับสถานการณ์ Hotspot':'ระดับความเสี่ยงสะสม'} - ${yearText} (${temporalText()})`;
+    document.getElementById('title-top10').textContent=`Top 10 ${unit} (Hotspot สูงสุด) - ${yearText} (${temporalText()})`;
     document.getElementById('rank-area-header').textContent=unit;
   }
 
