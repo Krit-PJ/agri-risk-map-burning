@@ -1,11 +1,13 @@
-const CONFIG = {
-  MAP_CENTER: [16.47, 99.52], MAP_ZOOM: 9, MAP_MIN_ZOOM: 7, MAP_MAX_ZOOM: 18,
-  CURRENT_YEAR_BE: 2569,
-  DATA: {
-    district_kpt: 'data/boundary/district_kpt.geojson',
-    subdistrict_kpt: 'data/boundary/subdistrict_kpt.geojson',
-    burnscar_kpt: 'data/burnscar/burnscar_kpt.geojson',
-    crop_kpt: 'data/crop/crop_kpt.geojson',
+window.CONFIG = {
+  years: [2566,2567,2568,2569],
+  currentYear: 2569,
+  defaultMonths: [1,2,3,4,5],
+  banMonths: [1,2,3,4,5],
+  data: {
+    district: 'data/boundary/district_kpt.geojson',
+    subdistrict: 'data/boundary/subdistrict_kpt.geojson',
+    crop: 'data/crop/crop_kpt.geojson',
+    burnscar: 'data/burnscar/burnscar_kpt.geojson',
     hotspot: {
       2566: 'data/hotspot/hotspot_2566.geojson',
       2567: 'data/hotspot/hotspot_2567.geojson',
@@ -13,20 +15,8 @@ const CONFIG = {
       2569: 'data/hotspot/hotspot_2569.geojson'
     }
   },
-  BASEMAPS: {
-    osm:'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    topo:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
-  },
-  YEAR_COLORS:{2566:'#8b5cf6',2567:'#0ea5e9',2568:'#f59e0b',2569:'#ef4444'},
-  YEAR_COLOR_FALLBACK:['#ef4444','#f59e0b','#06b6d4','#8b5cf6','#14b8a6'],
-  RISK_LEVELS:[
-    {label:'ต่ำ',class:'risk-low',color:'#22c55e',min:0,max:25},
-    {label:'ปานกลาง',class:'risk-medium',color:'#facc15',min:25,max:50},
-    {label:'สูง',class:'risk-high',color:'#fb923c',min:50,max:75},
-    {label:'สูงมาก',class:'risk-very-high',color:'#ef4444',min:75,max:101}
-  ],
-  RISK_MODEL:{yearWeights:{2566:0.15,2567:0.25,2568:0.35,2569:0.40},weights:{hotspot:0.40,trend:0.20,crop:0.20,area:0.20}},
-  CROP_RISK:{'ข้าว':70,'ข้าวโพด':90,'อ้อย':80,'มันสำปะหลัง':75,'อื่นๆ':50},
-  VISITOR_COUNTER:{endpoint:''}
+  colors: {
+    years: {2566:'#8b5cf6',2567:'#06b6d4',2568:'#fb923c',2569:'#ef4444'},
+    risk: {low:'#22c55e',medium:'#facc15',high:'#fb923c',veryHigh:'#ef4444'}
+  }
 };

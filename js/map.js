@@ -53,7 +53,6 @@ const MapModule = (() => {
   function matchesDate(feature){
     const parts=datePartsOf(feature),months=selectedMonths(),day=Number(state.day||0);
     return(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
-
   }
   async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); }
   function remove(layer){ if(layer && map.hasLayer(layer)) map.removeLayer(layer); }
@@ -338,6 +337,6 @@ const MapModule = (() => {
   function availableDays(years=activeYears(),month=state.month){
     const target=Number(month||0),set=new Set();if(!target)return[];years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const d=datePartsOf(f);if(d.month===target&&d.day)set.add(d.day);}));return[...set].sort((a,b)=>a-b);
   }
-  function temporalState(){return{month:String(state.month||''),months:selectedMonths(),day:String(state.day||'')}}
+  function temporalState(){return{month:String(state.month||''),months:selectedMonths(),day:String(state.day||'')};}
   return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,availableMonths,availableDays,temporalState,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop,annualEvidenceScore,datePartsOf,matchesDate} };
 })();
