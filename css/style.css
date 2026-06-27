@@ -548,3 +548,49 @@ body{font-size:16px!important;line-height:1.45;}
   #trend-box canvas,#chart-trend{height:150px!important;max-height:150px!important;}
   #top5-box canvas,#chart-top-district{height:165px!important;max-height:165px!important;}
 }
+
+
+/* UX refinement: single year control, multi-month timeline, lighter agri palette */
+:root{
+  --agri-bg:#f6faf7;
+  --agri-panel:#ffffff;
+  --agri-panel-soft:#ecfdf5;
+  --agri-primary:#2e7d32;
+  --agri-primary-2:#0ea5a4;
+  --agri-border:#bbf7d0;
+  --agri-text:#1f2937;
+  --agri-muted:#64748b;
+  --risk-low:#22c55e;
+  --risk-medium:#facc15;
+  --risk-high:#fb923c;
+  --risk-very-high:#ef4444;
+}
+body{background:var(--agri-bg)!important;color:var(--agri-text)!important;}
+#app-header{background:linear-gradient(90deg,#166534,#0f766e)!important;border-bottom:3px solid #a7f3d0!important;box-shadow:0 2px 12px rgba(22,101,52,.18)!important;}
+#left-panel,#right-panel{background:rgba(255,255,255,.96)!important;color:var(--agri-text)!important;border-color:#d1fae5!important;box-shadow:0 8px 24px rgba(15,118,110,.08)!important;}
+.panel-section,.chart-box,.comparison-box,.card{background:#ffffff!important;color:var(--agri-text)!important;border:1px solid #d1fae5!important;box-shadow:0 2px 10px rgba(15,118,110,.06)!important;}
+.panel-section h3,.chart-box h4,.comparison-heading h4{color:#166534!important;}
+.field-help,.scope-caption,.comparison-heading span{color:var(--agri-muted)!important;}
+select,input,button{border-color:#a7f3d0!important;}
+.btn-primary,.btn-print{background:#0f766e!important;color:#fff!important;}.btn-secondary{background:#e0f2fe!important;color:#075985!important;}
+.hs-year-internal{display:none!important;}.selected-year-chip{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;background:#dcfce7;color:#166534;font-weight:800;border:1px solid #86efac}.inline-help{font-weight:400;margin-left:4px}.legacy-time-field{display:none!important;}.compact-date-filter{grid-template-columns:1fr!important;}
+#hotspot-timeline{background:linear-gradient(90deg,#ecfdf5,#e0f2fe)!important;border-bottom:1px solid #a7f3d0!important;box-shadow:0 3px 14px rgba(15,118,110,.12)!important;grid-template-columns:118px minmax(0,1fr) 230px 230px!important;color:var(--agri-text)!important;}
+.timeline-year-wrap label{color:#166534!important}.timeline-year-wrap select{background:#fff!important;color:#166534!important;border:1px solid #86efac!important;border-radius:10px!important;font-weight:800;}
+.timeline-track:before{background:#a7f3d0!important}.timeline-track button,.timeline-all,.timeline-preset-wrap button{background:#ffffff!important;color:#166534!important;border:1px solid #a7f3d0!important;box-shadow:0 1px 4px rgba(15,118,110,.08);}
+.timeline-track button:hover,.timeline-all:hover,.timeline-preset-wrap button:hover{background:#dcfce7!important;}
+.timeline-track button.active,.timeline-all.active{background:#22c55e!important;border-color:#16a34a!important;color:#fff!important;box-shadow:0 0 0 3px rgba(34,197,94,.18)!important;}
+.timeline-preset-wrap{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}.timeline-preset-wrap button{min-height:30px;border-radius:999px;font-weight:800;font-size:11px;padding:3px 8px;cursor:pointer}.timeline-status{text-align:right;color:#0f766e!important;font-weight:900!important;white-space:normal!important;line-height:1.25;}
+#tbl-hotspot-comparison thead th{background:#dcfce7!important;color:#166534!important}#tbl-hotspot-comparison tfoot th{background:#ecfdf5!important;color:#166534!important}.change-up{background:#fee2e2!important;color:#b91c1c!important}.change-down{background:#dcfce7!important;color:#166534!important}.change-flat{background:#f1f5f9!important;color:#475569!important}.change-new{background:#ffedd5!important;color:#c2410c!important}
+.risk-level .risk-swatch,.dot.low{background:var(--risk-low)!important}.dot.medium{background:var(--risk-medium)!important}.dot.high{background:var(--risk-high)!important}.dot.very-high{background:var(--risk-very-high)!important}
+@media(max-width:768px){
+  #hotspot-timeline{height:104px!important;grid-template-columns:92px minmax(0,1fr)!important;grid-template-rows:auto auto auto;gap:4px 6px!important;padding:5px 8px!important;}
+  .timeline-year-wrap{grid-column:1}.timeline-status{grid-column:2;text-align:right!important;font-size:10px!important}.timeline-track-wrap{grid-column:1/-1!important;grid-row:2!important;grid-template-columns:46px 1fr!important}.timeline-preset-wrap{grid-column:1/-1!important;grid-row:3!important;justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.timeline-preset-wrap button{white-space:nowrap;min-width:max-content}.timeline-track{overflow-x:auto;display:flex!important;padding-bottom:2px}.timeline-track button{min-width:48px!important;}
+  #mobile-toolbar{top:calc(var(--header-h) + 104px)!important;background:rgba(255,255,255,.96)!important;border-bottom:1px solid #d1fae5!important;box-shadow:0 3px 14px rgba(15,118,110,.12)!important;}
+  #mobile-toolbar button{background:#0f766e!important;color:#fff!important;border-color:#5eead4!important;border-radius:999px!important;}
+  #app-body{margin-top:calc(var(--header-h) + 104px + var(--mobile-toolbar-h))!important;height:calc(100vh - var(--header-h) - 104px - var(--mobile-toolbar-h))!important;display:block!important;}
+  #map-container,#map{height:100%!important;min-height:100%!important;width:100%!important;}
+  #left-panel,#right-panel{top:calc(var(--header-h) + 104px + var(--mobile-toolbar-h))!important;width:min(92vw,390px)!important;background:#ffffff!important;color:var(--agri-text)!important;}
+  #right-panel{right:0!important;left:auto!important;transform:translateX(105%)!important;}#right-panel.mobile-open{transform:translateX(0)!important;}
+  #mobile-overlay{inset:calc(var(--header-h) + 104px + var(--mobile-toolbar-h)) 0 0!important;background:rgba(15,23,42,.34)!important;}
+}
+@media print{#hotspot-timeline{display:none!important}.hs-year-internal{display:none!important}}

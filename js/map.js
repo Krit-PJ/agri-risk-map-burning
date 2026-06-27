@@ -6,7 +6,7 @@ const MapModule = (() => {
     risk:null, riskDistrict:null, riskSubdistrict:null
   };
   const shown = { province:null, district:null, subdistrict:null, hotspot:{}, crop:null, burnscar:null, risk:null };
-  let state = { district:'', subdistrict:'', crop:'', month:'', day:'' };
+  let state = { district:'', subdistrict:'', crop:'', months:[], month:'', day:'' };
 
   const clean = v => String(v || '').replace(/^(อ\.|อำเภอ|ต\.|ตำบล|จ\.|จังหวัด)\s*/, '').trim();
   const districtOf = p => clean(p?.__district || p?.district || p?.Amphoe || p?.AmphoeN || p?.AMP_NAMT || p?.AMP_NAM_T || p?.AMPHOE_T || p?.AMPHOE || p?.NAME_2);
@@ -46,9 +46,10 @@ const MapModule = (() => {
     if(Number.isFinite(Number(p.__month))&&Number.isFinite(Number(p.__day)))return{month:Number(p.__month),day:Number(p.__day),date:p.__date||''};
     const d=parseHotspotDate(p,p.year_be);return d?{month:d.getUTCMonth()+1,day:d.getUTCDate(),date:d.toISOString().slice(0,10)}:{month:0,day:0,date:''};
   }
+  function selectedMonths(){return Array.isArray(state.months)?state.months.map(Number).filter(Number.isFinite):(state.month?[Number(state.month)]:[]);}
   function matchesDate(feature){
-    const parts=datePartsOf(feature),month=Number(state.month||0),day=Number(state.day||0);
-    return(!month||parts.month===month)&&(!day||parts.day===day);
+    const parts=datePartsOf(feature),months=selectedMonths(),day=Number(state.day||0);
+    return(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
   }
   async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); }
   function remove(layer){ if(layer && map.hasLayer(layer)) map.removeLayer(layer); }
@@ -231,8 +232,8 @@ const MapModule = (() => {
             hotspot_score:+hs.toFixed(2),trend_score:+trend.toFixed(2),
             crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),
             risk_years:years.join(','),
-            risk_month:state.month||'',risk_day:state.day||'',
-            risk_period:[state.day?`วันที่ ${state.day}`:'',state.month?`เดือน ${state.month}`:''].filter(Boolean).join(' ')||'ทุกเดือน',
+            risk_months:selectedMonths().join(','),risk_day:state.day||'',
+            risk_period:[state.day?`วันที่ ${state.day}`:'',selectedMonths().length?`เดือน ${selectedMonths().join(',')}`:''].filter(Boolean).join(' ')||'ทุกเดือน',
             risk_method:method,
             selected_hotspot_count:selectedCount,
             risk_reference_max:referenceMax,
@@ -296,7 +297,7 @@ const MapModule = (() => {
   }
 
   function applyFilter(next){
-    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||'',month:String(next.month||''),day:String(next.day||'')};
+    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||'',months:Array.isArray(next.months)?next.months.map(Number).filter(Number.isFinite):(next.month?[Number(next.month)]:[]),month:String(next.month||''),day:String(next.day||'')};
     computeDynamicRisk();
     raw.risk=state.district?raw.riskSubdistrict:raw.riskDistrict;
     renderBoundaries();renderHotspots();renderCrop();renderAux('burnscar');renderAux('risk');focusSelection();
@@ -329,9 +330,9 @@ const MapModule = (() => {
   function availableMonths(years=activeYears()){
     const set=new Set();years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const m=datePartsOf(f).month;if(m)set.add(m);}));return[...set].sort((a,b)=>a-b);
   }
-  function availableDays(years=activeYears(),month=state.month){
-    const target=Number(month||0),set=new Set();if(!target)return[];years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const d=datePartsOf(f);if(d.month===target&&d.day)set.add(d.day);}));return[...set].sort((a,b)=>a-b);
+  function availableDays(years=activeYears(),months=selectedMonths()){
+    const wanted=Array.isArray(months)?months.map(Number).filter(Number.isFinite):(months?[Number(months)]:[]),set=new Set();if(!wanted.length)return[];years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const d=datePartsOf(f);if(wanted.includes(d.month)&&d.day)set.add(d.day);}));return[...set].sort((a,b)=>a-b);
   }
-  function temporalState(){return{month:String(state.month||''),day:String(state.day||'')};}
+  function temporalState(){return{months:selectedMonths(),month:selectedMonths().join(','),day:String(state.day||'')};}
   return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,availableMonths,availableDays,temporalState,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop,annualEvidenceScore,datePartsOf,matchesDate} };
 })();

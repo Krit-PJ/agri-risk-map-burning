@@ -15,74 +15,107 @@ const App=(()=>{
   function showRuntimeWarning(message){let el=document.getElementById('runtime-warning');if(!el){el=document.createElement('div');el.id='runtime-warning';el.style.cssText='position:fixed;left:50%;top:86px;transform:translateX(-50%);z-index:9999;background:#7f1d1d;color:white;padding:8px 14px;border-radius:6px;font-size:14px;box-shadow:0 4px 15px rgba(0,0,0,.35)';document.body.appendChild(el);}el.textContent=message;}
   function populateDistricts(){const sel=document.getElementById('filter-district'),current=sel.value;const districts=[...new Set(subdistrictFeatures.map(f=>MapModule.helpers.districtOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML='<option value="">-- ทั้งหมด --</option>'+districts.map(x=>`<option value="${x}">${x}</option>`).join('');sel.value=current;}
   function populateSubdistricts(){const d=document.getElementById('filter-district').value,sel=document.getElementById('filter-subdistrict');const names=[...new Set(subdistrictFeatures.filter(f=>MapModule.helpers.districtOf(f.properties)===d).map(f=>MapModule.helpers.subdistrictOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML=d?'<option value="">-- ทุกตำบล --</option>'+names.map(x=>`<option value="${x}">${x}</option>`).join(''):'<option value="">-- เลือกอำเภอก่อน --</option>';sel.disabled=!d;}
+  function selectedMonths(){
+    return [...document.querySelectorAll('#hotspot-timeline .timeline-track [data-month].active')]
+      .map(btn=>Number(btn.dataset.month)).filter(Number.isFinite).sort((a,b)=>a-b);
+  }
+  function setSelectedMonths(months){
+    const wanted=new Set((months||[]).map(Number).filter(Number.isFinite));
+    document.querySelectorAll('#hotspot-timeline .timeline-track [data-month]').forEach(btn=>{
+      const active=wanted.has(Number(btn.dataset.month));
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',String(active));
+    });
+    document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',wanted.size===0);
+    document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(wanted.size===0));
+    const monthSelect=document.getElementById('filter-month');
+    if(monthSelect){[...monthSelect.options].forEach(opt=>{opt.selected=wanted.has(Number(opt.value));});}
+  }
   function current(){return{
     district:document.getElementById('filter-district').value,
     subdistrict:document.getElementById('filter-subdistrict').value,
     crop:document.getElementById('filter-crop').value,
-    month:document.getElementById('filter-month')?.value||'',
+    months:selectedMonths(),
     day:document.getElementById('filter-day')?.value||''
   };}
+  function selectedYear(){return document.getElementById('timeline-year')?.value||document.getElementById('filter-year')?.value||String(CONFIG.CURRENT_YEAR_BE||2569);}
   function syncYearSelector(){
-    const sel=document.getElementById('filter-year');if(!sel)return;
-    const years=MapModule.activeYears();sel.value=years.length===1?String(years[0]):'';syncTimelineUI();
+    const year=selectedYear();
+    const hidden=document.getElementById('filter-year');if(hidden)hidden.value=year;
+    document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=String(cb.dataset.year)===String(year);});
+    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
+    syncTimelineUI();
   }
   function applyYearSelector(){
-    const value=document.getElementById('filter-year')?.value||'';
-    const boxes=[...document.querySelectorAll('.hs-layer')];
-    if(value) boxes.forEach(cb=>cb.checked=String(cb.dataset.year)===value);
-    else boxes.forEach(cb=>cb.checked=true);
-    populateDayOptions();applyCurrent();
-    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'year-filter'}}));
+    syncYearSelector();
+    populateDayOptions();
+    applyCurrent();
+    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'timeline-year'}}));
   }
   function populateDayOptions(){
-    const monthSel=document.getElementById('filter-month'),daySel=document.getElementById('filter-day');if(!monthSel||!daySel)return;
-    const currentDay=daySel.value,month=monthSel.value;
-    if(!month){daySel.innerHTML='<option value="">-- เลือกเดือนก่อน --</option>';daySel.disabled=true;return;}
-    const days=MapModule.availableDays(MapModule.activeYears(),month);
+    const daySel=document.getElementById('filter-day');if(!daySel)return;
+    const months=selectedMonths(),currentDay=daySel.value;
+    if(!months.length){daySel.innerHTML='<option value="">-- เลือกเดือนบน Timeline ก่อน --</option>';daySel.disabled=true;return;}
+    const days=MapModule.availableDays(MapModule.activeYears(),months);
     daySel.innerHTML='<option value="">-- ทุกวันที่ --</option>'+days.map(d=>`<option value="${d}">${d}</option>`).join('');
     daySel.disabled=false;if(days.includes(Number(currentDay)))daySel.value=currentDay;
   }
   function initTimeline(){
     const year=document.getElementById('timeline-year');
-    const month=document.getElementById('filter-month');
-    year?.addEventListener('change',()=>{
-      const filterYear=document.getElementById('filter-year');
-      if(filterYear)filterYear.value=year.value;
-      applyYearSelector();syncTimelineUI();
+    year?.addEventListener('change',applyYearSelector);
+    document.querySelector('#hotspot-timeline .timeline-all')?.addEventListener('click',()=>{
+      setSelectedMonths([]);const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
     });
-    document.querySelectorAll('#hotspot-timeline [data-month]').forEach(btn=>btn.addEventListener('click',()=>{
-      if(month)month.value=btn.dataset.month||'';
-      const day=document.getElementById('filter-day');if(day)day.value='';
-      populateDayOptions();syncTimelineUI();applyCurrent();
+    document.querySelectorAll('#hotspot-timeline .timeline-track [data-month]').forEach(btn=>btn.addEventListener('click',()=>{
+      btn.classList.toggle('active');
+      btn.setAttribute('aria-pressed',String(btn.classList.contains('active')));
+      document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',selectedMonths().length===0);
+      document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(selectedMonths().length===0));
+      const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
+    }));
+    document.querySelectorAll('#hotspot-timeline [data-preset]').forEach(btn=>btn.addEventListener('click',()=>{
+      const preset=btn.dataset.preset;
+      if(preset==='jan-may'||preset==='ban')setSelectedMonths([1,2,3,4,5]);
+      else setSelectedMonths([]);
+      const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
     }));
   }
+  function monthText(months){
+    const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    if(!months.length)return'ทุกเดือน';
+    const sorted=[...months].sort((a,b)=>a-b);
+    const isJanMay=sorted.length===5&&sorted.every((m,i)=>m===i+1);
+    if(isJanMay)return'มกราคม–พฤษภาคม';
+    if(sorted.length===1)return names[sorted[0]];
+    return sorted.map(m=>names[m].replace('มกราคม','ม.ค.').replace('กุมภาพันธ์','ก.พ.').replace('มีนาคม','มี.ค.').replace('เมษายน','เม.ย.').replace('พฤษภาคม','พ.ค.').replace('มิถุนายน','มิ.ย.').replace('กรกฎาคม','ก.ค.').replace('สิงหาคม','ส.ค.').replace('กันยายน','ก.ย.').replace('ตุลาคม','ต.ค.').replace('พฤศจิกายน','พ.ย.').replace('ธันวาคม','ธ.ค.')).join(', ');
+  }
   function syncTimelineUI(){
-    const selectedYear=document.getElementById('filter-year')?.value||String(MapModule.activeYears().slice(-1)[0]||'');
-    const timelineYear=document.getElementById('timeline-year');if(timelineYear&&selectedYear)timelineYear.value=selectedYear;
-    const month=String(document.getElementById('filter-month')?.value||'');
-    document.querySelectorAll('#hotspot-timeline [data-month]').forEach(btn=>{
-      const active=String(btn.dataset.month||'')===month;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
-    });
-    const names=['ทุกเดือน','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    const status=document.getElementById('timeline-status');if(status)status.textContent=`ปี ${selectedYear||'-'} · ${names[Number(month)||0]}`;
+    const year=selectedYear();
+    const timelineYear=document.getElementById('timeline-year');if(timelineYear&&year)timelineYear.value=year;
+    const months=selectedMonths();
+    document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',months.length===0);
+    document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(months.length===0));
+    const day=document.getElementById('filter-day')?.value||'';
+    const status=document.getElementById('timeline-status');if(status)status.textContent=`ปี ${year||'-'} · ${monthText(months)}${day?' · วันที่ '+day:''}`;
+    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
   }
   function applyCurrent(){const s=current();syncTimelineUI();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}}
   function bindFilters(){
     const d=document.getElementById('filter-district'),t=document.getElementById('filter-subdistrict'),c=document.getElementById('filter-crop'),cropLayer=document.getElementById('lyr-crop');
-    const year=document.getElementById('filter-year'),month=document.getElementById('filter-month'),day=document.getElementById('filter-day');
+    const day=document.getElementById('filter-day');
     d.addEventListener('change',()=>{populateSubdistricts();applyCurrent();});t.addEventListener('change',applyCurrent);c.addEventListener('change',applyCurrent);
-    year?.addEventListener('change',applyYearSelector);
-    month?.addEventListener('change',()=>{if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();});
-    day?.addEventListener('change',applyCurrent);
+    day?.addEventListener('change',()=>{syncTimelineUI();applyCurrent();});
     document.addEventListener('change',e=>{if(e.target?.classList?.contains('hs-layer')){syncYearSelector();populateDayOptions();}});
     cropLayer.addEventListener('change',()=>{c.disabled=!cropLayer.checked;if(!cropLayer.checked)c.value='';applyCurrent();});
     document.getElementById('btn-apply-filter').addEventListener('click',applyCurrent);
     document.getElementById('btn-reset-filter').addEventListener('click',()=>{
       d.value='';populateSubdistricts();t.value='';c.value='';
-      if(year)year.value=String(CONFIG.CURRENT_YEAR_BE||2569);
-      document.querySelectorAll('.hs-layer').forEach(cb=>cb.checked=String(cb.dataset.year)===year.value);
-      if(month)month.value='';if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- เลือกเดือนก่อน --</option>';}
-      applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'reset'}}));
+      const year=String(CONFIG.CURRENT_YEAR_BE||2569);
+      const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=year;
+      const hiddenYear=document.getElementById('filter-year');if(hiddenYear)hiddenYear.value=year;
+      setSelectedMonths([]);
+      if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- เลือกเดือนบน Timeline ก่อน --</option>';}
+      syncYearSelector();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'reset'}}));
     });
   }
   function bindPrint(){

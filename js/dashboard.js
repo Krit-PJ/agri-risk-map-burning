@@ -1,6 +1,6 @@
 const Dashboard = (() => {
   const charts={}, store={};
-  let state={district:'',subdistrict:'',crop:'',month:'',day:''};
+  let state={district:'',subdistrict:'',crop:'',months:[],month:'',day:''};
   let refreshQueued=false;
   const H=()=>MapModule.helpers;
 
@@ -25,7 +25,7 @@ const Dashboard = (() => {
   function riskOpts(){const o=opts(false);o.plugins.legend.labels.generateLabels=(chart)=>{const ds=chart.data.datasets[0],total=ds.data.reduce((a,b)=>a+(Number(b)||0),0);return chart.data.labels.map((label,i)=>({text:`${label} ${total?((Number(ds.data[i])||0)*100/total).toFixed(1):'0.0'}%`,fillStyle:ds.backgroundColor[i],strokeStyle:'#fff',lineWidth:1,index:i}));};o.plugins.tooltip.callbacks={label:(ctx)=>{const data=ctx.dataset.data,total=data.reduce((a,b)=>a+(Number(b)||0),0),v=Number(ctx.raw)||0,p=total?v*100/total:0;return ` ${ctx.label}: ${v} พื้นที่ (${p.toFixed(1)}%)`;}};return o;}
   function setData(hotspot){Object.assign(store,hotspot);queueRefresh();}
   function setYearData(year,fc){store[String(year)]=fc;queueRefresh();}
-  function applyFilter(s){state={...state,...s};queueRefresh();}
+  function applyFilter(s){state={...state,...s,months:Array.isArray(s?.months)?s.months.map(Number).filter(Number.isFinite):(s?.month?[Number(s.month)]:state.months||[])};queueRefresh();}
   function activeYears(){return MapModule.activeYears().map(String);}
   function selected(){
     const years=activeYears();
@@ -121,16 +121,17 @@ const Dashboard = (() => {
     }).join('');
   }
 
+  function selectedMonths(){return Array.isArray(state.months)?state.months.map(Number).filter(Number.isFinite):(state.month?[Number(state.month)]:[]);}
   function matchesState(f){
-    const p=f.properties||{},parts=H().datePartsOf(f),month=Number(state.month||0),day=Number(state.day||0);
-    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop)&&(!month||parts.month===month)&&(!day||parts.day===day);
+    const p=f.properties||{},parts=H().datePartsOf(f),months=selectedMonths(),day=Number(state.day||0);
+    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop)&&(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
   }
   function temporalText(){
-    const month=Number(state.month||0),day=Number(state.day||0);
+    const months=selectedMonths(),day=Number(state.day||0);
     const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    if(month&&day)return`วันที่ ${day} ${names[month]}`;
-    if(month)return`เดือน${names[month]}`;
-    return'ทุกเดือน';
+    const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    const text=!months.length?'ทุกเดือน':(months.length===1?names[months[0]]:months.map(m=>short[m]).join(', '));
+    return day&&months.length?`${text} วันที่ ${day}`:text;
   }
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}

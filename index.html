@@ -156,28 +156,33 @@
 
 <section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
   <div class="timeline-year-wrap">
-    <label for="timeline-year">ปี พ.ศ.</label>
-    <select id="timeline-year" aria-label="เลือกปีสำหรับเส้นเวลา">
+    <label for="timeline-year">ปีประเมิน</label>
+    <select id="timeline-year" aria-label="เลือกปีประเมินหลัก">
       <option value="2566">2566</option><option value="2567">2567</option>
       <option value="2568">2568</option><option value="2569" selected>2569</option>
     </select>
   </div>
   <div class="timeline-track-wrap">
-    <button class="timeline-all active" type="button" data-month="" aria-pressed="true">ทั้งปี</button>
-    <div class="timeline-track" role="list" aria-label="เลือกเดือน">
-      <button type="button" data-month="1" role="listitem">ม.ค.</button>
-      <button type="button" data-month="2" role="listitem">ก.พ.</button>
-      <button type="button" data-month="3" role="listitem">มี.ค.</button>
-      <button type="button" data-month="4" role="listitem">เม.ย.</button>
-      <button type="button" data-month="5" role="listitem">พ.ค.</button>
-      <button type="button" data-month="6" role="listitem">มิ.ย.</button>
-      <button type="button" data-month="7" role="listitem">ก.ค.</button>
-      <button type="button" data-month="8" role="listitem">ส.ค.</button>
-      <button type="button" data-month="9" role="listitem">ก.ย.</button>
-      <button type="button" data-month="10" role="listitem">ต.ค.</button>
-      <button type="button" data-month="11" role="listitem">พ.ย.</button>
-      <button type="button" data-month="12" role="listitem">ธ.ค.</button>
+    <button class="timeline-all active" type="button" data-action="all" aria-pressed="true">ทั้งปี</button>
+    <div class="timeline-track" role="list" aria-label="เลือกเดือนได้หลายเดือนเพื่อดู Hotspot สะสม">
+      <button type="button" data-month="1" role="listitem" aria-pressed="false">ม.ค.</button>
+      <button type="button" data-month="2" role="listitem" aria-pressed="false">ก.พ.</button>
+      <button type="button" data-month="3" role="listitem" aria-pressed="false">มี.ค.</button>
+      <button type="button" data-month="4" role="listitem" aria-pressed="false">เม.ย.</button>
+      <button type="button" data-month="5" role="listitem" aria-pressed="false">พ.ค.</button>
+      <button type="button" data-month="6" role="listitem" aria-pressed="false">มิ.ย.</button>
+      <button type="button" data-month="7" role="listitem" aria-pressed="false">ก.ค.</button>
+      <button type="button" data-month="8" role="listitem" aria-pressed="false">ส.ค.</button>
+      <button type="button" data-month="9" role="listitem" aria-pressed="false">ก.ย.</button>
+      <button type="button" data-month="10" role="listitem" aria-pressed="false">ต.ค.</button>
+      <button type="button" data-month="11" role="listitem" aria-pressed="false">พ.ย.</button>
+      <button type="button" data-month="12" role="listitem" aria-pressed="false">ธ.ค.</button>
     </div>
+  </div>
+  <div class="timeline-preset-wrap" aria-label="ช่วงเวลาที่ใช้บ่อย">
+    <button type="button" data-preset="jan-may">ม.ค.–พ.ค.</button>
+    <button type="button" data-preset="ban">ช่วงห้ามเผา</button>
+    <button type="button" data-preset="clear">ล้างเดือน</button>
   </div>
   <div class="timeline-status" id="timeline-status">ปี 2569 · ทุกเดือน</div>
 </section>
@@ -200,17 +205,17 @@
 <input id="lyr-subdistrict" type="checkbox"/> ตำบล
           </label>
 </div>
-<div class="layer-group">
+<div class="layer-group hs-year-internal" aria-hidden="true">
 <label class="section-label">Hotspot รายปี</label>
-<label class="toggle-row hs-2566">
-<input class="hs-layer" data-year="2566" type="checkbox"/> ปี 2566 (2023)
-          </label>
-<label class="toggle-row hs-2567">
-<input class="hs-layer" data-year="2567" type="checkbox"/> ปี 2567 (2024)
-          </label>
-<label class="toggle-row hs-2568">
-<input class="hs-layer" data-year="2568" type="checkbox"/> ปี 2568 (2025)
-          </label><label class="toggle-row hs-2569"><input checked="" class="hs-layer" data-year="2569" type="checkbox"/> ปี 2569 (2026)</label>
+<label class="toggle-row hs-2566"><input class="hs-layer" data-year="2566" type="checkbox"/> ปี 2566 (2023)</label>
+<label class="toggle-row hs-2567"><input class="hs-layer" data-year="2567" type="checkbox"/> ปี 2567 (2024)</label>
+<label class="toggle-row hs-2568"><input class="hs-layer" data-year="2568" type="checkbox"/> ปี 2568 (2025)</label>
+<label class="toggle-row hs-2569"><input checked="" class="hs-layer" data-year="2569" type="checkbox"/> ปี 2569 (2026)</label>
+</div>
+<div class="layer-group year-control-note">
+<label class="section-label">ปีและช่วงเวลา Hotspot</label>
+<div class="selected-year-chip" id="selected-year-display">ปีประเมิน 2569</div>
+<p class="field-help">ควบคุมจาก Timeline ด้านบนเพียงจุดเดียว เพื่อลดความซ้ำซ้อนของตัวกรองปี</p>
 </div>
 <div class="layer-group">
 <label class="section-label">แผนที่ความเสี่ยงและชนิดพืช</label>
@@ -239,42 +244,29 @@
 </div>
 </div>
 </section>
-<section class="panel-section">
-<h3>🗓️ กรองช่วงเวลา Hotspot</h3>
-<div class="date-filter-grid">
-<label>ปี พ.ศ.
+<section class="panel-section time-filter-panel">
+<h3>🗓️ ช่วงเวลา Hotspot</h3>
+<div class="date-filter-grid compact-date-filter">
+<label class="legacy-time-field">ปี พ.ศ.
 <select id="filter-year">
-<option value="">-- ทุกปีที่เลือก --</option>
 <option value="2566">2566 (2023)</option>
 <option value="2567">2567 (2024)</option>
 <option value="2568">2568 (2025)</option>
 <option value="2569" selected>2569 (2026)</option>
 </select>
 </label>
-<label>เดือน
-<select id="filter-month">
-<option value="">-- ทุกเดือน --</option>
-<option value="1">มกราคม</option>
-<option value="2">กุมภาพันธ์</option>
-<option value="3">มีนาคม</option>
-<option value="4">เมษายน</option>
-<option value="5">พฤษภาคม</option>
-<option value="6">มิถุนายน</option>
-<option value="7">กรกฎาคม</option>
-<option value="8">สิงหาคม</option>
-<option value="9">กันยายน</option>
-<option value="10">ตุลาคม</option>
-<option value="11">พฤศจิกายน</option>
-<option value="12">ธันวาคม</option>
+<label class="legacy-time-field">เดือน
+<select id="filter-month" multiple aria-hidden="true">
+<option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option><option value="3">มีนาคม</option><option value="4">เมษายน</option><option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option><option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option><option value="9">กันยายน</option><option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
 </select>
 </label>
-<label>วันที่
+<label>วันที่ <span class="field-help inline-help">(ใช้เมื่อเลือกเดือน)</span>
 <select id="filter-day" disabled>
-<option value="">-- เลือกเดือนก่อน --</option>
+<option value="">-- เลือกเดือนบน Timeline ก่อน --</option>
 </select>
 </label>
 </div>
-<p class="field-help" id="date-filter-help">ปีจะเชื่อมโยงกับชั้น Hotspot รายปี ส่วนเดือนและวันที่จะกรองข้อมูลทุกส่วนพร้อมกัน</p>
+<p class="field-help" id="date-filter-help">เลือกปีและหลายเดือนจาก Timeline ด้านบน ระบบจะคำนวณ HS สะสมและเปรียบเทียบช่วงเดียวกันกับปีก่อนโดยอัตโนมัติ</p>
 </section>
 <section class="panel-section">
 <h3>🔍 กรองพื้นที่และชนิดพืช</h3>
