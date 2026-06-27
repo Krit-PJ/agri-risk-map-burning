@@ -43,11 +43,6 @@ const App=(()=>{
     const year=selectedYear();
     const hidden=document.getElementById('filter-year');if(hidden)hidden.value=year;
     document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=String(cb.dataset.year)===String(year);});
-    document.querySelectorAll('.timeline-year-pills [data-year]').forEach(btn=>{
-      const active=String(btn.dataset.year)===String(year);
-      btn.classList.toggle('active',active);
-      btn.setAttribute('aria-pressed',String(active));
-    });
     const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
     syncTimelineUI();
   }
@@ -68,10 +63,6 @@ const App=(()=>{
   function initTimeline(){
     const year=document.getElementById('timeline-year');
     year?.addEventListener('change',applyYearSelector);
-    document.querySelectorAll('.timeline-year-pills [data-year]').forEach(btn=>btn.addEventListener('click',()=>{
-      if(year) year.value=String(btn.dataset.year);
-      applyYearSelector();
-    }));
     document.querySelector('#hotspot-timeline .timeline-all')?.addEventListener('click',()=>{
       setSelectedMonths([]);const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
     });
@@ -84,14 +75,13 @@ const App=(()=>{
     }));
     document.querySelectorAll('#hotspot-timeline [data-preset]').forEach(btn=>btn.addEventListener('click',()=>{
       const preset=btn.dataset.preset;
-      if(preset==='jan-may'||preset==='ban')setSelectedMonths([1,2,3,4,5]);
-      else setSelectedMonths([]);
+      setSelectedMonths([]);
       const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
     }));
   }
   function monthText(months){
     const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    if(!months.length)return'สะสมทั้งปี';
+    if(!months.length)return'สะสมทุกเดือน';
     const sorted=[...months].sort((a,b)=>a-b);
     const isJanMay=sorted.length===5&&sorted.every((m,i)=>m===i+1);
     if(isJanMay)return'มกราคม–พฤษภาคม';
@@ -243,7 +233,7 @@ const App=(()=>{
       const detail=findDetailTable(wb);
       if(!detail)throw new Error('ไม่พบตารางรายละเอียดที่มีคอลัมน์ hsID, Date, Province และ LandType');
       const result=rowsToGeoJSON(detail.rows,detail.headers,yearBE);
-      if(!result.features.length)throw new Error(`ไม่พบข้อมูลจังหวัดกำแพงเพชร พื้นที่เกษตร ช่วง ม.ค.–พ.ค. ${yearBE}`);
+      if(!result.features.length)throw new Error(`ไม่พบข้อมูลจังหวัดกำแพงเพชร พื้นที่เกษตร ปี ${yearBE}`);
       const checkbox=ensureYearCheckbox(yearBE);
       checkbox.checked=true;
       MapModule.importHotspots(yearBE,result);

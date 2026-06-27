@@ -90,12 +90,17 @@ const Dashboard = (() => {
       names=[...new Set(boundary.map(f=>H().districtOf(f.properties)).filter(Boolean))];
     }
     const cur=countBy(currentFs,unit),prev=countBy(previousFs,unit);
-    names=[...new Set([...names,...Object.keys(cur),...Object.keys(prev)].filter(n=>n&&n!=='ไม่ระบุ'))]
-      .sort((a,b)=>(cur[b]||0)-(cur[a]||0)||a.localeCompare(b,'th'));
+    names=[...new Set([...names,...Object.keys(cur),...Object.keys(prev)].filter(n=>n&&n!=='ไม่ระบุ'))];
+    if(state.district){
+      names.sort((a,b)=>(cur[b]||0)-(cur[a]||0)||a.localeCompare(b,'th'));
+    }else{
+      const order=['เมืองกำแพงเพชร','ไทรงาม','คลองลาน','ขาณุวรลักษบุรี','คลองขลุง','พรานกระต่าย','ลานกระบือ','ทรายทองวัฒนา','ปางศิลาทอง','บึงสามัคคี','โกสัมพีนคร'];
+      names.sort((a,b)=>(order.indexOf(a)===-1?999:order.indexOf(a))-(order.indexOf(b)===-1?999:order.indexOf(b))||a.localeCompare(b,'th'));
+    }
     const body=document.querySelector('#tbl-hotspot-comparison tbody');if(!body)return;body.innerHTML='';
     names.forEach(name=>{
       const c=cur[name]||0,p=prev[name]||0,change=pctChange(c,p),tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name}</td><td>${c.toLocaleString('th-TH')}</td><td>${p.toLocaleString('th-TH')}</td><td><span class="change-badge ${change.cls}">${change.text}</span></td>`;
+      tr.innerHTML=`<td>${name}</td><td>${p.toLocaleString('th-TH')}</td><td>${c.toLocaleString('th-TH')}</td><td><span class="change-badge ${change.cls}">${change.text}</span></td>`;
       body.appendChild(tr);
     });
     const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);

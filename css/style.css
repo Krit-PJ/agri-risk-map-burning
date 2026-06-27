@@ -761,3 +761,75 @@ select,button,input[type=file]{min-height:42px!important;border-radius:10px!impo
   :root{--timeline-h:78px;}
   #app-body{margin-top:calc(var(--header-h) + var(--timeline-h))!important;height:calc(100vh - var(--header-h) - var(--timeline-h))!important;}
 }
+
+
+/* Final executive refinement: opaque text, dropdown year only, full district comparison table */
+:root{
+  --final-text:#111827;
+  --final-muted:#1f2937;
+  --final-green:#166534;
+  --final-soft:#f8fafc;
+}
+html,body,#app-header,#left-panel,#right-panel,.panel-section,.chart-box,.comparison-box,
+label,.section-label,.field-help,.scope-caption,.comparison-heading span,
+button,select,input,table,th,td,.leaflet-container,.risk-level,.toggle-row,
+.brand-title h1,.brand-title .system-subtitle,.brand-title .developer-credit{
+  opacity:1!important;
+  color:var(--final-text)!important;
+  text-shadow:none!important;
+}
+#app-header,.brand-title h1,.brand-title .system-subtitle,.brand-title .developer-credit,
+#app-header button,#app-header span,#app-header strong{color:#ffffff!important;opacity:1!important;}
+.brand-title .developer-credit{color:#fff7ed!important;}
+.panel-section h3,.chart-box h4,.comparison-heading h4,.section-label{color:var(--final-green)!important;font-weight:900!important;}
+.field-help,.scope-caption,.comparison-heading span{color:var(--final-muted)!important;font-weight:700!important;}
+select,input{background:#ffffff!important;color:#111827!important;font-weight:800!important;border:2px solid #86efac!important;}
+button{font-weight:900!important;}
+/* Year must be a dropdown only */
+.timeline-year-pills{display:none!important;}
+.timeline-year-wrap{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:5px!important;min-width:120px!important;}
+.timeline-year-select{width:108px!important;min-height:42px!important;font-size:18px!important;color:#111827!important;background:#ffffff!important;border:2px solid #16a34a!important;border-radius:12px!important;}
+#hotspot-timeline{grid-template-columns:132px minmax(0,1fr) 150px 250px!important;background:linear-gradient(90deg,#f0fdf4,#e0f2fe)!important;color:#111827!important;}
+.timeline-status{color:#111827!important;background:#ffffff!important;border:1px solid #86efac!important;}
+.timeline-track button,.timeline-all,.timeline-preset-wrap button{color:#111827!important;background:#ffffff!important;border:2px solid #bbf7d0!important;}
+.timeline-track button.active,.timeline-all.active{background:#16a34a!important;color:#ffffff!important;border-color:#15803d!important;}
+.timeline-preset-wrap{justify-content:center!important;}
+/* Boundary filter moved into layer panel */
+.boundary-filter-group{background:#f0fdf4!important;border:1px solid #bbf7d0!important;border-radius:12px!important;padding:10px!important;}
+.boundary-filter-group label{display:block!important;color:#111827!important;font-weight:900!important;margin-top:8px!important;}
+.boundary-filter-group select{width:100%!important;margin-top:4px!important;}
+.boundary-filter-group .filter-actions{margin-top:10px!important;}
+/* Comparison table: show all 11 districts and keep newer BE year next to change column */
+#hotspot-comparison-box{min-height:390px!important;}
+.comparison-table-wrap{max-height:440px!important;overflow:auto!important;background:#ffffff!important;border:2px solid #d1fae5!important;}
+#tbl-hotspot-comparison{font-size:16px!important;color:#111827!important;}
+#tbl-hotspot-comparison th,#tbl-hotspot-comparison td{padding:9px 10px!important;color:#111827!important;border-bottom:1px solid #d1d5db!important;}
+#tbl-hotspot-comparison thead th{background:#dcfce7!important;color:#111827!important;font-weight:900!important;}
+#tbl-hotspot-comparison tfoot th{background:#ecfdf5!important;color:#111827!important;font-weight:900!important;}
+.change-badge{font-size:15px!important;font-weight:900!important;opacity:1!important;}
+.change-up{background:#fee2e2!important;color:#7f1d1d!important;}
+.change-down{background:#dcfce7!important;color:#14532d!important;}
+.change-flat{background:#f1f5f9!important;color:#111827!important;}
+.change-new{background:#ffedd5!important;color:#7c2d12!important;}
+@media(max-width:768px){
+  #hotspot-timeline{height:112px!important;min-height:112px!important;grid-template-columns:112px 1fr!important;grid-template-rows:auto auto auto!important;}
+  .timeline-year-wrap{grid-column:1!important;grid-row:1!important;}
+  .timeline-year-wrap label{font-size:13px!important;color:#111827!important;}
+  .timeline-year-select{width:96px!important;min-height:38px!important;font-size:16px!important;}
+  .timeline-status{grid-column:2!important;grid-row:1!important;font-size:13px!important;text-align:right!important;}
+  .timeline-track-wrap{grid-column:1/-1!important;grid-row:2!important;grid-template-columns:96px 1fr!important;}
+  .timeline-preset-wrap{grid-column:1/-1!important;grid-row:3!important;justify-content:flex-start!important;}
+  #mobile-toolbar{top:calc(var(--header-h) + 112px)!important;}
+  #app-body{margin-top:calc(var(--header-h) + 112px + var(--mobile-toolbar-h))!important;height:calc(100vh - var(--header-h) - 112px - var(--mobile-toolbar-h))!important;}
+  #left-panel,#right-panel{top:calc(var(--header-h) + 112px + var(--mobile-toolbar-h))!important;}
+  #mobile-overlay{inset:calc(var(--header-h) + 112px + var(--mobile-toolbar-h)) 0 0!important;}
+  #hotspot-comparison-box{min-height:420px!important;}
+  .comparison-table-wrap{max-height:360px!important;}
+}
+@media(min-width:769px){
+  :root{--timeline-h:78px;}
+}
+@media print{
+  #tbl-hotspot-comparison{font-size:6.2pt!important;}
+  #tbl-hotspot-comparison th,#tbl-hotspot-comparison td{padding:.65mm .7mm!important;color:#111!important;background:#fff!important;}
+}

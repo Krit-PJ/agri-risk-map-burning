@@ -164,15 +164,9 @@
       <option value="2566">2566</option><option value="2567">2567</option>
       <option value="2568">2568</option><option value="2569" selected>2569</option>
     </select>
-    <div class="timeline-year-pills" role="list" aria-label="เลือกปี พ.ศ. เรียงจากปีเก่าไปปีใหม่">
-      <button type="button" data-year="2566" role="listitem" aria-pressed="false">2566</button>
-      <button type="button" data-year="2567" role="listitem" aria-pressed="false">2567</button>
-      <button type="button" data-year="2568" role="listitem" aria-pressed="false">2568</button>
-      <button type="button" data-year="2569" role="listitem" aria-pressed="true" class="active">2569</button>
-    </div>
   </div>
   <div class="timeline-track-wrap">
-    <button class="timeline-all active" type="button" data-action="all" aria-pressed="true">สะสมทั้งปี</button>
+    <button class="timeline-all active" type="button" data-action="all" aria-pressed="true">สะสมทุกเดือน</button>
     <div class="timeline-track" role="list" aria-label="เลือกเดือนได้หลายเดือนเพื่อดู Hotspot สะสม">
       <button type="button" data-month="1" role="listitem" aria-pressed="false">ม.ค.</button>
       <button type="button" data-month="2" role="listitem" aria-pressed="false">ก.พ.</button>
@@ -189,11 +183,9 @@
     </div>
   </div>
   <div class="timeline-preset-wrap" aria-label="ช่วงเวลาที่ใช้บ่อย">
-    <button type="button" data-preset="jan-may">ม.ค.–พ.ค.</button>
-    <button type="button" data-preset="ban">ประกาศห้ามเผา</button>
-    <button type="button" data-preset="clear">ล้างการเลือก</button>
+    <button type="button" data-preset="clear">ล้างการเลือกเดือน</button>
   </div>
-  <div class="timeline-status" id="timeline-status">สะสมทั้งปี 2569</div>
+  <div class="timeline-status" id="timeline-status">สะสมทุกเดือน 2569</div>
 </section>
 
 <!-- MAIN LAYOUT -->
@@ -203,7 +195,7 @@
 <section class="panel-section">
 <h3>🗺️ ชั้นข้อมูล</h3>
 <div class="layer-group">
-<label class="section-label">ขอบเขต</label>
+<label class="section-label">ขอบเขตข้อมูล</label>
 <label class="toggle-row">
 <input checked="" id="lyr-province" type="checkbox"/> จังหวัด
           </label>
@@ -213,6 +205,35 @@
 <label class="toggle-row">
 <input id="lyr-subdistrict" type="checkbox"/> ตำบล
           </label>
+</div>
+<div class="layer-group boundary-filter-group">
+<label class="section-label">เลือกพื้นที่วิเคราะห์</label>
+<label>อำเภอ
+          <select id="filter-district">
+<option value="">-- ทั้งหมด --</option>
+<option value="เมืองกำแพงเพชร">เมืองกำแพงเพชร</option>
+<option value="ไทรงาม">ไทรงาม</option>
+<option value="คลองลาน">คลองลาน</option>
+<option value="ขาณุวรลักษบุรี">ขาณุวรลักษบุรี</option>
+<option value="คลองขลุง">คลองขลุง</option>
+<option value="พรานกระต่าย">พรานกระต่าย</option>
+<option value="ลานกระบือ">ลานกระบือ</option>
+<option value="ทรายทองวัฒนา">ทรายทองวัฒนา</option>
+<option value="ปางศิลาทอง">ปางศิลาทอง</option>
+<option value="บึงสามัคคี">บึงสามัคคี</option>
+<option value="โกสัมพีนคร">โกสัมพีนคร</option>
+</select>
+</label>
+<label>ตำบล
+          <select disabled="" id="filter-subdistrict">
+<option value="">-- เลือกอำเภอก่อน --</option>
+</select>
+<span class="field-help">รายชื่อตำบลโหลดจากชั้นข้อมูลขอบเขตโดยอัตโนมัติ</span>
+</label>
+<div class="filter-actions">
+<button class="btn-primary" id="btn-apply-filter" type="button">ใช้ตัวกรอง</button>
+<button class="btn-secondary" id="btn-reset-filter" type="button">รีเซ็ต</button>
+</div>
 </div>
 <div class="layer-group hs-year-internal" aria-hidden="true">
 <label class="section-label">Hotspot รายปี</label>
@@ -255,35 +276,6 @@
 </section>
 
 <section class="panel-section">
-<h3>🔍 กรองพื้นที่และชนิดพืช</h3>
-<label>อำเภอ
-          <select id="filter-district">
-<option value="">-- ทั้งหมด --</option>
-<option value="เมืองกำแพงเพชร">เมืองกำแพงเพชร</option>
-<option value="ไทรงาม">ไทรงาม</option>
-<option value="คลองลาน">คลองลาน</option>
-<option value="ขาณุวรลักษบุรี">ขาณุวรลักษบุรี</option>
-<option value="คลองขลุง">คลองขลุง</option>
-<option value="พรานกระต่าย">พรานกระต่าย</option>
-<option value="ลานกระบือ">ลานกระบือ</option>
-<option value="ทรายทองวัฒนา">ทรายทองวัฒนา</option>
-<option value="ปางศิลาทอง">ปางศิลาทอง</option>
-<option value="บึงสามัคคี">บึงสามัคคี</option>
-<option value="โกสัมพีนคร">โกสัมพีนคร</option>
-</select>
-</label>
-<label>ตำบล
-          <select disabled="" id="filter-subdistrict">
-<option value="">-- เลือกอำเภอก่อน --</option>
-</select>
-<span class="field-help">รายชื่อตำบลโหลดจากชั้นข้อมูลขอบเขตโดยอัตโนมัติ</span>
-</label>
-<div class="filter-actions">
-<button class="btn-primary" id="btn-apply-filter" type="button">ใช้ตัวกรอง</button>
-<button class="btn-secondary" id="btn-reset-filter" type="button">รีเซ็ต</button>
-</div>
-</section>
-<section class="panel-section">
 <h3>🗃️ Basemap</h3>
 <div class="radio-group">
 <label><input name="basemap" type="radio" value="osm"/> OpenStreetMap</label>
@@ -325,12 +317,12 @@
     <table id="tbl-hotspot-comparison">
       <thead><tr>
         <th id="comparison-area-header">อำเภอ</th>
-        <th id="comparison-current-header">ปีที่เลือก</th>
         <th id="comparison-previous-header">ปีก่อน</th>
+        <th id="comparison-current-header">ปีที่เลือก</th>
         <th>เพิ่ม/ลด</th>
       </tr></thead>
       <tbody></tbody>
-      <tfoot><tr><th>รวม</th><th id="comparison-current-total">0</th><th id="comparison-previous-total">0</th><th id="comparison-change-total">0%</th></tr></tfoot>
+      <tfoot><tr><th>รวม</th><th id="comparison-previous-total">0</th><th id="comparison-current-total">0</th><th id="comparison-change-total">0%</th></tr></tfoot>
     </table>
   </div>
 </div>
