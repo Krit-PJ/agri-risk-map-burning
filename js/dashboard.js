@@ -72,6 +72,42 @@ const Dashboard = (() => {
     names=[...new Set([...names,...Object.keys(cur),...Object.keys(prev)].filter(n=>n&&n!=='ไม่ระบุ'))]
       .sort((a,b)=>(cur[b]||0)-(cur[a]||0)||a.localeCompare(b,'th'));
     const body=document.querySelector('#tbl-hotspot-comparison tbody');if(!body)return;body.innerHTML='';
+    names.forEach(name=>{
+      const c=cur[name]||0,p=prev[name]||0,change=pctChange(c,p),tr=document.createElement('tr');
+      tr.innerHTML=`<td>${name}</td><td>${c.toLocaleString('th-TH')}</td><td>${p.toLocaleString('th-TH')}</td><td><span class="change-badge ${change.cls}">${change.text}</span></td>`;
+      body.appendChild(tr);
+    });
+    const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);
+    document.getElementById('comparison-current-total').textContent=ct.toLocaleString('th-TH');
+    document.getElementById('comparison-previous-total').textContent=pt.toLocaleString('th-TH');
+    const totalEl=document.getElementById('comparison-change-total');totalEl.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
+    const unitLabel=state.district?'ตำบล':'อำเภอ';
+    document.getElementById('comparison-area-header').textContent=unitLabel;
+    document.getElementById('comparison-current-header').textContent=`พ.ศ. ${selectedYear}`;
+    document.getElementById('comparison-previous-header').textContent=`พ.ศ. ${previousYear}`;
+    document.getElementById('title-comparison').textContent=`เปรียบเทียบ Hotspot ราย${unitLabel}`;
+    document.getElementById('comparison-period').textContent=`${temporalText()} · ${state.crop||'ทุกชนิดพืช'}`;
+
+  }
+  function yearFeatures(year){return(store[String(year)]?.features||[]).filter(matchesState);}
+  function updateComparisonTable(years){
+    const selectedYear=Number(years.slice(-1)[0]||CONFIG.CURRENT_YEAR_BE||2569);
+    const previousYear=selectedYear-1;
+    const currentFs=yearFeatures(selectedYear),previousFs=yearFeatures(previousYear);
+    const unit=state.district?'__subdistrict':'__district';
+    let names=[];
+    if(state.subdistrict)names=[state.subdistrict];
+    else if(state.district){
+      const boundary=MapModule.getRiskForScope('subdistrict')?.features||[];
+      names=[...new Set(boundary.filter(f=>H().districtOf(f.properties)===state.district).map(f=>H().subdistrictOf(f.properties)).filter(Boolean))];
+    }else{
+      const boundary=MapModule.getRiskForScope('district')?.features||[];
+      names=[...new Set(boundary.map(f=>H().districtOf(f.properties)).filter(Boolean))];
+    }
+    const cur=countBy(currentFs,unit),prev=countBy(previousFs,unit);
+    names=[...new Set([...names,...Object.keys(cur),...Object.keys(prev)].filter(n=>n&&n!=='ไม่ระบุ'))]
+      .sort((a,b)=>(cur[b]||0)-(cur[a]||0)||a.localeCompare(b,'th'));
+    const body=document.querySelector('#tbl-hotspot-comparison tbody');if(!body)return;body.innerHTML='';
     const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);
     const unitLabel=state.district?'ตำบล':'อำเภอ';
     const totalLabel=state.district?`รวมอำเภอ${state.district}`:'รวมจังหวัดกำแพงเพชร';
@@ -119,6 +155,7 @@ const Dashboard = (() => {
     const contiguous=months.every((m,i)=>i===0||m===months[i-1]+1);
     if(contiguous&&months.length>1)return`เดือน ${short[months[0]]}–${short[months[months.length-1]]}`;
     return`เดือน ${months.map(m=>short[m]).join(', ')}`;
+
   }
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}

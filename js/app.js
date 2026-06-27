@@ -102,7 +102,7 @@ const App=(()=>{
     });
     const status=document.getElementById('timeline-status');if(status)status.textContent=`ปี ${selectedYear||'-'} · ${compactMonthText(months)}`;
   }
-  function applyCurrent(){const s=current();syncTimelineUI();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}document.dispatchEvent(new CustomEvent('agri-risk:filter-change',{detail:s}));}
+  function applyCurrent(){const s=current();syncTimelineUI();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}document.dispatchEvent(new CustomEvent('agri-risk:filter-change',{detail:s}));
   function bindFilters(){
     const d=document.getElementById('filter-district'),t=document.getElementById('filter-subdistrict'),c=document.getElementById('filter-crop'),cropLayer=document.getElementById('lyr-crop');
     const year=document.getElementById('filter-year'),month=document.getElementById('filter-month'),day=document.getElementById('filter-day');

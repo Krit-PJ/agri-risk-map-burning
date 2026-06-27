@@ -255,6 +255,43 @@
 <p class="field-help" id="date-filter-help">เลือกปีและเดือนจาก Timeline ด้านบน ระบบจะนำช่วงเวลาเดียวกันไปใช้กับแผนที่ ตาราง กราฟ และการประเมินความเสี่ยงทั้งหมด</p>
 </section>
 <section class="panel-section">
+<h3>🗓️ กรองช่วงเวลา Hotspot</h3>
+<div class="date-filter-grid">
+<label>ปี พ.ศ.
+<select id="filter-year">
+<option value="">-- ทุกปีที่เลือก --</option>
+<option value="2566">2566 (2023)</option>
+<option value="2567">2567 (2024)</option>
+<option value="2568">2568 (2025)</option>
+<option value="2569" selected>2569 (2026)</option>
+</select>
+</label>
+<label>เดือน
+<select id="filter-month">
+<option value="">-- ทุกเดือน --</option>
+<option value="1">มกราคม</option>
+<option value="2">กุมภาพันธ์</option>
+<option value="3">มีนาคม</option>
+<option value="4">เมษายน</option>
+<option value="5">พฤษภาคม</option>
+<option value="6">มิถุนายน</option>
+<option value="7">กรกฎาคม</option>
+<option value="8">สิงหาคม</option>
+<option value="9">กันยายน</option>
+<option value="10">ตุลาคม</option>
+<option value="11">พฤศจิกายน</option>
+<option value="12">ธันวาคม</option>
+</select>
+</label>
+<label>วันที่
+<select id="filter-day" disabled>
+<option value="">-- เลือกเดือนก่อน --</option>
+</select>
+</label>
+</div>
+<p class="field-help" id="date-filter-help">ปีจะเชื่อมโยงกับชั้น Hotspot รายปี ส่วนเดือนและวันที่จะกรองข้อมูลทุกส่วนพร้อมกัน</p>
+</section>
+<section class="panel-section">
 <h3>🔍 กรองพื้นที่และชนิดพืช</h3>
 <label>อำเภอ
           <select id="filter-district">
@@ -325,12 +362,12 @@
     <table id="tbl-hotspot-comparison">
       <thead><tr>
         <th id="comparison-area-header">อำเภอ</th>
-        <th id="comparison-previous-header">ปีก่อน</th>
         <th id="comparison-current-header">ปีที่เลือก</th>
+        <th id="comparison-previous-header">ปีก่อน</th>
         <th>เพิ่ม/ลด</th>
       </tr></thead>
       <tbody></tbody>
-      <tfoot><tr><th>รวม</th><th id="comparison-previous-total">0</th><th id="comparison-current-total">0</th><th id="comparison-change-total">0%</th></tr></tfoot>
+      <tfoot><tr><th>รวม</th><th id="comparison-current-total">0</th><th id="comparison-previous-total">0</th><th id="comparison-change-total">0%</th></tr></tfoot>
     </table>
   </div>
 </div>
