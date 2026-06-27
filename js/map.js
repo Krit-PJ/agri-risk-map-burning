@@ -233,7 +233,7 @@ const MapModule = (() => {
             crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),
             risk_years:years.join(','),
             risk_months:selectedMonths().join(','),risk_day:state.day||'',
-            risk_period:[state.day?`วันที่ ${state.day}`:'',selectedMonths().length?`เดือน ${selectedMonths().join(',')}`:''].filter(Boolean).join(' ')||'ทุกเดือน',
+            risk_period:[state.day?`วันที่ ${state.day}`:'',selectedMonths().length?`เดือน ${selectedMonths().join(',')}`:''].filter(Boolean).join(' ')||'สะสมทั้งปี',
             risk_method:method,
             selected_hotspot_count:selectedCount,
             risk_reference_max:referenceMax,
@@ -291,7 +291,7 @@ const MapModule = (() => {
       style:type==='burnscar'?{color:'#dc2626',fillColor:'#ef4444',weight:.8,fillOpacity:.4}:f=>{const l=getRiskLevel(Number(f.properties?.risk_score||0));return{color:l.color,fillColor:l.color,weight:1.4,fillOpacity:.62};},
       onEachFeature:type==='risk'?(f,l)=>{
         const p=f.properties||{}, score=Number(p.risk_score||0), name=level==='district'?`อ.${districtOf(p)}`:`ต.${subdistrictOf(p)}`;
-        l.bindTooltip(`${name}<br>คะแนน ${score.toFixed(1)} (${getRiskLevel(score).label})<br>ปี ${p.risk_years||'-'} | ${p.risk_period||'ทุกเดือน'}`);
+        l.bindTooltip(`${name}<br>คะแนน ${score.toFixed(1)} (${getRiskLevel(score).label})<br>ปี ${p.risk_years||'-'} | ${p.risk_period||'สะสมทั้งปี'}`);
       }:undefined
     }).addTo(map);
   }

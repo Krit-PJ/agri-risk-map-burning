@@ -130,7 +130,7 @@ const Dashboard = (() => {
     const months=selectedMonths(),day=Number(state.day||0);
     const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
     const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    const text=!months.length?'ทุกเดือน':(months.length===1?names[months[0]]:months.map(m=>short[m]).join(', '));
+    const text=!months.length?'สะสมทั้งปี':(months.length===1?names[months[0]]:months.map(m=>short[m]).join(', '));
     return day&&months.length?`${text} วันที่ ${day}`:text;
   }
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}

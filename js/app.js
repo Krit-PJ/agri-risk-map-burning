@@ -43,6 +43,11 @@ const App=(()=>{
     const year=selectedYear();
     const hidden=document.getElementById('filter-year');if(hidden)hidden.value=year;
     document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=String(cb.dataset.year)===String(year);});
+    document.querySelectorAll('.timeline-year-pills [data-year]').forEach(btn=>{
+      const active=String(btn.dataset.year)===String(year);
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',String(active));
+    });
     const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
     syncTimelineUI();
   }
@@ -55,7 +60,7 @@ const App=(()=>{
   function populateDayOptions(){
     const daySel=document.getElementById('filter-day');if(!daySel)return;
     const months=selectedMonths(),currentDay=daySel.value;
-    if(!months.length){daySel.innerHTML='<option value="">-- เลือกเดือนบน Timeline ก่อน --</option>';daySel.disabled=true;return;}
+    if(!months.length){daySel.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';daySel.disabled=true;return;}
     const days=MapModule.availableDays(MapModule.activeYears(),months);
     daySel.innerHTML='<option value="">-- ทุกวันที่ --</option>'+days.map(d=>`<option value="${d}">${d}</option>`).join('');
     daySel.disabled=false;if(days.includes(Number(currentDay)))daySel.value=currentDay;
@@ -63,6 +68,10 @@ const App=(()=>{
   function initTimeline(){
     const year=document.getElementById('timeline-year');
     year?.addEventListener('change',applyYearSelector);
+    document.querySelectorAll('.timeline-year-pills [data-year]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(year) year.value=String(btn.dataset.year);
+      applyYearSelector();
+    }));
     document.querySelector('#hotspot-timeline .timeline-all')?.addEventListener('click',()=>{
       setSelectedMonths([]);const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
     });
@@ -82,7 +91,7 @@ const App=(()=>{
   }
   function monthText(months){
     const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    if(!months.length)return'ทุกเดือน';
+    if(!months.length)return'สะสมทั้งปี';
     const sorted=[...months].sort((a,b)=>a-b);
     const isJanMay=sorted.length===5&&sorted.every((m,i)=>m===i+1);
     if(isJanMay)return'มกราคม–พฤษภาคม';
@@ -96,7 +105,7 @@ const App=(()=>{
     document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',months.length===0);
     document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(months.length===0));
     const day=document.getElementById('filter-day')?.value||'';
-    const status=document.getElementById('timeline-status');if(status)status.textContent=`ปี ${year||'-'} · ${monthText(months)}${day?' · วันที่ '+day:''}`;
+    const status=document.getElementById('timeline-status');if(status)status.textContent=`${monthText(months)} ${year||'-'}${day?' · วันที่ '+day:''}`;
     const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
   }
   function applyCurrent(){const s=current();syncTimelineUI();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}}
@@ -114,7 +123,7 @@ const App=(()=>{
       const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=year;
       const hiddenYear=document.getElementById('filter-year');if(hiddenYear)hiddenYear.value=year;
       setSelectedMonths([]);
-      if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- เลือกเดือนบน Timeline ก่อน --</option>';}
+      if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';}
       syncYearSelector();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'reset'}}));
     });
   }
