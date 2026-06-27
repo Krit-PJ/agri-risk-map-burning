@@ -843,3 +843,263 @@ button{font-weight:900!important;}
 .timeline-year-select option{color:#111827!important;background:#ffffff!important;font-size:17px!important;}
 .guide-disabled{background:#e5e7eb!important;color:#374151!important;border:2px dashed #9ca3af!important;cursor:not-allowed!important;box-shadow:none!important;}
 @media(max-width:768px){.external-counter{display:none!important}.timeline-year-select{min-width:104px!important;font-size:16px!important}}
+
+/* =====================================================
+   Counter/year visibility + timeline card layout patch
+   ===================================================== */
+/* 1) Make all text fully opaque and readable. */
+#hotspot-timeline,
+#hotspot-timeline *,
+.external-counter,
+.external-counter *{
+  opacity:1!important;
+  text-shadow:none!important;
+}
+
+/* 2) Counter: keep the provided external scripts but hide unrelated backlinks. */
+.external-counter{
+  background:#ffffff!important;
+  color:#111827!important;
+  border:2px solid #16a34a!important;
+  border-radius:14px!important;
+  padding:8px 12px!important;
+  font-weight:900!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  min-height:42px!important;
+}
+.external-counter-box{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  min-width:42px!important;
+  color:#111827!important;
+  font-weight:900!important;
+}
+.external-counter-box a,
+.external-counter + a{
+  display:none!important;
+  visibility:hidden!important;
+  width:0!important;
+  height:0!important;
+  overflow:hidden!important;
+}
+.external-counter-box img{
+  max-height:22px!important;
+  width:auto!important;
+  vertical-align:middle!important;
+}
+
+/* 3) Year dropdown must be visible. Earlier versions visually clipped it for pills. Reset all clipping. */
+.timeline-year-select,
+#timeline-year{
+  position:static!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  clip:auto!important;
+  clip-path:none!important;
+  overflow:visible!important;
+  white-space:normal!important;
+  margin:0!important;
+  padding:8px 36px 8px 12px!important;
+  width:136px!important;
+  min-width:136px!important;
+  max-width:150px!important;
+  height:auto!important;
+  min-height:44px!important;
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  background:#ffffff!important;
+  color:#111827!important;
+  border:2px solid #15803d!important;
+  border-radius:12px!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  line-height:1.2!important;
+  z-index:2!important;
+}
+.timeline-year-select option,
+#timeline-year option{
+  color:#111827!important;
+  background:#ffffff!important;
+  font-size:17px!important;
+  font-weight:800!important;
+}
+.timeline-year-pills{display:none!important;}
+
+/* 4) Reflow the top hotspot cards so year, months and status are all visible. */
+#hotspot-timeline{
+  display:grid!important;
+  grid-template-columns:160px minmax(0,1fr) 220px!important;
+  grid-template-rows:auto auto!important;
+  gap:8px 12px!important;
+  align-items:center!important;
+  height:auto!important;
+  min-height:122px!important;
+  padding:10px 16px!important;
+  background:linear-gradient(90deg,#f0fdf4,#e0f2fe)!important;
+  border-bottom:2px solid #86efac!important;
+  color:#111827!important;
+}
+.timeline-year-wrap{
+  grid-column:1!important;
+  grid-row:1!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  justify-content:center!important;
+  gap:5px!important;
+  min-width:150px!important;
+}
+.timeline-year-wrap label{
+  color:#111827!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  line-height:1.2!important;
+  margin:0!important;
+}
+.timeline-status{
+  grid-column:2 / 4!important;
+  grid-row:1!important;
+  justify-self:stretch!important;
+  align-self:center!important;
+  background:#ffffff!important;
+  color:#111827!important;
+  border:2px solid #86efac!important;
+  border-radius:16px!important;
+  padding:9px 14px!important;
+  text-align:center!important;
+  font-size:17px!important;
+  font-weight:900!important;
+  line-height:1.25!important;
+  min-height:44px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:normal!important;
+}
+.timeline-track-wrap{
+  grid-column:1 / 3!important;
+  grid-row:2!important;
+  display:grid!important;
+  grid-template-columns:132px minmax(0,1fr)!important;
+  gap:8px!important;
+  align-items:center!important;
+  min-width:0!important;
+}
+.timeline-all{
+  min-width:124px!important;
+  max-width:132px!important;
+  min-height:42px!important;
+  border-radius:14px!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  padding:7px 8px!important;
+  white-space:normal!important;
+  line-height:1.15!important;
+}
+.timeline-track{
+  display:grid!important;
+  grid-template-columns:repeat(12,minmax(54px,1fr))!important;
+  gap:7px!important;
+  overflow:visible!important;
+  min-width:0!important;
+  width:100%!important;
+  padding:0!important;
+}
+.timeline-track:before{display:none!important;}
+.timeline-track button{
+  min-width:0!important;
+  width:100%!important;
+  min-height:42px!important;
+  border-radius:14px!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  padding:6px 4px!important;
+  background:#ffffff!important;
+  color:#111827!important;
+  border:2px solid #bbf7d0!important;
+  box-shadow:0 1px 4px rgba(15,118,110,.10)!important;
+}
+.timeline-track button.active,
+.timeline-all.active{
+  background:#16a34a!important;
+  color:#ffffff!important;
+  border-color:#15803d!important;
+  box-shadow:0 0 0 4px rgba(22,163,74,.18)!important;
+}
+.timeline-preset-wrap{
+  grid-column:3!important;
+  grid-row:2!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:stretch!important;
+  overflow:visible!important;
+  min-width:0!important;
+}
+.timeline-preset-wrap button{
+  width:100%!important;
+  min-height:42px!important;
+  border-radius:14px!important;
+  padding:7px 10px!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  background:#ffffff!important;
+  color:#111827!important;
+  border:2px solid #bbf7d0!important;
+  white-space:normal!important;
+  line-height:1.15!important;
+}
+
+/* Keep the map below the larger timeline on desktop. */
+@media(min-width:769px){
+  :root{--timeline-h:122px!important;}
+  #app-body{
+    margin-top:calc(var(--header-h) + var(--timeline-h))!important;
+    height:calc(100vh - var(--header-h) - var(--timeline-h))!important;
+  }
+}
+
+/* Tablet: month cards can wrap to two rows rather than disappear. */
+@media(max-width:1180px) and (min-width:769px){
+  #hotspot-timeline{
+    grid-template-columns:150px minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto!important;
+    min-height:170px!important;
+  }
+  .timeline-status{grid-column:2!important;grid-row:1!important;}
+  .timeline-track-wrap{grid-column:1 / 3!important;grid-row:2!important;}
+  .timeline-track{grid-template-columns:repeat(6, minmax(56px,1fr))!important;}
+  .timeline-preset-wrap{grid-column:1 / 3!important;grid-row:3!important;justify-content:flex-start!important;}
+  .timeline-preset-wrap button{width:auto!important;min-width:190px!important;}
+  :root{--timeline-h:170px!important;}
+}
+
+/* Smartphone: visible dropdown, map-first preserved. */
+@media(max-width:768px){
+  #hotspot-timeline{
+    grid-template-columns:120px minmax(0,1fr)!important;
+    grid-template-rows:auto auto auto!important;
+    min-height:154px!important;
+    height:154px!important;
+    gap:6px!important;
+    padding:7px 8px!important;
+  }
+  .timeline-year-wrap{grid-column:1!important;grid-row:1!important;min-width:112px!important;}
+  .timeline-year-wrap label{font-size:13px!important;}
+  .timeline-year-select,#timeline-year{width:112px!important;min-width:112px!important;min-height:38px!important;font-size:16px!important;padding:6px 26px 6px 9px!important;}
+  .timeline-status{grid-column:2!important;grid-row:1!important;font-size:13px!important;min-height:38px!important;padding:5px 7px!important;text-align:left!important;}
+  .timeline-track-wrap{grid-column:1 / 3!important;grid-row:2!important;grid-template-columns:90px minmax(0,1fr)!important;gap:5px!important;}
+  .timeline-all{min-width:88px!important;max-width:90px!important;min-height:36px!important;font-size:12.5px!important;}
+  .timeline-track{display:flex!important;overflow-x:auto!important;gap:6px!important;padding-bottom:2px!important;}
+  .timeline-track button{min-width:52px!important;min-height:36px!important;font-size:13px!important;}
+  .timeline-preset-wrap{grid-column:1 / 3!important;grid-row:3!important;justify-content:flex-start!important;overflow:visible!important;}
+  .timeline-preset-wrap button{width:auto!important;min-width:150px!important;min-height:34px!important;font-size:12.5px!important;white-space:nowrap!important;}
+  #mobile-toolbar{top:calc(var(--header-h) + 154px)!important;}
+  #app-body{margin-top:calc(var(--header-h) + 154px + var(--mobile-toolbar-h))!important;height:calc(100vh - var(--header-h) - 154px - var(--mobile-toolbar-h))!important;}
+  #left-panel,#right-panel{top:calc(var(--header-h) + 154px + var(--mobile-toolbar-h))!important;}
+  #mobile-overlay{inset:calc(var(--header-h) + 154px + var(--mobile-toolbar-h)) 0 0!important;}
+}
+.external-counter-box .counter-break{display:none!important;}
