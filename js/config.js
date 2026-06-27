@@ -18,13 +18,13 @@ const CONFIG = {
     satellite:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     topo:'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
   },
-  YEAR_COLORS:{2566:'#8b5cf6',2567:'#06b6d4',2568:'#f59e0b',2569:'#ef4444'},
+  YEAR_COLORS:{2566:'#8b5cf6',2567:'#0ea5e9',2568:'#f59e0b',2569:'#ef4444'},
   YEAR_COLOR_FALLBACK:['#ef4444','#f59e0b','#06b6d4','#8b5cf6','#14b8a6'],
   RISK_LEVELS:[
-    {label:'ต่ำ',class:'risk-low',color:'#2ecc71',min:0,max:25},
-    {label:'ปานกลาง',class:'risk-medium',color:'#f1c40f',min:25,max:50},
-    {label:'สูง',class:'risk-high',color:'#e67e22',min:50,max:75},
-    {label:'สูงมาก',class:'risk-very-high',color:'#e74c3c',min:75,max:101}
+    {label:'ต่ำ',class:'risk-low',color:'#22c55e',min:0,max:25},
+    {label:'ปานกลาง',class:'risk-medium',color:'#facc15',min:25,max:50},
+    {label:'สูง',class:'risk-high',color:'#fb923c',min:50,max:75},
+    {label:'สูงมาก',class:'risk-very-high',color:'#ef4444',min:75,max:101}
   ],
   RISK_MODEL:{yearWeights:{2566:0.15,2567:0.25,2568:0.35,2569:0.40},weights:{hotspot:0.40,trend:0.20,crop:0.20,area:0.20}},
   CROP_RISK:{'ข้าว':70,'ข้าวโพด':90,'อ้อย':80,'มันสำปะหลัง':75,'อื่นๆ':50},

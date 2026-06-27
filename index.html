@@ -154,6 +154,45 @@
 </div>
 <div id="mobile-overlay" class="no-print" hidden></div>
 
+<section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
+  <div class="timeline-year-wrap">
+    <label for="timeline-year">ปีประเมิน</label>
+    <select id="timeline-year" aria-label="เลือกปีประเมิน">
+      <option value="2566">2566</option><option value="2567">2567</option>
+      <option value="2568">2568</option><option value="2569" selected>2569</option>
+    </select>
+    <select id="filter-year" class="sr-only" aria-hidden="true" tabindex="-1">
+      <option value="2566">2566</option><option value="2567">2567</option>
+      <option value="2568">2568</option><option value="2569" selected>2569</option>
+    </select>
+    <select id="filter-month" class="sr-only" aria-hidden="true" tabindex="-1"><option value="">-- ทุกเดือน --</option></select>
+    <select id="filter-day" class="sr-only" aria-hidden="true" tabindex="-1" disabled><option value="">-- ทุกวันที่ --</option></select>
+  </div>
+  <div class="timeline-track-wrap">
+    <div class="timeline-presets" aria-label="ชุดเดือนที่ใช้บ่อย">
+      <button class="timeline-all active" type="button" data-preset="all" aria-pressed="true">ทั้งปี</button>
+      <button type="button" data-preset="jan-may" aria-pressed="false">ม.ค.–พ.ค.</button>
+      <button type="button" data-preset="burn-ban" aria-pressed="false">ช่วงห้ามเผา</button>
+      <button type="button" data-preset="clear" aria-pressed="false">ล้าง</button>
+    </div>
+    <div class="timeline-track" role="list" aria-label="เลือกได้หลายเดือน">
+      <button type="button" data-month="1" role="listitem" aria-pressed="false">ม.ค.</button>
+      <button type="button" data-month="2" role="listitem" aria-pressed="false">ก.พ.</button>
+      <button type="button" data-month="3" role="listitem" aria-pressed="false">มี.ค.</button>
+      <button type="button" data-month="4" role="listitem" aria-pressed="false">เม.ย.</button>
+      <button type="button" data-month="5" role="listitem" aria-pressed="false">พ.ค.</button>
+      <button type="button" data-month="6" role="listitem" aria-pressed="false">มิ.ย.</button>
+      <button type="button" data-month="7" role="listitem" aria-pressed="false">ก.ค.</button>
+      <button type="button" data-month="8" role="listitem" aria-pressed="false">ส.ค.</button>
+      <button type="button" data-month="9" role="listitem" aria-pressed="false">ก.ย.</button>
+      <button type="button" data-month="10" role="listitem" aria-pressed="false">ต.ค.</button>
+      <button type="button" data-month="11" role="listitem" aria-pressed="false">พ.ย.</button>
+      <button type="button" data-month="12" role="listitem" aria-pressed="false">ธ.ค.</button>
+    </div>
+  </div>
+  <div class="timeline-status" id="timeline-status">ปี 2569 · ทุกเดือน</div>
+</section>
+
 <!-- MAIN LAYOUT -->
 <div id="app-body">
 <!-- LEFT PANEL: Controls -->
@@ -172,8 +211,8 @@
 <input id="lyr-subdistrict" type="checkbox"/> ตำบล
           </label>
 </div>
-<div class="layer-group">
-<label class="section-label">Hotspot รายปี (ม.ค.–พ.ค.)</label>
+<div class="layer-group year-layer-group">
+<label class="section-label">Hotspot รายปี (ควบคุมด้วย Timeline)</label>
 <label class="toggle-row hs-2566">
 <input class="hs-layer" data-year="2566" type="checkbox"/> ปี 2566 (2023)
           </label>
@@ -211,8 +250,12 @@
 </div>
 </div>
 </section>
+<section class="panel-section timeline-help-section">
+<h3>🗓️ ช่วงเวลา Hotspot</h3>
+<p class="field-help" id="date-filter-help">เลือกปีและเดือนจาก Timeline ด้านบน ระบบจะนำช่วงเวลาเดียวกันไปใช้กับแผนที่ ตาราง กราฟ และการประเมินความเสี่ยงทั้งหมด</p>
+</section>
 <section class="panel-section">
-<h3>🔍 กรองข้อมูล</h3>
+<h3>🔍 กรองพื้นที่และชนิดพืช</h3>
 <label>อำเภอ
           <select id="filter-district">
 <option value="">-- ทั้งหมด --</option>
@@ -272,34 +315,36 @@
 </main>
 <!-- RIGHT PANEL: Dashboard -->
 <aside id="right-panel">
-<!-- Summary Cards -->
-<div id="summary-cards">
-<div class="card card-total">
-<div class="card-icon">🔥</div>
-<div class="card-body">
-<div class="card-value" id="card-total">-</div>
-<div class="card-label" id="card-total-label">Hotspot ทั้งหมด (ปี 2569)</div>
-</div>
-</div>
-<div class="card card-province">
-<div class="card-icon">📍</div>
-<div class="card-body">
-<div class="card-value" id="card-provinces">-</div>
-<div class="card-label" id="card-area-label">อำเภอที่พบ Hotspot</div>
-</div>
-</div>
+<!-- Hotspot comparison table -->
+<div class="chart-box comparison-box" id="hotspot-comparison-box">
+  <div class="comparison-heading">
+    <h4 id="title-comparison">เปรียบเทียบ Hotspot รายพื้นที่</h4>
+    <span id="comparison-period">-</span>
+  </div>
+  <div class="comparison-table-wrap">
+    <table id="tbl-hotspot-comparison">
+      <thead><tr>
+        <th id="comparison-area-header">อำเภอ</th>
+        <th id="comparison-previous-header">ปีก่อน</th>
+        <th id="comparison-current-header">ปีที่เลือก</th>
+        <th>เพิ่ม/ลด</th>
+      </tr></thead>
+      <tbody></tbody>
+      <tfoot><tr><th>รวม</th><th id="comparison-previous-total">0</th><th id="comparison-current-total">0</th><th id="comparison-change-total">0%</th></tr></tfoot>
+    </table>
+  </div>
 </div>
 <!-- Charts -->
-<div class="chart-box">
+<div class="chart-box" id="trend-box">
 <h4 id="title-trend">Hotspot รายปี (Trend) - ทุกอำเภอ</h4>
 <div class="scope-caption" id="scope-caption">ขอบเขตวิเคราะห์: จังหวัดกำแพงเพชร</div>
 <canvas height="160" id="chart-trend"></canvas>
 </div>
-<div class="chart-box">
+<div class="chart-box" id="top5-box">
 <h4 id="title-top5">Top 5 อำเภอ</h4>
 <canvas height="180" id="chart-top-district"></canvas>
 </div>
-<div class="chart-box">
+<div class="chart-box" id="risk-box">
 <h4 id="title-risk">ระดับความเสี่ยงตามปีที่เลือก</h4>
 <div class="risk-chart-layout">
   <div class="risk-canvas-wrap"><canvas height="150" id="chart-risk"></canvas></div>
@@ -307,7 +352,7 @@
 </div>
 </div>
 <!-- Top Districts Table -->
-<div class="chart-box">
+<div class="chart-box" id="top10-box">
 <h4 id="title-top10">Top 10 อำเภอ (Hotspot สูงสุด)</h4>
 <table id="tbl-top-district">
 <thead>
