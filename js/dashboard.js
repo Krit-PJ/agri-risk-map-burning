@@ -1,21 +1,31 @@
 const Dashboard = (() => {
   const charts={}, store={};
-  let state={district:'',subdistrict:'',crop:'',month:'',months:[],day:''};
+  let state={district:'',subdistrict:'',crop:'',month:'',day:''};
+  let refreshQueued=false;
   const H=()=>MapModule.helpers;
 
   function init(){
+    Object.keys(charts).forEach(key=>{try{charts[key]?.destroy?.();}catch{} delete charts[key];});
     charts.trend=new Chart(document.getElementById('chart-trend'),{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:[]}]},options:opts()});
-    charts.top=new Chart(document.getElementById('chart-top-district'),{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:'#0ea5a4'}]},options:{...opts(),indexAxis:'y'}});
+    charts.top=new Chart(document.getElementById('chart-top-district'),{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:'#38bdf8'}]},options:{...opts(),indexAxis:'y'}});
     charts.risk=new Chart(document.getElementById('chart-risk'),{type:'doughnut',data:{labels:CONFIG.RISK_LEVELS.map(x=>x.label),datasets:[{data:[0,0,0,0],backgroundColor:CONFIG.RISK_LEVELS.map(x=>x.color)}]},options:riskOpts(),plugins:[riskPercentPlugin]});
     document.getElementById('last-updated').textContent='อัปเดต: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
-    document.addEventListener('agri-risk:years-changed',refresh);
+    document.addEventListener('agri-risk:years-changed',queueRefresh);
   }
-  function opts(legend=false){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:legend,position:'right',labels:{color:'#334155',font:{size:13,weight:'600'}}},tooltip:{backgroundColor:'#14532d',titleFont:{size:14},bodyFont:{size:13}}},scales:legend?{}:{x:{ticks:{color:'#334155',font:{size:12}},grid:{color:'rgba(22,101,52,.14)'}},y:{ticks:{color:'#334155',font:{size:12}},grid:{color:'rgba(22,101,52,.14)'}}}};}
+  function queueRefresh(){
+    if(refreshQueued)return;
+    refreshQueued=true;
+    requestAnimationFrame(()=>{
+      refreshQueued=false;
+      try{refresh();}catch(err){console.warn('[Dashboard] refresh skipped:',err.message);}
+    });
+  }
+  function opts(legend=false){return{responsive:true,maintainAspectRatio:false,animation:false,resizeDelay:160,plugins:{legend:{display:legend,position:'right',labels:{color:'#e5f3ff',font:{size:13,weight:'600'}}},tooltip:{backgroundColor:'#071827',titleFont:{size:14},bodyFont:{size:13}}},scales:legend?{}:{x:{ticks:{color:'#d7e8f6',font:{size:12}},grid:{color:'rgba(96,165,250,.16)'}},y:{ticks:{color:'#d7e8f6',font:{size:12}},grid:{color:'rgba(96,165,250,.16)'}}}};}
   const riskPercentPlugin={id:'riskPercentPlugin',afterDatasetsDraw(chart){const ds=chart.data.datasets?.[0];if(!ds)return;const total=ds.data.reduce((a,b)=>a+(Number(b)||0),0);if(!total)return;const ctx=chart.ctx,meta=chart.getDatasetMeta(0);ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='700 13px sans-serif';meta.data.forEach((arc,i)=>{const v=Number(ds.data[i])||0;if(!v)return;const pct=v/total*100;if(pct<4)return;const pos=arc.tooltipPosition();ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.65)';ctx.fillStyle='#fff';const text=pct.toFixed(pct>=10?0:1)+'%';ctx.strokeText(text,pos.x,pos.y);ctx.fillText(text,pos.x,pos.y);});ctx.restore();}};
   function riskOpts(){const o=opts(false);o.plugins.legend.labels.generateLabels=(chart)=>{const ds=chart.data.datasets[0],total=ds.data.reduce((a,b)=>a+(Number(b)||0),0);return chart.data.labels.map((label,i)=>({text:`${label} ${total?((Number(ds.data[i])||0)*100/total).toFixed(1):'0.0'}%`,fillStyle:ds.backgroundColor[i],strokeStyle:'#fff',lineWidth:1,index:i}));};o.plugins.tooltip.callbacks={label:(ctx)=>{const data=ctx.dataset.data,total=data.reduce((a,b)=>a+(Number(b)||0),0),v=Number(ctx.raw)||0,p=total?v*100/total:0;return ` ${ctx.label}: ${v} พื้นที่ (${p.toFixed(1)}%)`;}};return o;}
-  function setData(hotspot){Object.assign(store,hotspot);refresh();}
-  function setYearData(year,fc){store[String(year)]=fc;refresh();}
-  function applyFilter(s){const months=Array.isArray(s.months)?s.months.map(Number).filter(Number.isFinite):String(s.month||'').split(',').map(Number).filter(Number.isFinite);state={...state,...s,months,month:months.join(',')};refresh();}
+  function setData(hotspot){Object.assign(store,hotspot);queueRefresh();}
+  function setYearData(year,fc){store[String(year)]=fc;queueRefresh();}
+  function applyFilter(s){state={...state,...s};queueRefresh();}
   function activeYears(){return MapModule.activeYears().map(String);}
   function selected(){
     const years=activeYears();
@@ -27,13 +37,14 @@ const Dashboard = (() => {
     charts.trend.data.datasets[0].data=years.map(y=>(store[y]?.features||[]).filter(matchesState).length);
     charts.trend.data.datasets[0].backgroundColor=years.map(y=>CONFIG.YEAR_COLORS[y]||'#ef4444');
     charts.trend.update('none');
+    lockCanvasSize(charts.trend,'chart-trend');
 
     const unit=state.district?'__subdistrict':'__district', counts=countBy(fs,unit), ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-    charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]); charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]); charts.top.update('none');
+    charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]); charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]); charts.top.update('none'); lockCanvasSize(charts.top,'chart-top-district');
 
     const riskFeatures=selectedRiskFeatures(), risk=[0,0,0,0];
     riskFeatures.forEach(f=>{const score=riskScoreOf(f.properties);const idx=CONFIG.RISK_LEVELS.findIndex(x=>score>=x.min&&score<x.max);risk[Math.max(idx,0)]++;});
-    charts.risk.data.datasets[0].data=risk; charts.risk.update('none');
+    charts.risk.data.datasets[0].data=risk; charts.risk.update('none'); lockCanvasSize(charts.risk,'chart-risk');
     updateRiskLegend(risk);
 
     const yearText=formatYears(years);
@@ -46,6 +57,16 @@ const Dashboard = (() => {
       tbody.appendChild(tr);
     });
     updateTitles(yearText);
+  }
+
+  function lockCanvasSize(chart,id){
+    const canvas=document.getElementById(id);
+    if(!canvas||!chart)return;
+    const parent=canvas.parentElement;
+    const parentHeight=parent?.clientHeight||0;
+    const maxHeight=id==='chart-top-district'?180:id==='chart-risk'?150:160;
+    const height=Math.min(maxHeight, Math.max(120,parentHeight||maxHeight));
+    if(canvas.style.height!==height+'px')canvas.style.height=height+'px';
   }
 
   function pctChange(current,previous){
@@ -72,28 +93,22 @@ const Dashboard = (() => {
     names=[...new Set([...names,...Object.keys(cur),...Object.keys(prev)].filter(n=>n&&n!=='ไม่ระบุ'))]
       .sort((a,b)=>(cur[b]||0)-(cur[a]||0)||a.localeCompare(b,'th'));
     const body=document.querySelector('#tbl-hotspot-comparison tbody');if(!body)return;body.innerHTML='';
-    const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);
-    const unitLabel=state.district?'ตำบล':'อำเภอ';
-    const totalLabel=state.district?`รวมอำเภอ${state.district}`:'รวมจังหวัดกำแพงเพชร';
-    const totalRow=document.createElement('tr');totalRow.className='comparison-total-row';
-    totalRow.innerHTML=`<td>${totalLabel}</td><td>${pt.toLocaleString('th-TH')}</td><td>${ct.toLocaleString('th-TH')}</td><td><span class="change-badge ${totalChange.cls}">${totalChange.text}</span></td>`;
-    body.appendChild(totalRow);
     names.forEach(name=>{
       const c=cur[name]||0,p=prev[name]||0,change=pctChange(c,p),tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name}</td><td>${p.toLocaleString('th-TH')}</td><td>${c.toLocaleString('th-TH')}</td><td><span class="change-badge ${change.cls}">${change.text}</span></td>`;
+      tr.innerHTML=`<td>${name}</td><td>${c.toLocaleString('th-TH')}</td><td>${p.toLocaleString('th-TH')}</td><td><span class="change-badge ${change.cls}">${change.text}</span></td>`;
       body.appendChild(tr);
     });
-    const prevTotal=document.getElementById('comparison-previous-total'),curTotal=document.getElementById('comparison-current-total'),chgTotal=document.getElementById('comparison-change-total');
-    if(prevTotal)prevTotal.textContent=pt.toLocaleString('th-TH');
-    if(curTotal)curTotal.textContent=ct.toLocaleString('th-TH');
-    if(chgTotal)chgTotal.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
+    const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);
+    document.getElementById('comparison-current-total').textContent=ct.toLocaleString('th-TH');
+    document.getElementById('comparison-previous-total').textContent=pt.toLocaleString('th-TH');
+    const totalEl=document.getElementById('comparison-change-total');totalEl.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
+    const unitLabel=state.district?'ตำบล':'อำเภอ';
     document.getElementById('comparison-area-header').textContent=unitLabel;
-    document.getElementById('comparison-previous-header').textContent=`พ.ศ. ${previousYear}`;
     document.getElementById('comparison-current-header').textContent=`พ.ศ. ${selectedYear}`;
+    document.getElementById('comparison-previous-header').textContent=`พ.ศ. ${previousYear}`;
     document.getElementById('title-comparison').textContent=`เปรียบเทียบ Hotspot ราย${unitLabel}`;
     document.getElementById('comparison-period').textContent=`${temporalText()} · ${state.crop||'ทุกชนิดพืช'}`;
   }
-
 
   function updateRiskLegend(values){
     const host=document.getElementById('risk-legend-list');
@@ -107,18 +122,15 @@ const Dashboard = (() => {
   }
 
   function matchesState(f){
-    const p=f.properties||{},parts=H().datePartsOf(f),months=Array.isArray(state.months)?state.months:[],day=Number(state.day||0);
-    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop)&&(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
+    const p=f.properties||{},parts=H().datePartsOf(f),month=Number(state.month||0),day=Number(state.day||0);
+    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop)&&(!month||parts.month===month)&&(!day||parts.day===day);
   }
   function temporalText(){
-    const months=Array.isArray(state.months)?[...state.months].sort((a,b)=>a-b):[],day=Number(state.day||0);
+    const month=Number(state.month||0),day=Number(state.day||0);
     const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    if(months.length===1&&day)return`วันที่ ${day} ${names[months[0]]}`;
-    if(!months.length)return'ทุกเดือน';
-    const contiguous=months.every((m,i)=>i===0||m===months[i-1]+1);
-    if(contiguous&&months.length>1)return`เดือน ${short[months[0]]}–${short[months[months.length-1]]}`;
-    return`เดือน ${months.map(m=>short[m]).join(', ')}`;
+    if(month&&day)return`วันที่ ${day} ${names[month]}`;
+    if(month)return`เดือน${names[month]}`;
+    return'ทุกเดือน';
   }
   function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}

@@ -1,423 +1,308 @@
-(() => {
-  'use strict';
+const App=(()=>{
+  let subdistrictFeatures=[];
+  let lastImported=null;
+  const ADMIN_SESSION_KEY='agri-risk-admin-session';
+  const ADMIN_CREDENTIAL_HASH='c8e1f70c7abe021cf605303463b617d548d63e251f3fb1d9ae566470086b7603';
+  const ADMIN_SESSION_MINUTES=30;
 
-  const C = window.CONFIG;
-  const TH_MONTHS = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const TH_MONTHS_FULL = ['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-
-  const state = {
-    year: C.currentYear,
-    months: new Set(C.defaultMonths),
-    district: '', subdistrict: '', crop: '',
-    show: {province:true, district:true, subdistrict:false, hotspot:true, risk:true, crop:false, burnscar:false},
-    basemap: 'satellite'
-  };
-
-  const data = {district:null, subdistrict:null, crop:null, burnscar:null, hotspots:{}, allHotspots:[]};
-  const layers = {base:{}, district:null, subdistrict:null, risk:null, crop:null, burnscar:null, hotspot:null};
-  const charts = {trend:null, risk:null, top:null};
-  let map;
-
-  const $ = (id) => document.getElementById(id);
-  const fmt = (n) => Number(n || 0).toLocaleString('th-TH');
-  const clean = (v) => String(v ?? '').replace(/^(อ\.|ต\.|จ\.)/,'').trim();
-  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-
-  function monthText(months = [...state.months]) {
-    const arr = [...months].map(Number).filter(Boolean).sort((a,b)=>a-b);
-    if (!arr.length || arr.length === 12) return 'ทุกเดือน';
-    const contiguous = arr.every((m,i)=> i===0 || m === arr[i-1]+1);
-    if (contiguous && arr.length > 1) return `${TH_MONTHS[arr[0]]}–${TH_MONTHS[arr[arr.length-1]]}`;
-    return arr.map(m=>TH_MONTHS[m]).join(', ');
+  async function init(){
+    const loaded=await MapModule.init();
+    subdistrictFeatures=loaded.subdistrict?.features||[];
+    populateDistricts();
+    try{Dashboard.init();Dashboard.setData(loaded.hotspot);}catch(err){console.error('[Dashboard] initialization failed:',err);showRuntimeWarning('กราฟโหลดไม่สำเร็จ แต่แผนที่และตัวกรองยังใช้งานได้');}
+    bindFilters();bindPrint();initAdminAccess();bindExcelImport();initVisitorCounter();initMobilePanels();initTimeline();syncYearSelector();populateDayOptions();syncTimelineUI();applyCurrent();
+  }
+  function showRuntimeWarning(message){let el=document.getElementById('runtime-warning');if(!el){el=document.createElement('div');el.id='runtime-warning';el.style.cssText='position:fixed;left:50%;top:86px;transform:translateX(-50%);z-index:9999;background:#7f1d1d;color:white;padding:8px 14px;border-radius:6px;font-size:14px;box-shadow:0 4px 15px rgba(0,0,0,.35)';document.body.appendChild(el);}el.textContent=message;}
+  function populateDistricts(){const sel=document.getElementById('filter-district'),current=sel.value;const districts=[...new Set(subdistrictFeatures.map(f=>MapModule.helpers.districtOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML='<option value="">-- ทั้งหมด --</option>'+districts.map(x=>`<option value="${x}">${x}</option>`).join('');sel.value=current;}
+  function populateSubdistricts(){const d=document.getElementById('filter-district').value,sel=document.getElementById('filter-subdistrict');const names=[...new Set(subdistrictFeatures.filter(f=>MapModule.helpers.districtOf(f.properties)===d).map(f=>MapModule.helpers.subdistrictOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML=d?'<option value="">-- ทุกตำบล --</option>'+names.map(x=>`<option value="${x}">${x}</option>`).join(''):'<option value="">-- เลือกอำเภอก่อน --</option>';sel.disabled=!d;}
+  function current(){return{
+    district:document.getElementById('filter-district').value,
+    subdistrict:document.getElementById('filter-subdistrict').value,
+    crop:document.getElementById('filter-crop').value,
+    month:document.getElementById('filter-month')?.value||'',
+    day:document.getElementById('filter-day')?.value||''
+  };}
+  function syncYearSelector(){
+    const sel=document.getElementById('filter-year');if(!sel)return;
+    const years=MapModule.activeYears();sel.value=years.length===1?String(years[0]):'';syncTimelineUI();
+  }
+  function applyYearSelector(){
+    const value=document.getElementById('filter-year')?.value||'';
+    const boxes=[...document.querySelectorAll('.hs-layer')];
+    if(value) boxes.forEach(cb=>cb.checked=String(cb.dataset.year)===value);
+    else boxes.forEach(cb=>cb.checked=true);
+    populateDayOptions();applyCurrent();
+    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'year-filter'}}));
+  }
+  function populateDayOptions(){
+    const monthSel=document.getElementById('filter-month'),daySel=document.getElementById('filter-day');if(!monthSel||!daySel)return;
+    const currentDay=daySel.value,month=monthSel.value;
+    if(!month){daySel.innerHTML='<option value="">-- เลือกเดือนก่อน --</option>';daySel.disabled=true;return;}
+    const days=MapModule.availableDays(MapModule.activeYears(),month);
+    daySel.innerHTML='<option value="">-- ทุกวันที่ --</option>'+days.map(d=>`<option value="${d}">${d}</option>`).join('');
+    daySel.disabled=false;if(days.includes(Number(currentDay)))daySel.value=currentDay;
+  }
+  function initTimeline(){
+    const year=document.getElementById('timeline-year');
+    const month=document.getElementById('filter-month');
+    year?.addEventListener('change',()=>{
+      const filterYear=document.getElementById('filter-year');
+      if(filterYear)filterYear.value=year.value;
+      applyYearSelector();syncTimelineUI();
+    });
+    document.querySelectorAll('#hotspot-timeline [data-month]').forEach(btn=>btn.addEventListener('click',()=>{
+      if(month)month.value=btn.dataset.month||'';
+      const day=document.getElementById('filter-day');if(day)day.value='';
+      populateDayOptions();syncTimelineUI();applyCurrent();
+    }));
+  }
+  function syncTimelineUI(){
+    const selectedYear=document.getElementById('filter-year')?.value||String(MapModule.activeYears().slice(-1)[0]||'');
+    const timelineYear=document.getElementById('timeline-year');if(timelineYear&&selectedYear)timelineYear.value=selectedYear;
+    const month=String(document.getElementById('filter-month')?.value||'');
+    document.querySelectorAll('#hotspot-timeline [data-month]').forEach(btn=>{
+      const active=String(btn.dataset.month||'')===month;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
+    });
+    const names=['ทุกเดือน','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    const status=document.getElementById('timeline-status');if(status)status.textContent=`ปี ${selectedYear||'-'} · ${names[Number(month)||0]}`;
+  }
+  function applyCurrent(){const s=current();syncTimelineUI();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}}
+  function bindFilters(){
+    const d=document.getElementById('filter-district'),t=document.getElementById('filter-subdistrict'),c=document.getElementById('filter-crop'),cropLayer=document.getElementById('lyr-crop');
+    const year=document.getElementById('filter-year'),month=document.getElementById('filter-month'),day=document.getElementById('filter-day');
+    d.addEventListener('change',()=>{populateSubdistricts();applyCurrent();});t.addEventListener('change',applyCurrent);c.addEventListener('change',applyCurrent);
+    year?.addEventListener('change',applyYearSelector);
+    month?.addEventListener('change',()=>{if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();});
+    day?.addEventListener('change',applyCurrent);
+    document.addEventListener('change',e=>{if(e.target?.classList?.contains('hs-layer')){syncYearSelector();populateDayOptions();}});
+    cropLayer.addEventListener('change',()=>{c.disabled=!cropLayer.checked;if(!cropLayer.checked)c.value='';applyCurrent();});
+    document.getElementById('btn-apply-filter').addEventListener('click',applyCurrent);
+    document.getElementById('btn-reset-filter').addEventListener('click',()=>{
+      d.value='';populateSubdistricts();t.value='';c.value='';
+      if(year)year.value=String(CONFIG.CURRENT_YEAR_BE||2569);
+      document.querySelectorAll('.hs-layer').forEach(cb=>cb.checked=String(cb.dataset.year)===year.value);
+      if(month)month.value='';if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- เลือกเดือนก่อน --</option>';}
+      applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'reset'}}));
+    });
+  }
+  function bindPrint(){
+    const prepare=()=>{
+      document.body.classList.add('print-preparing');
+      try{Dashboard.setPrintMode?.(true);}catch(err){console.warn('[Print] chart contrast:',err.message);}
+      const refit=()=>{
+        const map=MapModule.map?.();
+        if(!map)return;
+        map.invalidateSize({pan:false});
+        MapModule.focusSelection?.({padding:[10,10],maxZoom:12});
+      };
+      refit();
+      [120,320,650].forEach(ms=>setTimeout(refit,ms));
+    };
+    const restore=()=>{
+      document.body.classList.remove('print-preparing');
+      try{Dashboard.setPrintMode?.(false);}catch(err){console.warn('[Print] chart restore:',err.message);}
+      setTimeout(()=>{MapModule.map()?.invalidateSize({pan:false});MapModule.focusSelection?.({padding:[20,20]});},180);
+    };
+    window.addEventListener('beforeprint',prepare);
+    window.addEventListener('afterprint',restore);
+    document.getElementById('btn-print')?.addEventListener('click',()=>{prepare();setTimeout(()=>window.print(),850);});
   }
 
-  function parseDateInfo(raw, fallbackYear) {
-    if (raw == null || raw === '') return {year: fallbackYear, month:null, day:null, iso:''};
-    if (typeof raw === 'number') {
-      const d = new Date(Math.round((raw - 25569) * 86400 * 1000));
-      return {year: d.getUTCFullYear()+543, month: d.getUTCMonth()+1, day: d.getUTCDate(), iso: d.toISOString().slice(0,10)};
-    }
-    const s = String(raw).trim();
-    let m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
-    if (m) {
-      let y = Number(m[1]); if (y < 2400) y += 543;
-      return {year:y, month:Number(m[2]), day:Number(m[3]), iso:s.slice(0,10)};
-    }
-    m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
-    if (m) {
-      let y = Number(m[3]); if (y < 2400) y += 543;
-      return {year:y, month:Number(m[2]), day:Number(m[1]), iso:s};
-    }
-    return {year: fallbackYear, month:null, day:null, iso:s};
+  function initAdminAccess(){
+    const loginBtn=document.getElementById('btn-admin-login');
+    const logoutBtn=document.getElementById('btn-admin-logout');
+    const modal=document.getElementById('admin-modal');
+    const closeBtn=document.getElementById('admin-modal-close');
+    const cancelBtn=document.getElementById('admin-cancel');
+    const form=document.getElementById('admin-login-form');
+    loginBtn?.addEventListener('click',()=>openAdminModal());
+    logoutBtn?.addEventListener('click',adminLogout);
+    closeBtn?.addEventListener('click',closeAdminModal);
+    cancelBtn?.addEventListener('click',closeAdminModal);
+    modal?.addEventListener('click',event=>{if(event.target===modal)closeAdminModal();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeAdminModal();});
+    form?.addEventListener('submit',adminLogin);
+    updateAdminUI();
   }
-
-  async function loadJSON(url) {
-    const res = await fetch(url, {cache:'no-store'});
-    if (!res.ok) throw new Error(`${url}: ${res.status}`);
-    return res.json();
+  function isAdminAuthenticated(){
+    try{
+      const raw=sessionStorage.getItem(ADMIN_SESSION_KEY);if(!raw)return false;
+      const session=JSON.parse(raw);if(!session?.expiresAt||Date.now()>session.expiresAt){sessionStorage.removeItem(ADMIN_SESSION_KEY);return false;}
+      return session.role==='admin';
+    }catch{return false;}
   }
-
-  async function loadAllData() {
-    data.district = await loadJSON(C.data.district);
-    data.subdistrict = await loadJSON(C.data.subdistrict);
-    data.crop = await loadJSON(C.data.crop).catch(() => ({type:'FeatureCollection',features:[]}));
-    data.burnscar = await loadJSON(C.data.burnscar).catch(() => ({type:'FeatureCollection',features:[]}));
-    for (const y of C.years) {
-      const gj = await loadJSON(C.data.hotspot[y]);
-      gj.features.forEach((f, idx) => {
-        const p = f.properties ||= {};
-        const d = parseDateInfo(p.acq_date || p.Date || p.date, y);
-        p.__year = Number(p.year_be || p.season_be || d.year || y);
-        p.__month = d.month;
-        p.__day = d.day;
-        p.__date = d.iso || p.acq_date || '';
-        p.__district = clean(p.__district || p.district || p.AMPHOE || p.Amphoe || '');
-        p.__subdistrict = clean(p.__subdistrict || p.subdistrict || p.TAMBOL || p.Tambon || '');
-        p.__crop = clean(p.__crop || p.crop_type || p.crop_type_raw || 'อื่นๆ') || 'อื่นๆ';
-        p.__id = p.hs_id || p.hsID || `${y}-${idx}`;
-      });
-      data.hotspots[y] = gj;
-    }
-    data.allHotspots = C.years.flatMap(y => data.hotspots[y].features);
+  function touchAdminSession(){
+    if(!isAdminAuthenticated())return;
+    sessionStorage.setItem(ADMIN_SESSION_KEY,JSON.stringify({role:'admin',expiresAt:Date.now()+ADMIN_SESSION_MINUTES*60*1000}));
   }
-
-  function initMap() {
-    map = L.map('map', {zoomControl:true}).setView([16.42, 99.55], 9);
-    layers.base.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'});
-    layers.base.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {maxZoom:19, attribution:'Tiles © Esri'});
-    layers.base.topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom:17, attribution:'© OpenTopoMap'});
-    layers.base[state.basemap].addTo(map);
-  }
-
-  function getDistrictName(f) {return clean(f?.properties?.AMP_NAMT || f?.properties?.AMPHOE_T || f?.properties?.district || '');}
-  function getSubdistrictName(f) {return clean(f?.properties?.TAM_NAMT || f?.properties?.TAM_NAM_T || f?.properties?.subdistrict || '');}
-  function getAreaRai(f) {return Number(f?.properties?.AREA_RAI || f?.properties?.rai || 0) || 0;}
-
-  function fillAreaFilters() {
-    const districts = [...new Set(data.subdistrict.features.map(getDistrictName).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));
-    $('filter-district').innerHTML = '<option value="">-- ทั้งจังหวัด --</option>' + districts.map(d => `<option value="${esc(d)}">${esc(d)}</option>`).join('');
-    updateSubdistrictOptions();
-  }
-
-  function updateSubdistrictOptions() {
-    const sel = $('filter-subdistrict');
-    if (!state.district) {
-      sel.disabled = true;
-      sel.innerHTML = '<option value="">-- เลือกอำเภอก่อน --</option>';
-      state.subdistrict = '';
+  async function adminLogin(event){
+    event.preventDefault();
+    const username=String(document.getElementById('admin-username')?.value||'').trim().toLowerCase();
+    const password=String(document.getElementById('admin-password')?.value||'');
+    const status=document.getElementById('admin-login-status');
+    if(status){status.textContent='กำลังตรวจสอบ…';status.className='admin-login-status working';}
+    const hash=await sha256(`${username}:${password}`);
+    if(hash!==ADMIN_CREDENTIAL_HASH){
+      if(status){status.textContent='ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';status.className='admin-login-status error';}
       return;
     }
-    const subs = data.subdistrict.features.filter(f => getDistrictName(f) === state.district).map(getSubdistrictName).filter(Boolean).sort((a,b)=>a.localeCompare(b,'th'));
-    sel.disabled = false;
-    sel.innerHTML = '<option value="">-- ทั้งอำเภอ --</option>' + subs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-    if (state.subdistrict && !subs.includes(state.subdistrict)) state.subdistrict = '';
-    sel.value = state.subdistrict;
+    sessionStorage.setItem(ADMIN_SESSION_KEY,JSON.stringify({role:'admin',expiresAt:Date.now()+ADMIN_SESSION_MINUTES*60*1000}));
+    if(status){status.textContent='เข้าสู่ระบบสำเร็จ';status.className='admin-login-status success';}
+    document.getElementById('admin-login-form')?.reset();
+    updateAdminUI();
+    setTimeout(closeAdminModal,350);
+  }
+  function adminLogout(){
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    lastImported=null;
+    const dl=document.getElementById('btn-download-import');if(dl)dl.disabled=true;
+    updateAdminUI();
+  }
+  function updateAdminUI(){
+    const authenticated=isAdminAuthenticated();
+    const section=document.getElementById('excel-import-section');
+    const loginBtn=document.getElementById('btn-admin-login');
+    const logoutBtn=document.getElementById('btn-admin-logout');
+    section?.classList.toggle('hidden',!authenticated);
+    section?.setAttribute('aria-hidden',String(!authenticated));
+    loginBtn?.classList.toggle('hidden',authenticated);
+    logoutBtn?.classList.toggle('hidden',!authenticated);
+    if(authenticated)touchAdminSession();
+  }
+  function openAdminModal(message=''){
+    const modal=document.getElementById('admin-modal');
+    const status=document.getElementById('admin-login-status');
+    if(status){status.textContent=message;status.className='admin-login-status';}
+    modal?.classList.remove('hidden');
+    setTimeout(()=>document.getElementById('admin-username')?.focus(),0);
+  }
+  function closeAdminModal(){document.getElementById('admin-modal')?.classList.add('hidden');}
+  async function sha256(text){
+    const data=new TextEncoder().encode(text);
+    const digest=await crypto.subtle.digest('SHA-256',data);
+    return Array.from(new Uint8Array(digest)).map(byte=>byte.toString(16).padStart(2,'0')).join('');
   }
 
-  function selectedMonthsArray() {return [...state.months].map(Number).filter(Boolean).sort((a,b)=>a-b);}
-  function hsMatches(f, opts = {}) {
-    const p = f.properties || {};
-    const year = opts.year ?? state.year;
-    const months = opts.months ?? state.months;
-    if (Number(p.__year) !== Number(year)) return false;
-    if (months && months.size && !months.has(Number(p.__month))) return false;
-    if (state.district && p.__district !== state.district) return false;
-    if (state.subdistrict && p.__subdistrict !== state.subdistrict) return false;
-    if (state.crop && p.__crop !== state.crop) return false;
-    return true;
+  function bindExcelImport(){
+    const btn=document.getElementById('btn-import-excel'), dl=document.getElementById('btn-download-import');
+    btn?.addEventListener('click',importExcel);
+    dl?.addEventListener('click',downloadImportedGeoJSON);
   }
-  function getFilteredHotspots(year = state.year, months = state.months) {return data.allHotspots.filter(f => hsMatches(f, {year, months}));}
-
-  function countByArea(features, level, year, months) {
-    const counts = new Map();
-    for (const f of features) {
-      const p = f.properties || {};
-      if (Number(p.__year) !== Number(year)) continue;
-      if (months && months.size && !months.has(Number(p.__month))) continue;
-      if (state.crop && p.__crop !== state.crop) continue;
-      if (state.district && p.__district !== state.district) continue;
-      if (state.subdistrict && p.__subdistrict !== state.subdistrict) continue;
-      const key = level === 'subdistrict' ? p.__subdistrict : p.__district;
-      if (!key) continue;
-      counts.set(key, (counts.get(key) || 0) + 1);
-    }
-    return counts;
+  async function importExcel(){
+    if(!isAdminAuthenticated()){openAdminModal('กรุณาเข้าสู่ระบบผู้ดูแลก่อนนำเข้าข้อมูล');return;}
+    touchAdminSession();
+    const file=document.getElementById('import-excel')?.files?.[0], yearBE=Number(document.getElementById('import-year')?.value), status=document.getElementById('import-status');
+    if(!file){setStatus('กรุณาเลือกไฟล์ Excel','error');return;}
+    if(!Number.isInteger(yearBE)||yearBE<2566){setStatus('กรุณาระบุปี พ.ศ. ให้ถูกต้อง','error');return;}
+    if(!window.XLSX){setStatus('ไม่สามารถโหลดไลบรารีอ่าน Excel ได้','error');return;}
+    setStatus('กำลังอ่านและตรวจสอบข้อมูล…','working');
+    try{
+      const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+      const detail=findDetailTable(wb);
+      if(!detail)throw new Error('ไม่พบตารางรายละเอียดที่มีคอลัมน์ hsID, Date, Province และ LandType');
+      const result=rowsToGeoJSON(detail.rows,detail.headers,yearBE);
+      if(!result.features.length)throw new Error(`ไม่พบข้อมูลจังหวัดกำแพงเพชร พื้นที่เกษตร ช่วง ม.ค.–พ.ค. ${yearBE}`);
+      const checkbox=ensureYearCheckbox(yearBE);
+      checkbox.checked=true;
+      MapModule.importHotspots(yearBE,result);
+      Dashboard.setYearData(yearBE,result);
+      document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears()}}));
+      lastImported={year:yearBE,geojson:result,fileName:`hotspot_${yearBE}.geojson`};
+      document.getElementById('btn-download-import').disabled=false;
+      const qa=result.metadata?.qa||{};
+      setStatus(`นำเข้าสำเร็จ ${result.features.length.toLocaleString('th-TH')} จุด | ซ้ำที่ตัดออก ${qa.duplicates||0} | ไม่มีพิกัด ${qa.noCoordinates||0}`,'success');
+    }catch(err){console.error(err);setStatus(`นำเข้าไม่สำเร็จ: ${err.message}`,'error');}
   }
-
-  function countForUnit(name, level, year, months) {
-    let n = 0;
-    for (const f of data.allHotspots) {
-      const p = f.properties || {};
-      if (Number(p.__year) !== Number(year)) continue;
-      if (months && months.size && !months.has(Number(p.__month))) continue;
-      if (state.crop && p.__crop !== state.crop) continue;
-      if (level === 'district' && p.__district !== name) continue;
-      if (level === 'subdistrict' && p.__subdistrict !== name) continue;
-      n++;
-    }
-    return n;
-  }
-
-  function scoreFromEvidence(curr, prev1, prev2, areaRai) {
-    const evidence = curr + 0.6*prev1 + 0.4*prev2;
-    const density = areaRai ? (curr / areaRai * 10000) : curr;
-    const countScore = evidence <= 0 ? 0 : evidence <= 2 ? 20 : evidence <= 5 ? 45 : evidence <= 10 ? 70 : Math.min(100, 75 + (evidence - 10) * 2.2);
-    const densityScore = Math.min(100, density * 30);
-    const areaScore = areaRai <= 0 ? 0 : Math.min(100, Math.log1p(areaRai) / Math.log1p(250000) * 100);
-    let raw = 0.55*countScore + 0.25*densityScore + 0.20*areaScore;
-    let cap = evidence <= 0 ? 24.99 : evidence <= 2 ? 24.99 : evidence <= 5 ? 49.99 : evidence <= 10 ? 74.99 : 100;
-    return Math.min(raw, cap);
-  }
-  function riskLevel(score) {
-    if (score < 25) return {name:'ต่ำ', cls:'risk-low', color:C.colors.risk.low, key:'low'};
-    if (score < 50) return {name:'ปานกลาง', cls:'risk-medium', color:C.colors.risk.medium, key:'medium'};
-    if (score < 75) return {name:'สูง', cls:'risk-high', color:C.colors.risk.high, key:'high'};
-    return {name:'สูงมาก', cls:'risk-very-high', color:C.colors.risk.veryHigh, key:'veryHigh'};
-  }
-
-  function featureIncluded(f, level) {
-    const d = getDistrictName(f), s = getSubdistrictName(f);
-    if (state.district && d !== state.district) return false;
-    if (level === 'subdistrict' && state.subdistrict && s !== state.subdistrict) return false;
-    return true;
-  }
-
-  function removeLayer(name) { if (layers[name]) { map.removeLayer(layers[name]); layers[name] = null; } }
-
-  function refreshMapLayers() {
-    ['district','subdistrict','risk','crop','burnscar','hotspot'].forEach(removeLayer);
-    if (state.show.district) {
-      layers.district = L.geoJSON(data.district, {
-        filter: f => !state.district || getDistrictName(f) === state.district,
-        style: {color:'#0f766e', weight:2, fill:false, opacity:.95},
-        onEachFeature: (f,l) => l.bindTooltip(`อำเภอ${getDistrictName(f)}`)
-      }).addTo(map);
-    }
-    if (state.show.subdistrict) {
-      layers.subdistrict = L.geoJSON(data.subdistrict, {
-        filter: f => featureIncluded(f, 'subdistrict'),
-        style: {color:'#38bdf8', weight:1, fill:false, opacity:.75},
-        onEachFeature: (f,l) => l.bindTooltip(`ต.${getSubdistrictName(f)}`)
-      }).addTo(map);
-    }
-    if (state.show.risk) {
-      const prevYear = state.year - 1, prev2Year = state.year - 2;
-      layers.risk = L.geoJSON(data.subdistrict, {
-        filter: f => featureIncluded(f, 'subdistrict'),
-        style: f => {
-          const name = getSubdistrictName(f), area = getAreaRai(f);
-          const curr = countForUnit(name, 'subdistrict', state.year, state.months);
-          const p1 = C.years.includes(prevYear) ? countForUnit(name, 'subdistrict', prevYear, state.months) : 0;
-          const p2 = C.years.includes(prev2Year) ? countForUnit(name, 'subdistrict', prev2Year, state.months) : 0;
-          const score = scoreFromEvidence(curr, p1, p2, area);
-          const lev = riskLevel(score);
-          return {color:'#ffffff', weight:1.2, fillColor:lev.color, fillOpacity:.58, opacity:.9};
-        },
-        onEachFeature: (f,l) => {
-          l.on('click', () => showBoundaryDetail(f));
-          l.bindTooltip(`ต.${getSubdistrictName(f)}`);
-        }
-      }).addTo(map);
-    }
-    if (state.show.crop && data.crop?.features?.length) {
-      layers.crop = L.geoJSON(data.crop, {
-        filter: f => {
-          const p=f.properties||{};
-          if (state.district && clean(p.a_name || p.district) !== state.district) return false;
-          if (state.subdistrict && clean(p.t_name || p.subdistrict) !== state.subdistrict) return false;
-          if (state.crop && clean(p.crop_type) !== state.crop) return false;
-          return true;
-        },
-        style: f => ({color:'#84cc16', weight:.5, fillColor:'#bef264', fillOpacity:.25})
-      }).addTo(map);
-    }
-    if (state.show.burnscar && data.burnscar?.features?.length) {
-      layers.burnscar = L.geoJSON(data.burnscar, {style:{color:'#7c2d12', weight:1, fillColor:'#f97316', fillOpacity:.35}}).addTo(map);
-    }
-    if (state.show.hotspot) {
-      layers.hotspot = L.markerClusterGroup({showCoverageOnHover:false, maxClusterRadius:42});
-      for (const f of getFilteredHotspots()) {
-        const [lng,lat] = f.geometry.coordinates;
-        const y = f.properties.__year;
-        const icon = L.divIcon({className:'', html:`<div class="marker-hs marker-${y}"></div>`, iconSize:[18,18], iconAnchor:[9,9]});
-        L.marker([lat,lng], {icon}).bindPopup(hotspotPopup(f)).addTo(layers.hotspot);
+  function findDetailTable(wb){
+    for(const name of wb.SheetNames){
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:false,dateNF:'yyyy-mm-dd'});
+      for(let i=0;i<rows.length;i++){
+        const headers=(rows[i]||[]).map(v=>String(v??'').trim());
+        const required=['hsID','Date','Province','LandType'];
+        if(required.every(k=>headers.includes(k)))return{sheet:name,headers,rows:rows.slice(i+1)};
       }
-      layers.hotspot.addTo(map);
     }
-    fitToScope();
+    return null;
   }
-
-  function hotspotPopup(f) {
-    const p=f.properties||{};
-    return `<b>Hotspot ${esc(p.__id)}</b><br>วันที่: ${esc(p.__date || '-') }<br>อำเภอ: ${esc(p.__district)}<br>ตำบล: ${esc(p.__subdistrict)}<br>พืช: ${esc(p.__crop)}<br>Confidence: ${esc(p.confidence ?? '-')}`;
-  }
-  function showBoundaryDetail(f) {
-    const sub = getSubdistrictName(f), dist = getDistrictName(f), area=getAreaRai(f);
-    const curr = countForUnit(sub, 'subdistrict', state.year, state.months);
-    const p1 = C.years.includes(state.year-1) ? countForUnit(sub, 'subdistrict', state.year-1, state.months) : 0;
-    const p2 = C.years.includes(state.year-2) ? countForUnit(sub, 'subdistrict', state.year-2, state.months) : 0;
-    const score = scoreFromEvidence(curr,p1,p2,area), lev=riskLevel(score);
-    $('detail-title').textContent = `ต.${sub}`;
-    $('detail-content').innerHTML = `<p><b>อำเภอ:</b> ${esc(dist)}</p><p><b>ช่วงเวลา:</b> ${monthText()} ${state.year}</p><p><b>Hotspot:</b> ${fmt(curr)} จุด</p><p><b>ปีก่อน:</b> ${fmt(p1)} จุด</p><p><b>Risk Score:</b> ${score.toFixed(2)} <span class="risk-badge ${lev.cls}">${lev.name}</span></p>`;
-    $('detail-panel').classList.remove('hidden');
-  }
-  function fitToScope() {
-    let layer = layers.risk || layers.subdistrict || layers.district;
-    if (layer && layer.getBounds && layer.getBounds().isValid()) map.fitBounds(layer.getBounds(), {padding:[20,20], maxZoom:11});
-  }
-
-  function updateComparisonTable() {
-    const prevYear = state.year - 1;
-    const level = state.district ? 'subdistrict' : 'district';
-    const areaHeader = state.district ? 'ตำบล' : 'อำเภอ';
-    $('comparison-area-header').textContent = areaHeader;
-    $('comparison-prev-header').textContent = C.years.includes(prevYear) ? `ปี ${prevYear}` : `ปี ${prevYear}`;
-    $('comparison-current-header').textContent = `ปี ${state.year}`;
-    $('title-comparison').textContent = state.district ? 'เปรียบเทียบ Hotspot รายตำบล' : 'เปรียบเทียบ Hotspot รายอำเภอ';
-    $('comparison-period').textContent = `${monthText()} · เทียบช่วงเดียวกันของปีก่อน`;
-
-    let names;
-    if (state.subdistrict) names = [state.subdistrict];
-    else if (state.district) names = [...new Set(data.subdistrict.features.filter(f => getDistrictName(f) === state.district).map(getSubdistrictName))].sort((a,b)=>a.localeCompare(b,'th'));
-    else names = [...new Set(data.district.features.map(getDistrictName))].sort((a,b)=>a.localeCompare(b,'th'));
-
-    const rows = names.map(name => {
-      const curr = countForUnit(name, level, state.year, state.months);
-      const prev = C.years.includes(prevYear) ? countForUnit(name, level, prevYear, state.months) : 0;
-      return {name, curr, prev};
-    });
-    rows.sort((a,b) => b.curr - a.curr || a.name.localeCompare(b.name,'th'));
-    const total = rows.reduce((a,r)=>({curr:a.curr+r.curr, prev:a.prev+r.prev}), {curr:0, prev:0});
-    const label = state.subdistrict ? `รวมตำบล${state.subdistrict}` : state.district ? `รวมอำเภอ${state.district}` : 'รวมจังหวัดกำแพงเพชร';
-    const bodyRows = [renderCompareRow(label,total.curr,total.prev,true), ...rows.map(r => renderCompareRow(r.name,r.curr,r.prev,false))].join('');
-    $('tbl-hotspot-comparison').querySelector('tbody').innerHTML = bodyRows;
-  }
-  function changeText(curr, prev) {
-    if (prev === 0 && curr === 0) return `<span class="change-flat">0%</span>`;
-    if (prev === 0 && curr > 0) return `<span class="change-up">ใหม่</span>`;
-    const pct = ((curr - prev) / prev) * 100;
-    const cls = pct > 0 ? 'change-up' : pct < 0 ? 'change-down' : 'change-flat';
-    const sign = pct > 0 ? '+' : '';
-    return `<span class="${cls}">${sign}${pct.toFixed(1)}%</span>`;
-  }
-  function renderCompareRow(name,curr,prev,total=false) {
-    return `<tr class="${total?'total-row':''}"><td>${esc(name)}</td><td>${fmt(prev)}</td><td>${fmt(curr)}</td><td>${changeText(curr,prev)}</td></tr>`;
-  }
-
-  function updateTrendChart() {
-    const counts = C.years.map(y => getFilteredHotspots(y, state.months).length);
-    $('title-trend').textContent = `Hotspot รายปี (Trend) - ${state.district || 'ทุกอำเภอ'}`;
-    $('scope-caption').textContent = `ขอบเขตวิเคราะห์: ${state.subdistrict ? 'ต.'+state.subdistrict : state.district ? 'อ.'+state.district : 'จังหวัดกำแพงเพชร'} · ${monthText()}`;
-    const ctx = $('chart-trend');
-    if (charts.trend) charts.trend.destroy();
-    charts.trend = new Chart(ctx, {type:'bar', data:{labels:C.years.map(String), datasets:[{label:'Hotspot', data:counts, borderRadius:7, backgroundColor:C.years.map(y=>C.colors.years[y])}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}});
-  }
-
-  function currentUnitRows() {
-    const level = state.district ? 'subdistrict' : 'district';
-    let names = state.district ? [...new Set(data.subdistrict.features.filter(f => getDistrictName(f) === state.district).map(getSubdistrictName))] : [...new Set(data.district.features.map(getDistrictName))];
-    if (state.subdistrict) names = [state.subdistrict];
-    return names.map(name => {
-      const curr = countForUnit(name, level, state.year, state.months);
-      const prev1 = C.years.includes(state.year-1) ? countForUnit(name, level, state.year-1, state.months) : 0;
-      const prev2 = C.years.includes(state.year-2) ? countForUnit(name, level, state.year-2, state.months) : 0;
-      const area = level === 'district' ? districtArea(name) : subdistrictArea(name);
-      const score = scoreFromEvidence(curr, prev1, prev2, area);
-      return {name, curr, score, level:riskLevel(score)};
-    }).sort((a,b)=>b.curr-a.curr || b.score-a.score);
-  }
-  function districtArea(name) {return data.district.features.filter(f=>getDistrictName(f)===name).reduce((s,f)=>s+getAreaRai(f),0);}
-  function subdistrictArea(name) {return data.subdistrict.features.filter(f=>getSubdistrictName(f)===name && (!state.district || getDistrictName(f)===state.district)).reduce((s,f)=>s+getAreaRai(f),0);}
-
-  function updateRiskChartAndTop() {
-    const rows = currentUnitRows();
-    const riskCounts = {ต่ำ:0,ปานกลาง:0,สูง:0,สูงมาก:0};
-    rows.forEach(r => riskCounts[r.level.name]++);
-    if (charts.risk) charts.risk.destroy();
-    charts.risk = new Chart($('chart-risk'), {type:'doughnut', data:{labels:Object.keys(riskCounts), datasets:[{data:Object.values(riskCounts), backgroundColor:[C.colors.risk.low,C.colors.risk.medium,C.colors.risk.high,C.colors.risk.veryHigh]}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}}});
-    const top = rows.slice(0,5);
-    if (charts.top) charts.top.destroy();
-    charts.top = new Chart($('chart-top'), {type:'bar', data:{labels:top.map(r=>r.name), datasets:[{data:top.map(r=>r.curr), label:'Hotspot', backgroundColor:'#38bdf8', borderRadius:7}]}, options:{indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}}}});
-    $('title-top5').textContent = `Top 5 ${state.district ? 'ตำบล' : 'อำเภอ'}`;
-    $('title-top10').textContent = `Top 10 ${state.district ? 'ตำบล' : 'อำเภอ'} Hotspot สูงสุด`;
-    $('tbl-top10').querySelector('tbody').innerHTML = rows.slice(0,10).map(r => `<tr><td>${esc(r.name)}</td><td>${fmt(r.curr)}</td><td><span class="risk-badge ${r.level.cls}">${r.level.name}</span></td></tr>`).join('') || '<tr><td colspan="3">ไม่พบข้อมูล</td></tr>';
-  }
-
-  function refreshAll() {
-    syncUI();
-    refreshMapLayers();
-    updateComparisonTable();
-    updateTrendChart();
-    updateRiskChartAndTop();
-  }
-
-  function syncUI() {
-    $('filter-year-main').value = state.year;
-    document.querySelectorAll('.month').forEach(btn => btn.classList.toggle('active', state.months.has(Number(btn.dataset.month))));
-    document.querySelectorAll('.preset').forEach(btn => btn.classList.remove('active'));
-    const arr = selectedMonthsArray().join(',');
-    const preset = arr === C.defaultMonths.join(',') ? 'janmay' : arr === C.banMonths.join(',') ? 'ban' : arr === C.years.join(',') ? '' : '';
-    if (state.months.size === 12) document.querySelector('[data-preset="all"]')?.classList.add('active');
-    else if (arr === C.defaultMonths.join(',')) document.querySelector('[data-preset="janmay"]')?.classList.add('active');
-    $('timeline-status').textContent = `ปี ${state.year} · ${monthText()}`;
-    $('filter-district').value = state.district;
-    updateSubdistrictOptions();
-    $('filter-subdistrict').value = state.subdistrict;
-    $('filter-crop').value = state.crop;
-    for (const [k,v] of Object.entries(state.show)) { const el = $(`lyr-${k}`); if (el) el.checked = v; }
-  }
-
-  function bindEvents() {
-    $('filter-year-main').addEventListener('change', e => { state.year = Number(e.target.value); refreshAll(); });
-    document.querySelectorAll('.month').forEach(btn => btn.addEventListener('click', () => {
-      const m = Number(btn.dataset.month); state.months.has(m) ? state.months.delete(m) : state.months.add(m); refreshAll();
-    }));
-    document.querySelectorAll('.preset').forEach(btn => btn.addEventListener('click', () => {
-      const p = btn.dataset.preset;
-      if (p === 'all') state.months = new Set([1,2,3,4,5,6,7,8,9,10,11,12]);
-      if (p === 'janmay') state.months = new Set(C.defaultMonths);
-      if (p === 'ban') state.months = new Set(C.banMonths);
-      if (p === 'clear') state.months = new Set();
-      refreshAll();
-    }));
-    $('filter-district').addEventListener('change', e => { state.district = e.target.value; state.subdistrict=''; refreshAll(); });
-    $('filter-subdistrict').addEventListener('change', e => { state.subdistrict = e.target.value; refreshAll(); });
-    $('filter-crop').addEventListener('change', e => { state.crop = e.target.value; refreshAll(); });
-    $('btn-reset-filter').addEventListener('click', () => { state.year=C.currentYear; state.months=new Set(C.defaultMonths); state.district=''; state.subdistrict=''; state.crop=''; refreshAll(); });
-    ['province','district','subdistrict','hotspot','risk','crop','burnscar'].forEach(k => { const el=$(`lyr-${k}`); if (el) el.addEventListener('change', e => {state.show[k]=e.target.checked; refreshAll();}); });
-    document.querySelectorAll('input[name="basemap"]').forEach(r => r.addEventListener('change', e => { if(!e.target.checked) return; map.removeLayer(layers.base[state.basemap]); state.basemap=e.target.value; layers.base[state.basemap].addTo(map); }));
-    $('detail-close').addEventListener('click', () => $('detail-panel').classList.add('hidden'));
-    $('btn-print').addEventListener('click', () => { setTimeout(()=>map.invalidateSize(),50); window.print(); });
-    $('btn-admin-login').addEventListener('click', () => alert('ระบบ Login/นำเข้า Excel สามารถต่อเพิ่มได้จากเวอร์ชัน Admin เดิม โดยไม่กระทบระบบแสดงผลหลัก'));
-    bindMobile();
-  }
-
-  function bindMobile() {
-    const left=$('left-panel'), right=$('right-panel'), overlay=$('mobile-overlay');
-    function close(){left.classList.remove('mobile-open');right.classList.remove('mobile-open');overlay.hidden=true;setTimeout(()=>map.invalidateSize(),200)}
-    $('mobile-toggle-layers').addEventListener('click',()=>{right.classList.remove('mobile-open');left.classList.toggle('mobile-open');overlay.hidden=!left.classList.contains('mobile-open');});
-    $('mobile-toggle-dashboard').addEventListener('click',()=>{left.classList.remove('mobile-open');right.classList.toggle('mobile-open');overlay.hidden=!right.classList.contains('mobile-open');});
-    overlay.addEventListener('click',close);
-    window.addEventListener('resize',()=>setTimeout(()=>map.invalidateSize(),100));
-  }
-
-  function initVisitorCounter() {
-    const key='agri-risk-visitor-count';
-    const n=(Number(localStorage.getItem(key)||0)+1); localStorage.setItem(key,String(n)); $('visitor-count').textContent=fmt(n);
-  }
-
-  async function init() {
-    try {
-      initVisitorCounter();
-      initMap();
-      await loadAllData();
-      fillAreaFilters();
-      bindEvents();
-      refreshAll();
-    } catch (err) {
-      console.error(err);
-      alert('โหลดระบบไม่สำเร็จ: ' + err.message);
+  function rowsToGeoJSON(rows,headers,yearBE){
+    const idx=Object.fromEntries(headers.map((h,i)=>[h,i])), yearAD=yearBE-543, seen=new Set();
+    let duplicates=0,noCoordinates=0,wrongProvince=0,wrongLand=0,wrongDate=0;
+    const features=[];
+    for(const row of rows){
+      if(!row||row.every(v=>v===null||v===''))continue;
+      const get=k=>row[idx[k]];
+      const province=String(get('Province')??get('ProvinceN')??'').trim();
+      if(province!=='กำแพงเพชร'){wrongProvince++;continue;}
+      if(String(get('LandType')??'').trim()!=='พื้นที่เกษตร'){wrongLand++;continue;}
+      const dt=parseExcelDate(get('Date'));
+      if(!dt||dt.getFullYear()!==yearAD||dt.getMonth()<0||dt.getMonth()>4){wrongDate++;continue;}
+      const hsId=String(get('hsID')??'').trim();
+      if(hsId&&seen.has(hsId)){duplicates++;continue;} if(hsId)seen.add(hsId);
+      const coord=extractCoordinates(get('Maps'),get('X'),get('Y'),get('Q'));
+      if(!coord){noCoordinates++;continue;}
+      const point={type:'Feature',geometry:{type:'Point',coordinates:coord},properties:{hs_id:hsId,year_be:yearBE,date:dt.toISOString().slice(0,10),time:String(get('Time')??''),province:'กำแพงเพชร',district:String(get('Amphoe')??get('AmphoeN')??'').trim(),subdistrict:String(get('Tambon')??get('TambonN')??'').trim(),land_type:'พื้นที่เกษตร',crop_type:MapModule.helpers.normalizeCrop(get('PlantType')),confidence:Number(get('Q'))||null,source:'NASA FIRMS VIIRS / Excel import'}};
+      const hit=(MapModule.getData().subdistrict?.features||[]).find(poly=>{try{return turf.booleanPointInPolygon(point,poly);}catch{return false;}});
+      if(hit){point.properties.district=MapModule.helpers.districtOf(hit.properties);point.properties.subdistrict=MapModule.helpers.subdistrictOf(hit.properties);}
+      features.push(point);
     }
+    return{type:'FeatureCollection',name:`hotspot_${yearBE}_imported`,metadata:{province:'กำแพงเพชร',scope:'พื้นที่เกษตร',period:`${yearAD}-01-01/${yearAD}-05-31`,qa:{inputRows:rows.length,accepted:features.length,duplicates,noCoordinates,wrongProvince,wrongLand,wrongDate}},features};
   }
-  document.addEventListener('DOMContentLoaded', init);
+  function parseExcelDate(v){
+    if(v instanceof Date&&!Number.isNaN(v))return v;
+    if(typeof v==='number'&&window.XLSX?.SSF){const p=XLSX.SSF.parse_date_code(v);if(p)return new Date(p.y,p.m-1,p.d);}
+    if(typeof v==='string'){
+      const s=v.trim(); let d=new Date(s); if(!Number.isNaN(d))return d;
+      const m=s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);if(m){let y=Number(m[3]);if(y>2400)y-=543;return new Date(y,Number(m[2])-1,Number(m[1]));}
+    }
+    return null;
+  }
+  function extractCoordinates(maps,x,y,zone){
+    const m=String(maps||'').match(/[?&]q=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/i);
+    if(m)return[Number(m[2]),Number(m[1])];
+    const east=Number(x),north=Number(y),z=Number(zone)||47;
+    if(Number.isFinite(east)&&Number.isFinite(north)&&window.proj4){try{return proj4(`+proj=utm +zone=${z} +datum=WGS84 +units=m +no_defs`,'EPSG:4326',[east,north]);}catch{}}
+    return null;
+  }
+  function ensureYearCheckbox(year){
+    let cb=document.querySelector(`.hs-layer[data-year="${year}"]`);if(cb)return cb;
+    const yearSelect=document.getElementById('filter-year');if(yearSelect&&!yearSelect.querySelector(`option[value="${year}"]`)){const opt=document.createElement('option');opt.value=String(year);opt.textContent=`${year} (${year-543})`;yearSelect.appendChild(opt);}
+    const group=document.querySelector('.hs-layer')?.closest('.layer-group');
+    const label=document.createElement('label');label.className=`toggle-row hs-${year}`;label.style.borderLeft=`3px solid ${CONFIG.YEAR_COLORS[year]||'#14b8a6'}`;
+    label.innerHTML=`<input type="checkbox" class="hs-layer" data-year="${year}"> ปี ${year} (${year-543})`;
+    group?.appendChild(label);cb=label.querySelector('input');
+    if(!CONFIG.YEAR_COLORS[year]){const d=Math.max(0,(CONFIG.CURRENT_YEAR_BE||year)-year);CONFIG.YEAR_COLORS[year]=(CONFIG.YEAR_COLOR_FALLBACK||[])[d]||'#14b8a6';label.style.borderLeft=`3px solid ${CONFIG.YEAR_COLORS[year]}`;}
+    return cb;
+  }
+  function downloadImportedGeoJSON(){if(!lastImported)return;const blob=new Blob([JSON.stringify(lastImported.geojson,null,2)],{type:'application/geo+json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=lastImported.fileName;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+  function setStatus(text,type){const el=document.getElementById('import-status');if(!el)return;el.textContent=text;el.className=`import-status ${type||''}`;}
+
+
+
+  function initMobilePanels(){
+    const left=document.getElementById('left-panel');
+    const right=document.getElementById('right-panel');
+    const overlay=document.getElementById('mobile-overlay');
+    const btnLeft=document.getElementById('mobile-toggle-layers');
+    const btnRight=document.getElementById('mobile-toggle-dashboard');
+    if(!left||!right||!overlay||!btnLeft||!btnRight)return;
+    const closeAll=()=>{
+      left.classList.remove('mobile-open');right.classList.remove('mobile-open');overlay.hidden=true;
+      btnLeft.setAttribute('aria-expanded','false');btnRight.setAttribute('aria-expanded','false');
+      setTimeout(()=>MapModule.map()?.invalidateSize?.(),260);
+    };
+    const openPanel=(panel,button)=>{
+      const wasOpen=panel.classList.contains('mobile-open');closeAll();
+      if(!wasOpen){panel.classList.add('mobile-open');overlay.hidden=false;button.setAttribute('aria-expanded','true');}
+    };
+    btnLeft.addEventListener('click',()=>openPanel(left,btnLeft));
+    btnRight.addEventListener('click',()=>openPanel(right,btnRight));
+    overlay.addEventListener('click',closeAll);
+    window.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll();});
+    window.addEventListener('resize',()=>{if(window.innerWidth>768)closeAll();setTimeout(()=>MapModule.map()?.invalidateSize?.(),120);});
+    document.addEventListener('agri-risk:filter-change',()=>{if(window.innerWidth<=768)closeAll();});
+  }
+
+  async function initVisitorCounter(){const el=document.getElementById('visitor-count');if(!el)return;const key='agri-risk-pageviews';let local=Number(localStorage.getItem(key)||0)+1;localStorage.setItem(key,String(local));const endpoint=CONFIG.VISITOR_COUNTER?.endpoint;if(endpoint){try{const r=await fetch(endpoint,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();el.textContent=Number(j.count??j.value??local).toLocaleString('th-TH');return;}catch(e){console.warn('[Counter]',e.message);}}el.textContent=local.toLocaleString('th-TH');}
+  return{init};
 })();
+document.addEventListener('DOMContentLoaded',()=>App.init().catch(err=>{console.error('[App] fatal error:',err);const el=document.createElement('div');el.style.cssText='position:fixed;inset:auto 20px 20px 20px;z-index:10000;background:#991b1b;color:#fff;padding:12px;border-radius:8px;font:14px sans-serif';el.textContent='โหลดระบบไม่สำเร็จ: '+err.message;document.body.appendChild(el);}));
