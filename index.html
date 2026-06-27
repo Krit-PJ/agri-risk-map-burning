@@ -144,7 +144,13 @@
 <p class="developer-credit">พัฒนาโดย ดร. กิตติ&nbsp;&nbsp;โพธิ์จวง กลุ่มอารักขาพืช สำนักงานเกษตรจังหวัดกำแพงเพชร</p>
 </div>
 </div>
-<div class="header-right"><span class="visitor-counter" title="นับการเข้าชมบนอุปกรณ์นี้; รองรับ endpoint กลางเมื่อกำหนดใน config.js">👥 ผู้เข้าชม: <strong id="visitor-count">-</strong></span>
+<div class="header-right"><span class="visitor-counter external-counter" title="ตัวนับผู้เข้าชมภายนอก">
+  👥 ผู้เข้าชม:
+  <span class="external-counter-box">
+    <script type="text/javascript" src="https://www.free-counters.org/count/jwox"></script>
+    <script type="text/javascript" src="https://whomania.com/ctr?id=1d319e20137c183c2a9fea98cb421d294999244c"></script>
+  </span>
+</span>
 <span id="last-updated"></span>
 <button class="btn-print no-print" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ พิมพ์รายงาน</button>
 <button class="btn-admin no-print" id="btn-admin-login" type="button" aria-haspopup="dialog">🔐 Login</button>
@@ -160,9 +166,11 @@
 <section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
   <div class="timeline-year-wrap">
     <label for="timeline-year">ปีประเมิน</label>
-    <select id="timeline-year" class="timeline-year-select" aria-label="เลือกปีประเมินหลัก">
-      <option value="2566">2566</option><option value="2567">2567</option>
-      <option value="2568">2568</option><option value="2569" selected>2569</option>
+    <select id="timeline-year" class="timeline-year-select" aria-label="เลือกปีประเมินหลัก" data-years="2566,2567,2568,2569">
+      <option value="2566">2566</option>
+      <option value="2567">2567</option>
+      <option value="2568">2568</option>
+      <option value="2569" selected>2569</option>
     </select>
   </div>
   <div class="timeline-track-wrap">
@@ -291,7 +299,7 @@
 <div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.99 คะแนน</span></div>
 <div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.99 คะแนน</span></div>
 </div>
-<a class="btn-guide-download" href="docs/risk-ranking-assessment-guide-kpp.pdf" download>⬇ ดาวน์โหลดคู่มือการจัดลำดับชั้นและการประเมินพื้นที่เสี่ยง</a>
+<div class="btn-guide-download guide-disabled" aria-disabled="true">คู่มือการประเมินความเสี่ยง: ปิดการดาวน์โหลดชั่วคราว</div>
 </section>
 </aside>
 <!-- CENTER: Map -->

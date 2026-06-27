@@ -39,7 +39,15 @@ const App=(()=>{
     day:document.getElementById('filter-day')?.value||''
   };}
   function selectedYear(){return document.getElementById('timeline-year')?.value||document.getElementById('filter-year')?.value||String(CONFIG.CURRENT_YEAR_BE||2569);}
+  function ensureYearDropdown(){
+    const sel=document.getElementById('timeline-year');if(!sel)return;
+    if(sel.options && sel.options.length>0)return;
+    const years=(sel.dataset.years||'2566,2567,2568,2569').split(',').map(x=>x.trim()).filter(Boolean);
+    const current=String(CONFIG.CURRENT_YEAR_BE||2569);
+    sel.innerHTML=years.map(y=>`<option value="${y}"${String(y)===current?' selected':''}>${y}</option>`).join('');
+  }
   function syncYearSelector(){
+    ensureYearDropdown();
     const year=selectedYear();
     const hidden=document.getElementById('filter-year');if(hidden)hidden.value=year;
     document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=String(cb.dataset.year)===String(year);});
@@ -61,6 +69,7 @@ const App=(()=>{
     daySel.disabled=false;if(days.includes(Number(currentDay)))daySel.value=currentDay;
   }
   function initTimeline(){
+    ensureYearDropdown();
     const year=document.getElementById('timeline-year');
     year?.addEventListener('change',applyYearSelector);
     document.querySelector('#hotspot-timeline .timeline-all')?.addEventListener('click',()=>{
@@ -334,7 +343,13 @@ const App=(()=>{
     document.addEventListener('agri-risk:filter-change',()=>{if(window.innerWidth<=768)closeAll();});
   }
 
-  async function initVisitorCounter(){const el=document.getElementById('visitor-count');if(!el)return;const key='agri-risk-pageviews';let local=Number(localStorage.getItem(key)||0)+1;localStorage.setItem(key,String(local));const endpoint=CONFIG.VISITOR_COUNTER?.endpoint;if(endpoint){try{const r=await fetch(endpoint,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();el.textContent=Number(j.count??j.value??local).toLocaleString('th-TH');return;}catch(e){console.warn('[Counter]',e.message);}}el.textContent=local.toLocaleString('th-TH');}
+  async function initVisitorCounter(){
+    // External visitor counter is embedded in index.html. Keep legacy local counter only when #visitor-count exists.
+    const el=document.getElementById('visitor-count');if(!el)return;
+    const key='agri-risk-pageviews';let local=Number(localStorage.getItem(key)||0)+1;localStorage.setItem(key,String(local));
+    const endpoint=CONFIG.VISITOR_COUNTER?.endpoint;if(endpoint){try{const r=await fetch(endpoint,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();el.textContent=Number(j.count??j.value??local).toLocaleString('th-TH');return;}catch(e){console.warn('[Counter]',e.message);}}
+    el.textContent=local.toLocaleString('th-TH');
+  }
   return{init};
 })();
 document.addEventListener('DOMContentLoaded',()=>App.init().catch(err=>{console.error('[App] fatal error:',err);const el=document.createElement('div');el.style.cssText='position:fixed;inset:auto 20px 20px 20px;z-index:10000;background:#991b1b;color:#fff;padding:12px;border-radius:8px;font:14px sans-serif';el.textContent='โหลดระบบไม่สำเร็จ: '+err.message;document.body.appendChild(el);}));

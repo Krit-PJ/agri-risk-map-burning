@@ -833,3 +833,13 @@ button{font-weight:900!important;}
   #tbl-hotspot-comparison{font-size:6.2pt!important;}
   #tbl-hotspot-comparison th,#tbl-hotspot-comparison td{padding:.65mm .7mm!important;color:#111!important;background:#fff!important;}
 }
+
+/* Counter/year dropdown/guide refinement update */
+.external-counter{color:#111827!important;background:#ffffff!important;border:2px solid #16a34a!important;border-radius:12px!important;padding:7px 10px!important;font-weight:900!important;display:inline-flex!important;align-items:center!important;gap:6px!important;line-height:1.2!important;}
+.external-counter-box{display:inline-flex!important;align-items:center!important;gap:4px!important;color:#111827!important;font-weight:900!important;min-width:36px!important;}
+.external-counter-box a{display:none!important;}
+.external-counter-box img{vertical-align:middle!important;max-height:20px!important;}
+.timeline-year-select{display:block!important;visibility:visible!important;opacity:1!important;appearance:auto!important;-webkit-appearance:auto!important;min-width:120px!important;max-width:150px!important;color:#111827!important;background:#ffffff!important;border:2px solid #15803d!important;font-weight:900!important;}
+.timeline-year-select option{color:#111827!important;background:#ffffff!important;font-size:17px!important;}
+.guide-disabled{background:#e5e7eb!important;color:#374151!important;border:2px dashed #9ca3af!important;cursor:not-allowed!important;box-shadow:none!important;}
+@media(max-width:768px){.external-counter{display:none!important}.timeline-year-select{min-width:104px!important;font-size:16px!important}}
