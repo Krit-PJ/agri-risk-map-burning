@@ -2487,3 +2487,240 @@ body.print-preparing #risk-box{grid-column:2!important;grid-row:2!important;widt
   .risk-chart-layout{grid-template-columns:44mm 1fr!important;gap:3mm!important;height:47mm!important;}
   .risk-canvas-wrap,#chart-risk{height:44mm!important;max-height:44mm!important;width:44mm!important;max-width:44mm!important;}
 }
+
+/* =====================================================
+   28 Jun final: solid sidebar toggle + executive print header/table margins
+   ===================================================== */
+.sidebar-toggle-btn,
+.sidebar-toggle-btn *{
+  color:#022c22!important;
+  text-shadow:none!important;
+  opacity:1!important;
+  -webkit-text-fill-color:#022c22!important;
+}
+.sidebar-toggle-btn{
+  background:#ffffff!important;
+  border-color:#065f46!important;
+  box-shadow:0 4px 14px rgba(15,23,42,.18)!important;
+}
+.sidebar-toggle-btn:hover{
+  background:#ecfdf5!important;
+  color:#022c22!important;
+  -webkit-text-fill-color:#022c22!important;
+}
+body.left-panel-collapsed .sidebar-toggle-btn,
+body.left-panel-collapsed .sidebar-toggle-btn *{
+  background:#ffffff!important;
+  color:#022c22!important;
+  -webkit-text-fill-color:#022c22!important;
+  border-color:#065f46!important;
+}
+
+@media print{
+  @page{size:A4 landscape;margin:10mm!important;}
+  html,body{width:277mm!important;height:190mm!important;overflow:hidden!important;background:#fff!important;color:#111827!important;}
+
+  /* Header: logos at far left/right, title centered, no developer line. */
+  #print-report-header{
+    display:grid!important;
+    grid-template-columns:28mm 1fr 28mm!important;
+    align-items:center!important;
+    width:271mm!important;
+    height:20mm!important;
+    min-height:20mm!important;
+    max-height:20mm!important;
+    margin:0 auto 1.5mm auto!important;
+    padding:1.5mm 3mm!important;
+    border:1.15pt solid #111827!important;
+    border-radius:3mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    overflow:hidden!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #print-report-header .print-title-block{
+    grid-column:2!important;
+    text-align:center!important;
+    line-height:1.08!important;
+    color:#111827!important;
+    padding:0 2mm!important;
+  }
+  #print-report-header .print-title-block h1{
+    margin:0!important;
+    color:#111827!important;
+    font-size:14.5pt!important;
+    line-height:1!important;
+    font-weight:900!important;
+  }
+  #print-report-header .print-title-block p{
+    margin:.7mm 0 0 0!important;
+    color:#111827!important;
+    font-size:8.6pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+  }
+  .print-side-logo{display:flex!important;align-items:center!important;justify-content:center!important;}
+  .print-side-logo img{
+    width:14mm!important;
+    height:14mm!important;
+    object-fit:contain!important;
+    border-radius:50%!important;
+  }
+  .print-left-logo{grid-column:1!important;justify-content:flex-start!important;}
+  .print-right-logo{grid-column:3!important;justify-content:flex-end!important;}
+  .print-report-logos{display:none!important;}
+
+  /* Metadata restored as a dedicated top strip so it is always visible and does not compete with title. */
+  #print-report-meta{
+    display:grid!important;
+    grid-template-columns:1fr 1fr 1fr!important;
+    gap:2mm!important;
+    width:271mm!important;
+    height:6.5mm!important;
+    min-height:6.5mm!important;
+    max-height:6.5mm!important;
+    margin:0 auto 1.5mm auto!important;
+    padding:1mm 2.2mm!important;
+    border:1pt solid #15803d!important;
+    border-radius:2mm!important;
+    background:#ecfdf5!important;
+    color:#111827!important;
+    overflow:hidden!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #print-report-meta div,
+  #print-data-updated,#print-date,#print-scope{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    color:#111827!important;
+    -webkit-text-fill-color:#111827!important;
+    font-size:7.5pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #print-date{text-align:center!important;}
+  #print-scope{text-align:right!important;}
+  .print-meta-block{display:none!important;}
+
+  #print-filter-summary{
+    width:271mm!important;
+    height:6.5mm!important;
+    min-height:6.5mm!important;
+    max-height:6.5mm!important;
+    margin:0 auto 1.8mm auto!important;
+    padding:1mm 2mm!important;
+    border:1pt solid #15803d!important;
+    border-radius:2mm!important;
+    background:#ecfdf5!important;
+    color:#064e3b!important;
+    font-size:8pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    text-align:center!important;
+    overflow:hidden!important;
+  }
+
+  /* Report body pulled away from paper edge; right table has safe inside margins. */
+  #app-body{
+    display:grid!important;
+    grid-template-columns:148mm 120mm!important;
+    grid-template-rows:88mm 54mm!important;
+    gap:3mm!important;
+    width:271mm!important;
+    height:145mm!important;
+    max-height:145mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #map-container{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:148mm!important;
+    height:145mm!important;
+    min-width:148mm!important;
+    max-width:148mm!important;
+    min-height:145mm!important;
+    max-height:145mm!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+  }
+  #map{width:148mm!important;height:145mm!important;min-height:145mm!important;max-height:145mm!important;margin:0!important;background:#fff!important;}
+
+  #right-panel{display:contents!important;background:#fff!important;border:0!important;padding:0!important;margin:0!important;overflow:visible!important;color:#111827!important;}
+  #hotspot-comparison-box{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    width:120mm!important;
+    height:88mm!important;
+    max-height:88mm!important;
+    margin:0!important;
+    padding:2mm 2.2mm!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+  }
+  .comparison-heading{margin:0 0 1mm 0!important;display:grid!important;grid-template-columns:1fr auto!important;gap:2mm!important;color:#111827!important;align-items:start!important;}
+  .comparison-heading h4{font-size:7.8pt!important;line-height:1.08!important;margin:0!important;font-weight:900!important;color:#111827!important;}
+  .comparison-heading span{font-size:6pt!important;line-height:1.05!important;font-weight:900!important;color:#111827!important;text-align:right!important;white-space:normal!important;}
+  .comparison-table-wrap{height:77mm!important;max-height:77mm!important;overflow:hidden!important;width:100%!important;border:0!important;background:#ffffff!important;}
+  #tbl-hotspot-comparison{width:100%!important;table-layout:fixed!important;border-collapse:collapse!important;font-size:6.0pt!important;line-height:1.04!important;color:#111827!important;}
+  #tbl-hotspot-comparison th,#tbl-hotspot-comparison td{
+    padding:.42mm .52mm!important;
+    border:.42pt solid #cbd5e1!important;
+    color:#111827!important;
+    background:#ffffff!important;
+    vertical-align:middle!important;
+    overflow:hidden!important;
+    white-space:normal!important;
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  #tbl-hotspot-comparison thead th,#tbl-hotspot-comparison tfoot th,#tbl-hotspot-comparison tfoot td{background:#dcfce7!important;color:#111827!important;font-weight:900!important;position:static!important;}
+  #tbl-hotspot-comparison th:nth-child(1),#tbl-hotspot-comparison td:nth-child(1){width:44%!important;text-align:left!important;}
+  #tbl-hotspot-comparison th:nth-child(2),#tbl-hotspot-comparison td:nth-child(2),#tbl-hotspot-comparison th:nth-child(3),#tbl-hotspot-comparison td:nth-child(3){width:15%!important;text-align:right!important;white-space:nowrap!important;}
+  #tbl-hotspot-comparison th:nth-child(4),#tbl-hotspot-comparison td:nth-child(4){width:26%!important;text-align:center!important;white-space:nowrap!important;}
+  .change-badge{background:transparent!important;border:0!important;padding:0!important;min-width:0!important;color:#111827!important;font-size:5.8pt!important;font-weight:900!important;white-space:nowrap!important;}
+
+  #risk-box{
+    grid-column:2!important;
+    grid-row:2!important;
+    display:block!important;
+    width:120mm!important;
+    height:54mm!important;
+    max-height:54mm!important;
+    overflow:hidden!important;
+    padding:2mm!important;
+    margin:0!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    box-sizing:border-box!important;
+  }
+  #risk-box h4{font-size:7.4pt!important;line-height:1.05!important;margin:0 0 1mm!important;font-weight:900!important;color:#111827!important;}
+  .risk-chart-layout{display:grid!important;grid-template-columns:42mm 1fr!important;gap:3mm!important;align-items:center!important;height:45mm!important;overflow:hidden!important;}
+  .risk-canvas-wrap,#chart-risk{height:41mm!important;max-height:41mm!important;width:42mm!important;max-width:42mm!important;}
+  .risk-legend-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:1.1mm 2mm!important;background:#ffffff!important;border:0!important;padding:0!important;}
+  .risk-legend-item{font-size:6.2pt!important;line-height:1.05!important;font-weight:900!important;display:grid!important;grid-template-columns:3mm 1fr auto!important;gap:.7mm!important;align-items:center!important;color:#111827!important;}
+  .risk-legend-swatch{width:3mm!important;height:3mm!important;border:.5pt solid #111827!important;}
+  .risk-legend-name,.risk-legend-pct{font-size:6.2pt!important;font-weight:900!important;color:#111827!important;}
+}
