@@ -2146,3 +2146,134 @@ body.print-preparing #risk-box{grid-column:2!important;grid-row:3!important;heig
   .risk-legend-swatch{width:2.8mm!important;height:2.8mm!important;border:.5pt solid #111827!important;}
   .risk-legend-name,.risk-legend-pct{font-size:5.85pt!important;font-weight:900!important;color:#111827!important;}
 }
+
+/* ===== Print right column refinement: data-first report layout =====
+   Evidence-based adjustment from PDF output: remove risk criteria card from print,
+   expand comparison table, and move donut chart to the lowest right panel.
+*/
+@media print{
+  /* Keep the page as one A4 landscape sheet and reserve the right panel for table + donut only. */
+  @page{size:A4 landscape;margin:10mm!important;}
+  html,body{width:277mm!important;height:190mm!important;overflow:hidden!important;}
+
+  /* The risk criteria card is useful on-screen, but consumes print space and duplicates the map legend/donut meaning. */
+  #print-risk-level-card{display:none!important;}
+
+  /* Two-column report: map on left; right side prioritizes the data table, donut at bottom. */
+  #app-body{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 103mm!important;
+    grid-template-rows:119mm 32mm!important;
+    gap:2mm!important;
+    width:100%!important;
+    height:153mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+  }
+
+  #map-container{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    height:153mm!important;
+    min-height:153mm!important;
+    max-height:153mm!important;
+    overflow:hidden!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+  }
+  #map{height:153mm!important;min-height:153mm!important;max-height:153mm!important;width:100%!important;}
+
+  #right-panel{display:contents!important;overflow:visible!important;background:#ffffff!important;border:0!important;padding:0!important;}
+
+  /* Comparison table: larger readable area, all 4 fields visible, no internal scrolling in PDF. */
+  #hotspot-comparison-box{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    height:119mm!important;
+    min-height:0!important;
+    max-height:119mm!important;
+    overflow:hidden!important;
+    padding:1.3mm!important;
+    margin:0!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  .comparison-heading{margin:0 0 .9mm 0!important;display:block!important;color:#111827!important;}
+  .comparison-heading h4{font-size:7.8pt!important;line-height:1.08!important;margin:0 0 .7mm 0!important;font-weight:900!important;color:#111827!important;}
+  .comparison-heading span{font-size:6.2pt!important;line-height:1.05!important;font-weight:800!important;color:#111827!important;display:block!important;}
+  .comparison-table-wrap{
+    height:108mm!important;
+    max-height:108mm!important;
+    overflow:hidden!important;
+    border:0!important;
+    background:#ffffff!important;
+  }
+  #tbl-hotspot-comparison{
+    width:100%!important;
+    table-layout:fixed!important;
+    border-collapse:collapse!important;
+    font-size:6.15pt!important;
+    line-height:1.05!important;
+    color:#111827!important;
+  }
+  #tbl-hotspot-comparison th,
+  #tbl-hotspot-comparison td{
+    padding:.46mm .55mm!important;
+    border:.45pt solid #d1d5db!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    vertical-align:middle!important;
+    overflow:hidden!important;
+  }
+  #tbl-hotspot-comparison thead th,
+  #tbl-hotspot-comparison tfoot th,
+  #tbl-hotspot-comparison tfoot td{
+    background:#dcfce7!important;
+    color:#111827!important;
+    font-weight:900!important;
+    position:static!important;
+  }
+  #tbl-hotspot-comparison th:nth-child(1),
+  #tbl-hotspot-comparison td:nth-child(1){width:47%!important;text-align:left!important;white-space:normal!important;word-break:normal!important;overflow-wrap:anywhere!important;}
+  #tbl-hotspot-comparison th:nth-child(2),
+  #tbl-hotspot-comparison td:nth-child(2),
+  #tbl-hotspot-comparison th:nth-child(3),
+  #tbl-hotspot-comparison td:nth-child(3){width:15%!important;text-align:right!important;white-space:nowrap!important;}
+  #tbl-hotspot-comparison th:nth-child(4),
+  #tbl-hotspot-comparison td:nth-child(4){width:23%!important;text-align:center!important;white-space:nowrap!important;}
+  .change-badge{background:transparent!important;border:0!important;padding:0!important;min-width:0!important;font-size:6.0pt!important;font-weight:900!important;color:#111827!important;white-space:nowrap!important;}
+
+  /* Donut at the bottom only; no overlap with table. */
+  #risk-box{
+    grid-column:2!important;
+    grid-row:2!important;
+    display:block!important;
+    height:32mm!important;
+    min-height:0!important;
+    max-height:32mm!important;
+    overflow:hidden!important;
+    padding:1.2mm!important;
+    margin:0!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #risk-box h4{font-size:7.0pt!important;line-height:1.05!important;margin:0 0 .8mm!important;font-weight:900!important;color:#111827!important;}
+  .risk-chart-layout{display:grid!important;grid-template-columns:30mm 1fr!important;gap:1.6mm!important;align-items:center!important;height:25mm!important;overflow:hidden!important;}
+  .risk-canvas-wrap,#chart-risk{height:25mm!important;max-height:25mm!important;width:30mm!important;max-width:30mm!important;}
+  .risk-legend-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:.6mm .8mm!important;background:#ffffff!important;border:0!important;padding:0!important;}
+  .risk-legend-item{font-size:5.8pt!important;line-height:1.05!important;font-weight:800!important;display:grid!important;grid-template-columns:2.8mm 1fr auto!important;gap:.5mm!important;align-items:center!important;color:#111827!important;}
+  .risk-legend-swatch{width:2.8mm!important;height:2.8mm!important;border:.5pt solid #111827!important;}
+  .risk-legend-name,.risk-legend-pct{font-size:5.8pt!important;font-weight:900!important;color:#111827!important;}
+}
