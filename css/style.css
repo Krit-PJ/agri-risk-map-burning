@@ -148,10 +148,10 @@ select {
 }
 .rc-text strong { display: block; font-size: 12px; color: #dce8f0; }
 .rc-text span   { font-size: 11px; color: #8aaccc; line-height: 1.4; }
-.risk-low       { background: #1a4a2e; color: #2ecc71; }
-.risk-medium    { background: #4a3a00; color: #f1c40f; }
-.risk-high      { background: #4a2a00; color: #e67e22; }
-.risk-very-high { background: #4a1010; color: #e74c3c; }
+.risk-low       { background: #22c55e; color: #052e16; border-color: #15803d; }
+.risk-medium    { background: #facc15; color: #422006; border-color: #ca8a04; }
+.risk-high      { background: #fb923c; color: #431407; border-color: #ea580c; }
+.risk-very-high { background: #ef4444; color: #ffffff; border-color: #b91c1c; }
 
 /* ---- Detail Panel ---- */
 #detail-panel {
@@ -346,11 +346,11 @@ select,input[type=number],input[type=file]{width:100%;margin-top:5px;padding:9px
 .risk-legend-item{color:#ffffff!important;font-size:16px!important;}
 .risk-legend-name,.risk-legend-pct{color:#ffffff!important;text-shadow:0 1px 2px #000!important;}
 .risk-legend-pct{font-size:16px!important;}
-.risk-badge{border:1px solid currentColor;font-weight:900!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-.risk-low{background:#14532d!important;color:#dcfce7!important;}
-.risk-medium{background:#713f12!important;color:#fef9c3!important;}
-.risk-high{background:#7c2d12!important;color:#ffedd5!important;}
-.risk-very-high{background:#7f1d1d!important;color:#fee2e2!important;}
+.risk-badge{border:1px solid currentColor;font-weight:900!important;box-shadow:0 1px 2px rgba(0,0,0,.08);-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
+.risk-low{background:#22c55e!important;color:#052e16!important;border-color:#15803d!important;}
+.risk-medium{background:#facc15!important;color:#422006!important;border-color:#ca8a04!important;}
+.risk-high{background:#fb923c!important;color:#431407!important;border-color:#ea580c!important;}
+.risk-very-high{background:#ef4444!important;color:#ffffff!important;border-color:#b91c1c!important;}
 
 @media print{
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
