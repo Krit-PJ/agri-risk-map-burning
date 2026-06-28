@@ -182,12 +182,12 @@
     <div id="print-scope">ขอบเขต: จังหวัดกำแพงเพชร</div>
   </div>
 </section>
-<div id="print-filter-summary" class="print-only">ปีประเมิน 2569 · สะสมทุกเดือน</div>
+<div id="print-filter-summary" class="print-only">ชุดข้อมูลปี 2569 · จุดความร้อนสะสมรายเดือน: สะสมทุกเดือน</div>
 
 <section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
   <div class="timeline-year-wrap">
-    <label for="timeline-year">ปีประเมิน</label>
-    <select id="timeline-year" class="timeline-year-select" aria-label="เลือกปีประเมินหลัก" data-years="2566,2567,2568,2569">
+    <label for="timeline-year">ชุดข้อมูลปี</label>
+    <select id="timeline-year" class="timeline-year-select" aria-label="เลือกชุดข้อมูลปี" data-years="2566,2567,2568,2569">
       <option value="2566">2566</option>
       <option value="2567">2567</option>
       <option value="2568">2568</option>
@@ -214,7 +214,7 @@
   <div class="timeline-preset-wrap" aria-label="ช่วงเวลาที่ใช้บ่อย">
     <button type="button" data-preset="clear">ล้างการเลือกเดือน</button>
   </div>
-  <div class="timeline-status" id="timeline-status">สะสมทุกเดือน 2569</div>
+  <div class="timeline-status" id="timeline-status">จุดความร้อนสะสมรายเดือน ปี 2569: สะสมทุกเดือน</div>
 </section>
 
 <!-- MAIN LAYOUT -->
@@ -272,9 +272,9 @@
 <label class="toggle-row hs-2569"><input checked="" class="hs-layer" data-year="2569" type="checkbox"/> ปี 2569 (2026)</label>
 </div>
 <div class="layer-group year-control-note">
-<label class="section-label">ปีประเมินและเดือนสะสม</label>
-<div class="selected-year-chip" id="selected-year-display">ปีประเมิน 2569</div>
-<p class="field-help">เลือกปีและเดือนสะสมจากแถบด้านบน ผลลัพธ์ทุกส่วนใช้เงื่อนไขเดียวกัน</p>
+<label class="section-label">ชุดข้อมูลปีและเดือนสะสม</label>
+<div class="selected-year-chip" id="selected-year-display">ชุดข้อมูลปี 2569</div>
+<p class="field-help">เลือกชุดข้อมูลปีและเดือนสะสมจากแถบด้านบน ผลลัพธ์ทุกส่วนใช้เงื่อนไขเดียวกัน</p>
 </div>
 <div class="layer-group">
 <label class="section-label">แผนที่ความเสี่ยงและชนิดพืช</label>
@@ -325,6 +325,7 @@
 </aside>
 <!-- CENTER: Map -->
 <main id="map-container">
+<div class="print-north-arrow print-only" aria-label="ทิศเหนือ"><span class="north-arrow-symbol">↑</span><span class="north-arrow-label">N</span></div>
 <div id="map"></div>
 <div id="map-legend">
 <strong>ระดับความเสี่ยง</strong>
@@ -371,6 +372,15 @@
   <div class="risk-canvas-wrap"><canvas height="150" id="chart-risk"></canvas></div>
   <div id="risk-legend-list" class="risk-legend-list" aria-label="คำอธิบายระดับความเสี่ยง"></div>
 </div>
+</div>
+<div class="chart-box print-only" id="print-risk-level-card" aria-label="เกณฑ์ระดับความเสี่ยง 4 ระดับ">
+  <h4>เกณฑ์ระดับความเสี่ยง</h4>
+  <div class="print-risk-level-grid">
+    <div class="print-risk-level-item very-high"><span></span><strong>สูงมาก</strong><em>75–100</em></div>
+    <div class="print-risk-level-item high"><span></span><strong>สูง</strong><em>50–74.99</em></div>
+    <div class="print-risk-level-item medium"><span></span><strong>ปานกลาง</strong><em>25–49.99</em></div>
+    <div class="print-risk-level-item low"><span></span><strong>ต่ำ</strong><em>0–24.99</em></div>
+  </div>
 </div>
 <!-- Top Districts Table -->
 <div class="chart-box" id="top10-box">

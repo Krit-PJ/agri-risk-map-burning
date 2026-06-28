@@ -51,7 +51,7 @@ const App=(()=>{
     const year=selectedYear();
     const hidden=document.getElementById('filter-year');if(hidden)hidden.value=year;
     document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=String(cb.dataset.year)===String(year);});
-    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
+    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ชุดข้อมูลปี ${year}`;
     syncTimelineUI();
   }
   function applyYearSelector(){
@@ -93,8 +93,7 @@ const App=(()=>{
     if(!months.length)return'สะสมทุกเดือน';
     const sorted=[...months].sort((a,b)=>a-b);
     const isJanMay=sorted.length===5&&sorted.every((m,i)=>m===i+1);
-    if(isJanMay)return'มกราคม–พฤษภาคม';
-    if(sorted.length===1)return names[sorted[0]];
+        if(sorted.length===1)return names[sorted[0]];
     return sorted.map(m=>names[m].replace('มกราคม','ม.ค.').replace('กุมภาพันธ์','ก.พ.').replace('มีนาคม','มี.ค.').replace('เมษายน','เม.ย.').replace('พฤษภาคม','พ.ค.').replace('มิถุนายน','มิ.ย.').replace('กรกฎาคม','ก.ค.').replace('สิงหาคม','ส.ค.').replace('กันยายน','ก.ย.').replace('ตุลาคม','ต.ค.').replace('พฤศจิกายน','พ.ย.').replace('ธันวาคม','ธ.ค.')).join(', ');
   }
   function syncTimelineUI(){
@@ -104,8 +103,8 @@ const App=(()=>{
     document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',months.length===0);
     document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(months.length===0));
     const day=document.getElementById('filter-day')?.value||'';
-    const status=document.getElementById('timeline-status');if(status)status.textContent=`${monthText(months)} ${year||'-'}${day?' · วันที่ '+day:''}`;
-    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
+    const status=document.getElementById('timeline-status');if(status)status.textContent=`จุดความร้อนสะสมรายเดือน ปี ${year||'-'}: ${monthText(months)}${day?' · วันที่ '+day:''}`;
+    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ชุดข้อมูลปี ${year}`;
     updatePrintMeta();
   }
   function scopeText(){
@@ -119,7 +118,7 @@ const App=(()=>{
     const year=selectedYear();
     const months=selectedMonths();
     const day=document.getElementById('filter-day')?.value||'';
-    const period=`ปีประเมิน ${year} · ${monthText(months)}${day?' · วันที่ '+day:''}`;
+    const period=`ชุดข้อมูลปี ${year} · จุดความร้อนสะสมรายเดือน: ${monthText(months)}${day?' · วันที่ '+day:''}`;
     const printSummary=document.getElementById('print-filter-summary');if(printSummary)printSummary.textContent=period;
     const printScope=document.getElementById('print-scope');if(printScope)printScope.textContent=`ขอบเขต: ${scopeText()}`;
     const printDate=document.getElementById('print-date');if(printDate)printDate.textContent='วันที่พิมพ์รายงาน: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});

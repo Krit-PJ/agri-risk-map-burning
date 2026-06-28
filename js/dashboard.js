@@ -158,7 +158,7 @@ const Dashboard = (() => {
     const text=!months.length?'สะสมทั้งปี':(months.length===1?names[months[0]]:months.map(m=>short[m]).join(', '));
     return day&&months.length?`${text} วันที่ ${day}`:text;
   }
-  function formatYears(years){if(!years.length)return'ไม่เลือกปี';if(years.length===1)return`ปี ${years[0]}`;return`ปี ${years.join(', ')}`;}
+  function formatYears(years){if(!years.length)return'ไม่เลือกชุดข้อมูลปี';if(years.length===1)return`ชุดข้อมูลปี ${years[0]}`;return`ชุดข้อมูลปี ${years.join(', ')}`;}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}
   function riskScoreOf(p){return Number(p?.risk_score??p?.RISK_SCORE??p?.risk??p?.score??0)||0;}
   function selectedRiskFeatures(){
@@ -181,7 +181,7 @@ const Dashboard = (() => {
     document.getElementById('scope-caption').textContent=`ขอบเขตวิเคราะห์: ${scope} | ${yearText} | ${temporalText()}${state.crop?' | พืช: '+state.crop:''}`;
     document.getElementById('title-trend').textContent=`Hotspot รายปี - ${scope}`;
     document.getElementById('title-top5').textContent=`Top 5 ${unit} - ${yearText} (${temporalText()})`;
-    document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับสถานการณ์ Hotspot':'ระดับความเสี่ยงสะสม'} - ${yearText} (${temporalText()})`;
+    document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับความเสี่ยงสะสม':'ระดับความเสี่ยงสะสม'} - ${yearText} (${temporalText()})`;
     document.getElementById('title-top10').textContent=`Top 10 ${unit} (Hotspot สูงสุด) - ${yearText} (${temporalText()})`;
     document.getElementById('rank-area-header').textContent=unit;
   }
