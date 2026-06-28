@@ -379,13 +379,18 @@ const App=(()=>{
     const key='agri-risk-pageviews-fallback';
     const local=Number(localStorage.getItem(key)||0)+1;
     localStorage.setItem(key,String(local));
-    const showFallback=()=>{
-      const hasExternal=!!(box?.querySelector('img')) || /\d/.test(String(box?.textContent||'').replace(String(fallback.textContent||''),''));
-      if(!hasExternal){fallback.textContent='ผู้เข้าชม '+local.toLocaleString('th-TH');fallback.classList.add('is-fallback');}
-      else {fallback.textContent='';fallback.classList.remove('is-fallback');}
+    const fallbackText='สำรอง '+local.toLocaleString('th-TH');
+    fallback.textContent=fallbackText;
+    fallback.classList.add('is-fallback');
+    const checkExternal=()=>{
+      const raw=String(box?.textContent||'').replace(String(fallback.textContent||''),'').trim();
+      const hasExternal=!!(box?.querySelector('img')) || /\d/.test(raw);
+      /* Keep the local fallback visible even when the external script is blocked or renders as an image.
+         This avoids an empty counter card in privacy-restricted browsers. */
+      if(!hasExternal){fallback.textContent=fallbackText;fallback.classList.add('is-fallback');}
     };
-    setTimeout(showFallback,1800);
-    setTimeout(showFallback,4200);
+    setTimeout(checkExternal,1200);
+    setTimeout(checkExternal,3500);
   }
   return{init};
 })();
