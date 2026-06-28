@@ -1900,3 +1900,249 @@ body, label, select, button, input, table, th, td, .panel-section, .chart-box, .
   .print-risk-level-item.medium span{background:#facc15!important;}
   .print-risk-level-item.low span{background:#22c55e!important;}
 }
+
+
+/* =====================================================
+   Print layout stabilization: map-fit preparation + full right-side report
+   - Avoids CORS/blank-map problems from client-side screenshot capture.
+   - Forces the same layout during print preparation and actual printing.
+   ===================================================== */
+body.print-preparing{
+  background:#ffffff!important;
+}
+body.print-preparing #app-header,
+body.print-preparing #hotspot-timeline,
+body.print-preparing #mobile-toolbar,
+body.print-preparing #mobile-overlay,
+body.print-preparing #left-panel,
+body.print-preparing .leaflet-control-container,
+body.print-preparing .no-print,
+body.print-preparing button,
+body.print-preparing input[type=file],
+body.print-preparing #trend-box,
+body.print-preparing #top5-box,
+body.print-preparing #top10-box,
+body.print-preparing .chart-crop-full,
+body.print-preparing #right-panel .chart-box:not(#hotspot-comparison-box):not(#risk-box):not(#print-risk-level-card){
+  display:none!important;
+}
+body.print-preparing .print-only{display:block!important;}
+body.print-preparing #print-report-header,
+body.print-preparing #print-filter-summary{
+  display:block!important;
+}
+body.print-preparing #app-body{
+  display:grid!important;
+  grid-template-columns:160mm 115mm!important;
+  grid-template-rows:98mm 18mm 33mm!important;
+  gap:2mm!important;
+  width:277mm!important;
+  height:153mm!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#ffffff!important;
+}
+body.print-preparing #map-container{
+  grid-column:1!important;
+  grid-row:1 / 4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  position:relative!important;
+  width:160mm!important;
+  height:153mm!important;
+  min-height:153mm!important;
+  max-height:153mm!important;
+  overflow:hidden!important;
+  background:#ffffff!important;
+}
+body.print-preparing #map{
+  width:160mm!important;
+  height:153mm!important;
+  min-height:153mm!important;
+}
+body.print-preparing #right-panel{display:contents!important;}
+body.print-preparing #hotspot-comparison-box{grid-column:2!important;grid-row:1!important;height:98mm!important;overflow:hidden!important;display:block!important;}
+body.print-preparing #print-risk-level-card{grid-column:2!important;grid-row:2!important;height:18mm!important;overflow:hidden!important;display:block!important;}
+body.print-preparing #risk-box{grid-column:2!important;grid-row:3!important;height:33mm!important;overflow:hidden!important;display:block!important;}
+
+@media print{
+  @page{size:A4 landscape;margin:10mm!important;}
+  html,body{
+    width:277mm!important;
+    height:190mm!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  body{
+    margin:0!important;
+    padding:0!important;
+    font-family:'Sarabun','Noto Sans Thai',sans-serif!important;
+    font-size:7.4pt!important;
+    line-height:1.16!important;
+  }
+  #app-header,#hotspot-timeline,#mobile-toolbar,#mobile-overlay,#left-panel,.leaflet-control-container,.no-print,button,input[type=file],
+  #trend-box,#top5-box,#top10-box,.chart-crop-full,#right-panel .chart-box:not(#hotspot-comparison-box):not(#risk-box):not(#print-risk-level-card){display:none!important;}
+  .print-only{display:block!important;}
+  #print-report-header{
+    display:grid!important;
+    grid-template-columns:36mm 1fr 62mm!important;
+    align-items:center!important;
+    min-height:24mm!important;
+    margin:0 0 2mm 0!important;
+    padding:2mm 3mm!important;
+    border:1.2pt solid #111827!important;
+    border-radius:3mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  .print-title-block{text-align:center!important;line-height:1.12!important;color:#111827!important;}
+  .print-report-logos{display:flex!important;justify-content:center!important;align-items:center!important;gap:4mm!important;margin-bottom:.8mm!important;}
+  .print-report-logos img{width:11.5mm!important;height:11.5mm!important;object-fit:contain!important;border-radius:50%!important;}
+  .print-title-block h1{font-size:14.5pt!important;line-height:1!important;margin:0!important;font-weight:900!important;color:#111827!important;}
+  .print-title-block p{font-size:8pt!important;margin:.45mm 0 0!important;font-weight:800!important;color:#111827!important;}
+  .print-meta-block{font-size:7pt!important;line-height:1.35!important;border-left:1pt solid #d1d5db!important;padding-left:3mm!important;font-weight:800!important;color:#111827!important;}
+  #print-filter-summary{
+    display:block!important;
+    margin:0 0 2mm 0!important;
+    padding:1mm 3mm!important;
+    border:1.2pt solid #166534!important;
+    border-radius:2mm!important;
+    background:#ecfdf5!important;
+    text-align:center!important;
+    font-size:9pt!important;
+    font-weight:900!important;
+    color:#111827!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #app-body{
+    display:grid!important;
+    grid-template-columns:160mm 115mm!important;
+    grid-template-rows:98mm 18mm 33mm!important;
+    gap:2mm!important;
+    width:277mm!important;
+    height:153mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #map-container{
+    grid-column:1!important;
+    grid-row:1 / 4!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    position:relative!important;
+    width:160mm!important;
+    height:153mm!important;
+    min-height:153mm!important;
+    max-height:153mm!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+  }
+  #map{
+    width:160mm!important;
+    height:153mm!important;
+    min-height:153mm!important;
+    margin:0!important;
+    background:#ffffff!important;
+  }
+  #map-legend{display:block!important;font-size:6.1pt!important;line-height:1.12!important;background:#ffffff!important;border:1pt solid #374151!important;bottom:3mm!important;right:3mm!important;padding:.9mm 1.3mm!important;color:#111827!important;}
+  #map-legend strong,#map-legend div{color:#111827!important;}
+  .print-north-arrow{display:flex!important;top:3mm!important;left:3mm!important;width:12mm!important;height:16mm!important;border:1pt solid #111827!important;border-radius:1.7mm!important;background:#ffffff!important;}
+  .north-arrow-symbol{font-size:15pt!important;color:#111827!important;}
+  .north-arrow-label{font-size:7.6pt!important;color:#111827!important;}
+  #right-panel{display:contents!important;background:#ffffff!important;overflow:visible!important;padding:0!important;border:0!important;color:#111827!important;}
+
+  /* Right column: complete comparison table first, risk criteria second, donut chart at the bottom. */
+  #hotspot-comparison-box{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    height:98mm!important;
+    min-height:0!important;
+    max-height:98mm!important;
+    overflow:hidden!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    padding:1.2mm!important;
+    margin:0!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  .comparison-heading{margin:0 0 .7mm 0!important;display:block!important;color:#111827!important;}
+  .comparison-heading h4{font-size:7.4pt!important;line-height:1.08!important;margin:0 0 .5mm 0!important;font-weight:900!important;color:#111827!important;}
+  .comparison-heading span{font-size:5.8pt!important;line-height:1.05!important;font-weight:800!important;color:#111827!important;}
+  .comparison-table-wrap{height:88mm!important;max-height:88mm!important;overflow:hidden!important;border:0!important;background:#ffffff!important;}
+  #tbl-hotspot-comparison{width:100%!important;border-collapse:collapse!important;font-size:5.85pt!important;line-height:1.03!important;table-layout:fixed!important;color:#111827!important;}
+  #tbl-hotspot-comparison th,#tbl-hotspot-comparison td{padding:.38mm .45mm!important;border:.42pt solid #d1d5db!important;background:#ffffff!important;color:#111827!important;white-space:normal!important;word-break:normal!important;overflow-wrap:break-word!important;vertical-align:middle!important;}
+  #tbl-hotspot-comparison thead th,#tbl-hotspot-comparison tfoot th,#tbl-hotspot-comparison tfoot td{background:#dcfce7!important;font-weight:900!important;position:static!important;color:#111827!important;}
+  #tbl-hotspot-comparison th:nth-child(1),#tbl-hotspot-comparison td:nth-child(1){width:46%!important;text-align:left!important;}
+  #tbl-hotspot-comparison th:nth-child(2),#tbl-hotspot-comparison td:nth-child(2),#tbl-hotspot-comparison th:nth-child(3),#tbl-hotspot-comparison td:nth-child(3){width:15%!important;text-align:right!important;}
+  #tbl-hotspot-comparison th:nth-child(4),#tbl-hotspot-comparison td:nth-child(4){width:24%!important;text-align:center!important;}
+  .change-badge{background:transparent!important;border:0!important;padding:0!important;min-width:0!important;font-size:5.6pt!important;font-weight:900!important;color:#111827!important;}
+
+  #print-risk-level-card{
+    grid-column:2!important;
+    grid-row:2!important;
+    align-self:stretch!important;
+    display:block!important;
+    height:18mm!important;
+    min-height:0!important;
+    max-height:18mm!important;
+    overflow:hidden!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    padding:1mm 1.2mm!important;
+    margin:0!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  #print-risk-level-card h4{margin:0 0 .8mm!important;font-size:6.8pt!important;line-height:1!important;color:#111827!important;font-weight:900!important;}
+  .print-risk-level-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:.7mm 1.1mm!important;}
+  .print-risk-level-item{display:grid!important;grid-template-columns:3mm 1fr auto!important;gap:.7mm!important;align-items:center!important;min-height:4.5mm!important;padding:.45mm .7mm!important;border:.6pt solid #d1d5db!important;border-radius:1mm!important;background:#ffffff!important;color:#111827!important;font-size:5.7pt!important;line-height:1!important;font-style:normal!important;}
+  .print-risk-level-item span{width:2.8mm!important;height:2.8mm!important;border:.5pt solid #111827!important;border-radius:.7mm!important;}
+  .print-risk-level-item strong,.print-risk-level-item em{color:#111827!important;font-weight:900!important;font-style:normal!important;}
+  .print-risk-level-item.very-high span{background:#ef4444!important;}
+  .print-risk-level-item.high span{background:#fb923c!important;}
+  .print-risk-level-item.medium span{background:#facc15!important;}
+  .print-risk-level-item.low span{background:#22c55e!important;}
+
+  #risk-box{
+    grid-column:2!important;
+    grid-row:3!important;
+    display:block!important;
+    height:33mm!important;
+    min-height:0!important;
+    max-height:33mm!important;
+    overflow:hidden!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    padding:1.1mm!important;
+    margin:0!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #risk-box h4{font-size:6.9pt!important;line-height:1.05!important;margin:0 0 .6mm!important;font-weight:900!important;color:#111827!important;}
+  .risk-chart-layout{display:grid!important;grid-template-columns:34mm 1fr!important;gap:1.5mm!important;align-items:center!important;height:26mm!important;}
+  .risk-canvas-wrap,#chart-risk{height:26mm!important;max-height:26mm!important;min-height:26mm!important;}
+  #chart-risk{width:34mm!important;max-width:34mm!important;}
+  .risk-legend-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:.65mm 1mm!important;background:#ffffff!important;border:0!important;padding:0!important;}
+  .risk-legend-item{font-size:5.85pt!important;line-height:1!important;font-weight:800!important;display:grid!important;grid-template-columns:2.8mm 1fr auto!important;gap:.55mm!important;align-items:center!important;}
+  .risk-legend-swatch{width:2.8mm!important;height:2.8mm!important;border:.5pt solid #111827!important;}
+  .risk-legend-name,.risk-legend-pct{font-size:5.85pt!important;font-weight:900!important;color:#111827!important;}
+}

@@ -163,10 +163,12 @@ const App=(()=>{
         const map=MapModule.map?.();
         if(!map)return;
         map.invalidateSize({pan:false});
-        MapModule.focusSelection?.({padding:[10,10],maxZoom:12});
+        // Fit the selected province/district/subdistrict after the print-sized map container is applied.
+        // Larger padding prevents the selected boundary from being clipped in A4 landscape output.
+        MapModule.focusSelection?.({padding:[70,70],maxZoom:10});
       };
-      refit();
-      [120,320,650].forEach(ms=>setTimeout(refit,ms));
+      requestAnimationFrame(refit);
+      [180,420,850,1200].forEach(ms=>setTimeout(refit,ms));
     };
     const restore=()=>{
       document.body.classList.remove('print-preparing');
