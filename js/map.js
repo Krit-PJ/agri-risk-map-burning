@@ -6,7 +6,7 @@ const MapModule = (() => {
     risk:null, riskDistrict:null, riskSubdistrict:null
   };
   const shown = { province:null, district:null, subdistrict:null, hotspot:{}, crop:null, burnscar:null, risk:null };
-  let state = { district:'', subdistrict:'', crop:'', months:[], month:'', day:'' };
+  let state = { district:'', subdistrict:'', crop:'', months:[], month:'', day:'', startYM:null, endYM:null, startYear:null, startMonth:null, endYear:null, endMonth:null };
 
   const clean = v => String(v || '').replace(/^(อ\.|อำเภอ|ต\.|ตำบล|จ\.|จังหวัด)\s*/, '').trim();
   const districtOf = p => clean(p?.__district || p?.district || p?.Amphoe || p?.AmphoeN || p?.AMP_NAMT || p?.AMP_NAM_T || p?.AMPHOE_T || p?.AMPHOE || p?.NAME_2);
@@ -47,8 +47,14 @@ const MapModule = (() => {
     const d=parseHotspotDate(p,p.year_be);return d?{month:d.getUTCMonth()+1,day:d.getUTCDate(),date:d.toISOString().slice(0,10)}:{month:0,day:0,date:''};
   }
   function selectedMonths(){return Array.isArray(state.months)?state.months.map(Number).filter(Number.isFinite):(state.month?[Number(state.month)]:[]);}
+  function ymIndex(year,month){return Number(year)*12+Number(month);}
+  function featureYM(feature){const p=feature?.properties||{},parts=datePartsOf(feature),year=Number(p.year_be||p.season_be||0);return year&&parts.month?ymIndex(year,parts.month):null;}
+  function rangePeriodText(){const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];if(state.startYear&&state.startMonth&&state.endYear&&state.endMonth){const a=`${short[state.startMonth]} ${state.startYear}`,b=`${short[state.endMonth]} ${state.endYear}`;return Number(state.startYM)===Number(state.endYM)?a:`${a} ถึง ${b}`;}return selectedMonths().length?`เดือน ${selectedMonths().join(',')}`:'สะสมทั้งปี';}
   function matchesDate(feature){
-    const parts=datePartsOf(feature),months=selectedMonths(),day=Number(state.day||0);
+    const parts=datePartsOf(feature),months=selectedMonths(),day=Number(state.day||0),idx=featureYM(feature);
+    if(Number.isFinite(Number(state.startYM))&&Number.isFinite(Number(state.endYM))&&idx!==null){
+      return idx>=Number(state.startYM)&&idx<=Number(state.endYM)&&(!day||parts.day===day);
+    }
     return(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
   }
   async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); }
@@ -233,7 +239,7 @@ const MapModule = (() => {
             crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),
             risk_years:years.join(','),
             risk_months:selectedMonths().join(','),risk_day:state.day||'',
-            risk_period:[state.day?`วันที่ ${state.day}`:'',selectedMonths().length?`เดือน ${selectedMonths().join(',')}`:''].filter(Boolean).join(' ')||'สะสมทั้งปี',
+            risk_period:rangePeriodText(),
             risk_method:method,
             selected_hotspot_count:selectedCount,
             risk_reference_max:referenceMax,
@@ -297,7 +303,7 @@ const MapModule = (() => {
   }
 
   function applyFilter(next){
-    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||'',months:Array.isArray(next.months)?next.months.map(Number).filter(Number.isFinite):(next.month?[Number(next.month)]:[]),month:String(next.month||''),day:String(next.day||'')};
+    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||'',months:Array.isArray(next.months)?next.months.map(Number).filter(Number.isFinite):(next.month?[Number(next.month)]:[]),month:String(next.month||''),day:String(next.day||''),startYM:Number(next.startYM)||null,endYM:Number(next.endYM)||null,startYear:Number(next.startYear)||null,startMonth:Number(next.startMonth)||null,endYear:Number(next.endYear)||null,endMonth:Number(next.endMonth)||null};
     computeDynamicRisk();
     raw.risk=state.district?raw.riskSubdistrict:raw.riskDistrict;
     renderBoundaries();renderHotspots();renderCrop();renderAux('burnscar');renderAux('risk');focusSelection();
@@ -333,6 +339,6 @@ const MapModule = (() => {
   function availableDays(years=activeYears(),months=selectedMonths()){
     const wanted=Array.isArray(months)?months.map(Number).filter(Number.isFinite):(months?[Number(months)]:[]),set=new Set();if(!wanted.length)return[];years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const d=datePartsOf(f);if(wanted.includes(d.month)&&d.day)set.add(d.day);}));return[...set].sort((a,b)=>a-b);
   }
-  function temporalState(){return{months:selectedMonths(),month:selectedMonths().join(','),day:String(state.day||'')};}
+  function temporalState(){return{months:selectedMonths(),month:selectedMonths().join(','),day:String(state.day||''),startYM:state.startYM,endYM:state.endYM,startYear:state.startYear,startMonth:state.startMonth,endYear:state.endYear,endMonth:state.endMonth};}
   return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,availableMonths,availableDays,temporalState,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop,annualEvidenceScore,datePartsOf,matchesDate} };
 })();

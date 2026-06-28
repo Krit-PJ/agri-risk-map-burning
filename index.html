@@ -158,15 +158,13 @@
 <div id="mobile-overlay" class="no-print" hidden></div>
 
 <section id="print-report-header" class="print-only" aria-label="หัวรายงานสำหรับพิมพ์">
-  <div class="print-side-logo print-left-logo">
+  <div class="print-front-logos" aria-label="ตราหน่วยงาน">
     <img alt="ตรากรมส่งเสริมการเกษตร" src="assets/logo-doae.png"/>
+    <img alt="ตราจังหวัดกำแพงเพชร" src="assets/logo-kpp.jpg"/>
   </div>
   <div class="print-title-block">
     <h1>Agri-Risk Map Burning</h1>
     <p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
-  </div>
-  <div class="print-side-logo print-right-logo">
-    <img alt="ตราจังหวัดกำแพงเพชร" src="assets/logo-kpp.jpg"/>
   </div>
 </section>
 <section id="print-report-meta" class="print-only" aria-label="ข้อมูลประกอบรายงาน">
@@ -176,37 +174,32 @@
 </section>
 <div id="print-filter-summary" class="print-only">ชุดข้อมูลปี 2569 · จุดความร้อนสะสมรายเดือน: สะสมทุกเดือน</div>
 
-<section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
-  <div class="timeline-year-wrap">
-    <label for="timeline-year">ชุดข้อมูลปี</label>
-    <select id="timeline-year" class="timeline-year-select" aria-label="เลือกชุดข้อมูลปี" data-years="2566,2567,2568,2569">
-      <option value="2566">2566</option>
-      <option value="2567">2567</option>
-      <option value="2568">2568</option>
-      <option value="2569" selected>2569</option>
-    </select>
-  </div>
-  <div class="timeline-track-wrap">
-    <button class="timeline-all active" type="button" data-action="all" aria-pressed="true">สะสมทุกเดือน</button>
-    <div class="timeline-track" role="list" aria-label="เลือกเดือนได้หลายเดือนเพื่อดู Hotspot สะสม">
-      <button type="button" data-month="1" role="listitem" aria-pressed="false">ม.ค.</button>
-      <button type="button" data-month="2" role="listitem" aria-pressed="false">ก.พ.</button>
-      <button type="button" data-month="3" role="listitem" aria-pressed="false">มี.ค.</button>
-      <button type="button" data-month="4" role="listitem" aria-pressed="false">เม.ย.</button>
-      <button type="button" data-month="5" role="listitem" aria-pressed="false">พ.ค.</button>
-      <button type="button" data-month="6" role="listitem" aria-pressed="false">มิ.ย.</button>
-      <button type="button" data-month="7" role="listitem" aria-pressed="false">ก.ค.</button>
-      <button type="button" data-month="8" role="listitem" aria-pressed="false">ส.ค.</button>
-      <button type="button" data-month="9" role="listitem" aria-pressed="false">ก.ย.</button>
-      <button type="button" data-month="10" role="listitem" aria-pressed="false">ต.ค.</button>
-      <button type="button" data-month="11" role="listitem" aria-pressed="false">พ.ย.</button>
-      <button type="button" data-month="12" role="listitem" aria-pressed="false">ธ.ค.</button>
+<section id="hotspot-timeline" class="no-print" aria-label="ช่วงข้อมูล Hotspot">
+  <div class="period-range-card">
+    <div class="period-range-title">ช่วงข้อมูลจุดความร้อนสะสม</div>
+    <div class="period-range-controls" aria-label="เลือกช่วงเดือนปีของข้อมูล Hotspot">
+      <label>ตั้งแต่
+        <span class="period-select-row">
+          <select id="range-start-month" class="period-month-select" aria-label="เดือนเริ่มต้น"></select>
+          <select id="range-start-year" class="period-year-select" aria-label="ปีเริ่มต้น"></select>
+        </span>
+      </label>
+      <label>ถึง
+        <span class="period-select-row">
+          <select id="range-end-month" class="period-month-select" aria-label="เดือนสิ้นสุด"></select>
+          <select id="range-end-year" class="period-year-select" aria-label="ปีสิ้นสุด"></select>
+        </span>
+      </label>
+      <button type="button" id="btn-latest-period" class="period-latest-btn">เดือนล่าสุด</button>
     </div>
+    <div class="timeline-status" id="timeline-status">จุดความร้อนสะสม: กำลังโหลดช่วงข้อมูล…</div>
   </div>
-  <div class="timeline-preset-wrap" aria-label="ช่วงเวลาที่ใช้บ่อย">
-    <button type="button" data-preset="clear">ล้างการเลือกเดือน</button>
-  </div>
-  <div class="timeline-status" id="timeline-status">จุดความร้อนสะสมรายเดือน ปี 2569: สะสมทุกเดือน</div>
+  <select id="timeline-year" class="timeline-year-select timeline-year-hidden" aria-label="ชุดข้อมูลปีภายในระบบ" data-years="2566,2567,2568,2569" hidden>
+    <option value="2566">2566</option>
+    <option value="2567">2567</option>
+    <option value="2568">2568</option>
+    <option value="2569" selected>2569</option>
+  </select>
 </section>
 
 <!-- MAIN LAYOUT -->

@@ -15,96 +15,100 @@ const App=(()=>{
   function showRuntimeWarning(message){let el=document.getElementById('runtime-warning');if(!el){el=document.createElement('div');el.id='runtime-warning';el.style.cssText='position:fixed;left:50%;top:86px;transform:translateX(-50%);z-index:9999;background:#7f1d1d;color:white;padding:8px 14px;border-radius:6px;font-size:14px;box-shadow:0 4px 15px rgba(0,0,0,.35)';document.body.appendChild(el);}el.textContent=message;}
   function populateDistricts(){const sel=document.getElementById('filter-district'),current=sel.value;const districts=[...new Set(subdistrictFeatures.map(f=>MapModule.helpers.districtOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML='<option value="">-- ทั้งหมด --</option>'+districts.map(x=>`<option value="${x}">${x}</option>`).join('');sel.value=current;}
   function populateSubdistricts(){const d=document.getElementById('filter-district').value,sel=document.getElementById('filter-subdistrict');const names=[...new Set(subdistrictFeatures.filter(f=>MapModule.helpers.districtOf(f.properties)===d).map(f=>MapModule.helpers.subdistrictOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML=d?'<option value="">-- ทุกตำบล --</option>'+names.map(x=>`<option value="${x}">${x}</option>`).join(''):'<option value="">-- เลือกอำเภอก่อน --</option>';sel.disabled=!d;}
+  const MONTH_SHORT=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const MONTH_FULL=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const ymIndex=(year,month)=>Number(year)*12+Number(month);
+  const ymFromIndex=i=>({year:Math.floor((Number(i)-1)/12),month:((Number(i)-1)%12)+1});
+  function availableYears(){
+    const fromConfig=(document.getElementById('timeline-year')?.dataset.years||'2566,2567,2568,2569').split(',').map(x=>Number(x.trim())).filter(Number.isFinite);
+    const fromData=Object.keys(MapModule.getData?.().hotspot||{}).map(Number).filter(Number.isFinite);
+    return [...new Set([...fromConfig,...fromData])].sort((a,b)=>a-b);
+  }
+  function fillPeriodSelects(){
+    const years=availableYears();
+    const months=Array.from({length:12},(_,i)=>i+1);
+    ['range-start-month','range-end-month'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.options.length)el.innerHTML=months.map(m=>`<option value="${m}">${MONTH_SHORT[m]}</option>`).join('');});
+    ['range-start-year','range-end-year'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.options.length)el.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');});
+  }
+  function latestYM(){
+    let max=-Infinity;
+    const raw=MapModule.getData?.().hotspot||{};
+    Object.entries(raw).forEach(([year,fc])=>(fc.features||[]).forEach(f=>{const d=MapModule.helpers.datePartsOf(f);const y=Number(f.properties?.year_be||year);if(y&&d.month)max=Math.max(max,ymIndex(y,d.month));}));
+    if(Number.isFinite(max))return ymFromIndex(max);
+    return {year:Number(CONFIG.CURRENT_YEAR_BE||2569),month:12};
+  }
+  function setPeriodRange(startYear,startMonth,endYear,endMonth){
+    fillPeriodSelects();
+    const sm=document.getElementById('range-start-month'),sy=document.getElementById('range-start-year'),em=document.getElementById('range-end-month'),ey=document.getElementById('range-end-year');
+    if(sy)sy.value=String(startYear); if(sm)sm.value=String(startMonth); if(ey)ey.value=String(endYear); if(em)em.value=String(endMonth);
+    normalizePeriodRange();
+    syncYearSelector();syncTimelineUI();
+  }
+  function setLatestPeriod(){const latest=latestYM();setPeriodRange(latest.year,latest.month,latest.year,latest.month);}
+  function selectedRange(){
+    fillPeriodSelects();
+    const sy=Number(document.getElementById('range-start-year')?.value||CONFIG.CURRENT_YEAR_BE||2569);
+    const sm=Number(document.getElementById('range-start-month')?.value||1);
+    const ey=Number(document.getElementById('range-end-year')?.value||sy);
+    const em=Number(document.getElementById('range-end-month')?.value||sm);
+    let startYM=ymIndex(sy,sm),endYM=ymIndex(ey,em);
+    if(startYM>endYM){const tmp=startYM;startYM=endYM;endYM=tmp;}
+    const a=ymFromIndex(startYM),b=ymFromIndex(endYM);
+    return {startYear:a.year,startMonth:a.month,endYear:b.year,endMonth:b.month,startYM,endYM};
+  }
+  function normalizePeriodRange(){
+    const r=selectedRange();
+    const sy=document.getElementById('range-start-year'),sm=document.getElementById('range-start-month'),ey=document.getElementById('range-end-year'),em=document.getElementById('range-end-month');
+    if(sy)sy.value=String(r.startYear);if(sm)sm.value=String(r.startMonth);if(ey)ey.value=String(r.endYear);if(em)em.value=String(r.endMonth);
+  }
   function selectedMonths(){
-    return [...document.querySelectorAll('#hotspot-timeline .timeline-track [data-month].active')]
-      .map(btn=>Number(btn.dataset.month)).filter(Number.isFinite).sort((a,b)=>a-b);
+    const r=selectedRange();
+    if(r.startYear===r.endYear){const out=[];for(let m=r.startMonth;m<=r.endMonth;m++)out.push(m);return out;}
+    return [];
   }
-  function setSelectedMonths(months){
-    const wanted=new Set((months||[]).map(Number).filter(Number.isFinite));
-    document.querySelectorAll('#hotspot-timeline .timeline-track [data-month]').forEach(btn=>{
-      const active=wanted.has(Number(btn.dataset.month));
-      btn.classList.toggle('active',active);
-      btn.setAttribute('aria-pressed',String(active));
-    });
-    document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',wanted.size===0);
-    document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(wanted.size===0));
-    const monthSelect=document.getElementById('filter-month');
-    if(monthSelect){[...monthSelect.options].forEach(opt=>{opt.selected=wanted.has(Number(opt.value));});}
-  }
-  function current(){return{
+  function current(){const r=selectedRange();return{
     district:document.getElementById('filter-district').value,
     subdistrict:document.getElementById('filter-subdistrict').value,
     crop:document.getElementById('filter-crop').value,
     months:selectedMonths(),
-    day:document.getElementById('filter-day')?.value||''
+    day:document.getElementById('filter-day')?.value||'',
+    startYear:r.startYear,startMonth:r.startMonth,endYear:r.endYear,endMonth:r.endMonth,startYM:r.startYM,endYM:r.endYM
   };}
-  function selectedYear(){return document.getElementById('timeline-year')?.value||document.getElementById('filter-year')?.value||String(CONFIG.CURRENT_YEAR_BE||2569);}
-  function ensureYearDropdown(){
-    const sel=document.getElementById('timeline-year');if(!sel)return;
-    if(sel.options && sel.options.length>0)return;
-    const years=(sel.dataset.years||'2566,2567,2568,2569').split(',').map(x=>x.trim()).filter(Boolean);
-    const current=String(CONFIG.CURRENT_YEAR_BE||2569);
-    sel.innerHTML=years.map(y=>`<option value="${y}"${String(y)===current?' selected':''}>${y}</option>`).join('');
-  }
+  function selectedYear(){return String(selectedRange().endYear||CONFIG.CURRENT_YEAR_BE||2569);}
+  function ensureYearDropdown(){fillPeriodSelects();}
+  function activeRangeYears(){const r=selectedRange(),out=[];for(let y=r.startYear;y<=r.endYear;y++)out.push(y);return out;}
   function syncYearSelector(){
     ensureYearDropdown();
-    const year=selectedYear();
-    const hidden=document.getElementById('filter-year');if(hidden)hidden.value=year;
-    document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=String(cb.dataset.year)===String(year);});
-    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ชุดข้อมูลปี ${year}`;
-    syncTimelineUI();
+    const r=selectedRange();
+    const active=new Set(activeRangeYears().map(String));
+    const hidden=document.getElementById('filter-year');if(hidden)hidden.value=String(r.endYear);
+    const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=String(r.endYear);
+    document.querySelectorAll('.hs-layer').forEach(cb=>{cb.checked=active.has(String(cb.dataset.year));});
+    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ช่วงข้อมูล ${periodText(r)}`;
   }
   function applyYearSelector(){
-    syncYearSelector();
-    populateDayOptions();
-    applyCurrent();
-    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'timeline-year'}}));
+    normalizePeriodRange();syncYearSelector();populateDayOptions();applyCurrent();
+    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'period-range'}}));
   }
   function populateDayOptions(){
     const daySel=document.getElementById('filter-day');if(!daySel)return;
-    const months=selectedMonths(),currentDay=daySel.value;
-    if(!months.length){daySel.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';daySel.disabled=true;return;}
-    const days=MapModule.availableDays(MapModule.activeYears(),months);
-    daySel.innerHTML='<option value="">-- ทุกวันที่ --</option>'+days.map(d=>`<option value="${d}">${d}</option>`).join('');
-    daySel.disabled=false;if(days.includes(Number(currentDay)))daySel.value=currentDay;
+    daySel.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';daySel.disabled=true;daySel.value='';
   }
   function initTimeline(){
-    ensureYearDropdown();
-    const year=document.getElementById('timeline-year');
-    year?.addEventListener('change',applyYearSelector);
-    document.querySelector('#hotspot-timeline .timeline-all')?.addEventListener('click',()=>{
-      setSelectedMonths([]);const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
-    });
-    document.querySelectorAll('#hotspot-timeline .timeline-track [data-month]').forEach(btn=>btn.addEventListener('click',()=>{
-      btn.classList.toggle('active');
-      btn.setAttribute('aria-pressed',String(btn.classList.contains('active')));
-      document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',selectedMonths().length===0);
-      document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(selectedMonths().length===0));
-      const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
-    }));
-    document.querySelectorAll('#hotspot-timeline [data-preset]').forEach(btn=>btn.addEventListener('click',()=>{
-      const preset=btn.dataset.preset;
-      setSelectedMonths([]);
-      const day=document.getElementById('filter-day');if(day)day.value='';populateDayOptions();syncTimelineUI();applyCurrent();
-    }));
+    fillPeriodSelects();setLatestPeriod();
+    ['range-start-month','range-start-year','range-end-month','range-end-year'].forEach(id=>document.getElementById(id)?.addEventListener('change',applyYearSelector));
+    document.getElementById('btn-latest-period')?.addEventListener('click',()=>{setLatestPeriod();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'latest-period'}}));});
   }
-  function monthText(months){
-    const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    if(!months.length)return'สะสมทุกเดือน';
-    const sorted=[...months].sort((a,b)=>a-b);
-    const isJanMay=sorted.length===5&&sorted.every((m,i)=>m===i+1);
-        if(sorted.length===1)return names[sorted[0]];
-    return sorted.map(m=>names[m].replace('มกราคม','ม.ค.').replace('กุมภาพันธ์','ก.พ.').replace('มีนาคม','มี.ค.').replace('เมษายน','เม.ย.').replace('พฤษภาคม','พ.ค.').replace('มิถุนายน','มิ.ย.').replace('กรกฎาคม','ก.ค.').replace('สิงหาคม','ส.ค.').replace('กันยายน','ก.ย.').replace('ตุลาคม','ต.ค.').replace('พฤศจิกายน','พ.ย.').replace('ธันวาคม','ธ.ค.')).join(', ');
+  function periodText(r=selectedRange()){
+    const a=`${MONTH_SHORT[r.startMonth]} ${r.startYear}`;
+    const b=`${MONTH_SHORT[r.endMonth]} ${r.endYear}`;
+    return r.startYM===r.endYM?a:`${a} ถึง ${b}`;
   }
+  function monthText(){return periodText();}
   function syncTimelineUI(){
-    const year=selectedYear();
-    const timelineYear=document.getElementById('timeline-year');if(timelineYear&&year)timelineYear.value=year;
-    const months=selectedMonths();
-    document.querySelector('#hotspot-timeline .timeline-all')?.classList.toggle('active',months.length===0);
-    document.querySelector('#hotspot-timeline .timeline-all')?.setAttribute('aria-pressed',String(months.length===0));
-    const day=document.getElementById('filter-day')?.value||'';
-    const status=document.getElementById('timeline-status');if(status)status.textContent=`จุดความร้อนสะสมรายเดือน ปี ${year||'-'}: ${monthText(months)}${day?' · วันที่ '+day:''}`;
-    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ชุดข้อมูลปี ${year}`;
+    const r=selectedRange();syncYearSelector();
+    const status=document.getElementById('timeline-status');if(status)status.textContent=`จุดความร้อนสะสม: ${periodText(r)}`;
+    const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ช่วงข้อมูล ${periodText(r)}`;
     updatePrintMeta();
   }
   function scopeText(){
@@ -115,10 +119,8 @@ const App=(()=>{
     return 'จังหวัดกำแพงเพชร';
   }
   function updatePrintMeta(){
-    const year=selectedYear();
-    const months=selectedMonths();
-    const day=document.getElementById('filter-day')?.value||'';
-    const period=`ชุดข้อมูลปี ${year} · จุดความร้อนสะสมรายเดือน: ${monthText(months)}${day?' · วันที่ '+day:''}`;
+    const r=selectedRange();
+    const period=`ช่วงข้อมูลจุดความร้อนสะสม: ${periodText(r)}`;
     const printSummary=document.getElementById('print-filter-summary');if(printSummary)printSummary.textContent=period;
     const printScope=document.getElementById('print-scope');if(printScope)printScope.textContent=`ขอบเขต: ${scopeText()}`;
     const printDate=document.getElementById('print-date');if(printDate)printDate.textContent='วันที่พิมพ์รายงาน: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
@@ -143,10 +145,7 @@ const App=(()=>{
     if(c)c.value='';
     const cropLayer=document.getElementById('lyr-crop');
     if(cropLayer&&!cropLayer.checked&&c)c.disabled=true;
-    const year=String(CONFIG.CURRENT_YEAR_BE||2569);
-    const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=year;
-    const hiddenYear=document.getElementById('filter-year');if(hiddenYear)hiddenYear.value=year;
-    setSelectedMonths([]);
+    setLatestPeriod();
     const day=document.getElementById('filter-day');
     if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';}
     syncYearSelector();syncTimelineUI();applyCurrent();

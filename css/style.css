@@ -3058,3 +3058,265 @@ body.left-panel-collapsed .sidebar-toggle-btn *{
   .risk-legend-swatch{width:3mm!important;height:3mm!important;border:.5pt solid #111827!important;}
   .risk-legend-name,.risk-legend-pct{font-size:5.8pt!important;color:#111827!important;font-weight:900!important;}
 }
+
+/* ===== Print report rollback: centered two logos + HS comparison only ===== */
+@media print{
+  /* Header returns to the earlier compact style: both logos together above the title. */
+  #print-report-header{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:.7mm!important;
+    width:270mm!important;
+    height:22mm!important;
+    max-height:22mm!important;
+    margin:0 auto 1.1mm auto!important;
+    padding:1.2mm 3mm!important;
+    border:1.15pt solid #111827!important;
+    border-radius:2.4mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    overflow:hidden!important;
+  }
+  .print-front-logos{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:3mm!important;
+    height:9.5mm!important;
+    max-height:9.5mm!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  .print-front-logos img{
+    display:block!important;
+    width:9mm!important;
+    height:9mm!important;
+    object-fit:contain!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  #print-report-header .print-title-block{
+    display:block!important;
+    text-align:center!important;
+    margin:0!important;
+    padding:0!important;
+    max-width:190mm!important;
+    color:#111827!important;
+  }
+  #print-report-header .print-title-block h1{
+    margin:0!important;
+    padding:0!important;
+    font-size:12pt!important;
+    line-height:1.02!important;
+    font-weight:900!important;
+    color:#111827!important;
+    -webkit-text-fill-color:#111827!important;
+  }
+  #print-report-header .print-title-block p{
+    margin:.45mm 0 0!important;
+    padding:0!important;
+    font-size:7.2pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    color:#111827!important;
+    -webkit-text-fill-color:#111827!important;
+    white-space:nowrap!important;
+  }
+
+  /* Keep the report evidence line but remove non-essential right-column content. */
+  #risk-box,
+  #print-risk-level-card,
+  #trend-box,
+  #top5-box,
+  #top10-box,
+  .chart-crop-full,
+  #right-panel .chart-box:not(#hotspot-comparison-box){
+    display:none!important;
+  }
+
+  /* Right column contains only HS comparison table. */
+  #app-body{
+    grid-template-columns:146mm 121mm!important;
+    grid-template-rows:146mm!important;
+    width:270mm!important;
+    height:146mm!important;
+    gap:3mm!important;
+  }
+  #map-container{
+    grid-column:1!important;
+    grid-row:1!important;
+    width:146mm!important;
+    height:146mm!important;
+    min-width:146mm!important;
+    max-width:146mm!important;
+    min-height:146mm!important;
+    max-height:146mm!important;
+  }
+  #map{width:146mm!important;height:146mm!important;min-height:146mm!important;max-height:146mm!important;}
+  #hotspot-comparison-box{
+    grid-column:2!important;
+    grid-row:1!important;
+    width:121mm!important;
+    height:146mm!important;
+    max-height:146mm!important;
+    padding:1.6mm!important;
+    overflow:hidden!important;
+    border:1.15pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  .comparison-heading{
+    margin:0 0 1.2mm!important;
+    min-height:10mm!important;
+    max-height:10mm!important;
+    overflow:hidden!important;
+  }
+  .comparison-heading h4{
+    font-size:8pt!important;
+    line-height:1.08!important;
+    font-weight:900!important;
+    color:#111827!important;
+  }
+  .comparison-heading span{
+    max-width:35mm!important;
+    font-size:6pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    color:#111827!important;
+  }
+  .comparison-table-wrap{
+    height:130mm!important;
+    max-height:130mm!important;
+    overflow:hidden!important;
+    width:100%!important;
+  }
+  #tbl-hotspot-comparison{
+    width:100%!important;
+    table-layout:fixed!important;
+    font-size:5.9pt!important;
+    line-height:1.05!important;
+  }
+  #tbl-hotspot-comparison th,
+  #tbl-hotspot-comparison td{
+    padding:.45mm .5mm!important;
+    line-height:1.05!important;
+    color:#111827!important;
+    -webkit-text-fill-color:#111827!important;
+  }
+  #tbl-hotspot-comparison th:nth-child(1),#tbl-hotspot-comparison td:nth-child(1){width:45%!important;text-align:left!important;}
+  #tbl-hotspot-comparison th:nth-child(2),#tbl-hotspot-comparison td:nth-child(2),
+  #tbl-hotspot-comparison th:nth-child(3),#tbl-hotspot-comparison td:nth-child(3){width:15%!important;text-align:right!important;white-space:nowrap!important;}
+  #tbl-hotspot-comparison th:nth-child(4),#tbl-hotspot-comparison td:nth-child(4){width:25%!important;text-align:center!important;white-space:nowrap!important;}
+  #tbl-hotspot-comparison tfoot th,
+  #tbl-hotspot-comparison tfoot td{font-weight:900!important;background:#ecfdf5!important;}
+  .change-badge{font-size:5.8pt!important;font-weight:900!important;color:#111827!important;-webkit-text-fill-color:#111827!important;}
+}
+
+body.print-preparing #risk-box,
+body.print-preparing #print-risk-level-card,
+body.print-preparing #trend-box,
+body.print-preparing #top5-box,
+body.print-preparing #top10-box,
+body.print-preparing .chart-crop-full,
+body.print-preparing #right-panel .chart-box:not(#hotspot-comparison-box){
+  display:none!important;
+}
+body.print-preparing #hotspot-comparison-box{
+  grid-column:2!important;
+  grid-row:1!important;
+  height:146mm!important;
+  max-height:146mm!important;
+  overflow:hidden!important;
+}
+
+/* ===== Month-year range selector update ===== */
+.timeline-year-hidden{display:none!important;}
+#hotspot-timeline{
+  height:96px!important;
+  min-height:96px!important;
+  display:block!important;
+  padding:10px 18px!important;
+  background:linear-gradient(90deg,#f0fdf4,#e0f2fe)!important;
+  border-bottom:1px solid #86efac!important;
+  color:#111827!important;
+}
+.period-range-card{
+  display:grid!important;
+  grid-template-columns:260px minmax(0,1fr) 390px!important;
+  grid-template-rows:auto auto!important;
+  gap:8px 14px!important;
+  align-items:center!important;
+  max-width:100%!important;
+}
+.period-range-title{font-size:18px!important;font-weight:900!important;color:#064e3b!important;line-height:1.2!important;}
+.period-range-controls{display:flex!important;gap:10px!important;align-items:end!important;flex-wrap:wrap!important;}
+.period-range-controls label{font-size:14px!important;font-weight:900!important;color:#111827!important;display:flex!important;flex-direction:column!important;gap:4px!important;}
+.period-select-row{display:flex!important;gap:6px!important;}
+.period-month-select,.period-year-select{
+  min-height:40px!important;
+  padding:6px 10px!important;
+  border:2px solid #16a34a!important;
+  border-radius:12px!important;
+  background:#ffffff!important;
+  color:#111827!important;
+  font-size:17px!important;
+  font-weight:900!important;
+}
+.period-month-select{width:92px!important;}.period-year-select{width:96px!important;}
+.period-latest-btn{
+  min-height:40px!important;
+  padding:6px 15px!important;
+  border:2px solid #16a34a!important;
+  border-radius:12px!important;
+  background:#16a34a!important;
+  color:#ffffff!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+.period-latest-btn:hover{background:#15803d!important;color:#fff!important;}
+#hotspot-timeline .timeline-status{
+  grid-column:3!important;
+  align-self:center!important;
+  justify-self:stretch!important;
+  min-height:42px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:7px 12px!important;
+  background:#ffffff!important;
+  color:#064e3b!important;
+  border:2px solid #86efac!important;
+  border-radius:999px!important;
+  font-size:17px!important;
+  font-weight:900!important;
+  text-align:center!important;
+}
+@media(min-width:769px){
+  :root{--timeline-h:96px!important;}
+  #app-body{margin-top:calc(var(--header-h) + var(--timeline-h))!important;height:calc(100vh - var(--header-h) - var(--timeline-h))!important;}
+}
+@media(max-width:1100px){
+  #hotspot-timeline{height:132px!important;min-height:132px!important;}
+  .period-range-card{grid-template-columns:1fr!important;grid-template-rows:auto auto auto!important;}
+  #hotspot-timeline .timeline-status{grid-column:1!important;justify-content:flex-start!important;border-radius:12px!important;}
+  :root{--timeline-h:132px!important;}
+}
+@media(max-width:768px){
+  #hotspot-timeline{height:168px!important;min-height:168px!important;padding:8px!important;}
+  .period-range-title{font-size:16px!important;}
+  .period-range-controls{gap:7px!important;}
+  .period-month-select,.period-year-select{min-height:36px!important;font-size:15px!important;padding:5px 8px!important;}
+  .period-month-select{width:82px!important}.period-year-select{width:86px!important}.period-latest-btn{min-height:36px!important;font-size:14px!important;}
+  #hotspot-timeline .timeline-status{font-size:14px!important;min-height:36px!important;}
+  #mobile-toolbar{top:calc(var(--header-h) + 168px)!important;}
+  #app-body{margin-top:calc(var(--header-h) + 168px + var(--mobile-toolbar-h))!important;height:calc(100vh - var(--header-h) - 168px - var(--mobile-toolbar-h))!important;}
+  #left-panel,#right-panel{top:calc(var(--header-h) + 168px + var(--mobile-toolbar-h))!important;}
+}

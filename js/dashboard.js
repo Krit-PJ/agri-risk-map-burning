@@ -1,6 +1,6 @@
 const Dashboard = (() => {
   const charts={}, store={};
-  let state={district:'',subdistrict:'',crop:'',months:[],month:'',day:''};
+  let state={district:'',subdistrict:'',crop:'',months:[],month:'',day:'',startYM:null,endYM:null,startYear:null,startMonth:null,endYear:null,endMonth:null};
   let refreshQueued=false;
   const H=()=>MapModule.helpers;
 
@@ -45,7 +45,7 @@ const Dashboard = (() => {
   }
   function setData(hotspot){Object.assign(store,hotspot);updateDataTimestamp();queueRefresh();}
   function setYearData(year,fc){store[String(year)]=fc;updateDataTimestamp();queueRefresh();}
-  function applyFilter(s){state={...state,...s,months:Array.isArray(s?.months)?s.months.map(Number).filter(Number.isFinite):(s?.month?[Number(s.month)]:state.months||[])};queueRefresh();}
+  function applyFilter(s){state={...state,...s,months:Array.isArray(s?.months)?s.months.map(Number).filter(Number.isFinite):(s?.month?[Number(s.month)]:state.months||[]),startYM:Number(s?.startYM)||null,endYM:Number(s?.endYM)||null,startYear:Number(s?.startYear)||null,startMonth:Number(s?.startMonth)||null,endYear:Number(s?.endYear)||null,endMonth:Number(s?.endMonth)||null};queueRefresh();}
   function activeYears(){return MapModule.activeYears().map(String);}
   function selected(){
     const years=activeYears();
@@ -94,11 +94,22 @@ const Dashboard = (() => {
     const pct=(current-previous)*100/previous;
     return {text:`${pct>0?'+':''}${pct.toFixed(1)}%`,cls:pct>0?'change-up':pct<0?'change-down':'change-flat'};
   }
-  function yearFeatures(year){return(store[String(year)]?.features||[]).filter(matchesState);}
+  function ymIndex(year,month){return Number(year)*12+Number(month);}
+  function featureYM(f){const p=f.properties||{},parts=H().datePartsOf(f),year=Number(p.year_be||p.season_be||0);return year&&parts.month?ymIndex(year,parts.month):null;}
+  function baseMatches(f){
+    const p=f.properties||{};
+    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop);
+  }
+  function matchesRange(f,offsetYears=0){
+    const idx=featureYM(f); if(idx===null)return false;
+    const start=Number(state.startYM)||-Infinity,end=Number(state.endYM)||Infinity;
+    return idx>=start+(offsetYears*12)&&idx<=end+(offsetYears*12);
+  }
+  function featuresInRange(offsetYears=0){
+    return Object.values(store).flatMap(fc=>fc?.features||[]).filter(f=>baseMatches(f)&&matchesRange(f,offsetYears));
+  }
   function updateComparisonTable(years){
-    const selectedYear=Number(years.slice(-1)[0]||CONFIG.CURRENT_YEAR_BE||2569);
-    const previousYear=selectedYear-1;
-    const currentFs=yearFeatures(selectedYear),previousFs=yearFeatures(previousYear);
+    const currentFs=featuresInRange(0),previousFs=featuresInRange(-1);
     const unit=state.district?'__subdistrict':'__district';
     let names=[];
     if(state.subdistrict)names=[state.subdistrict];
@@ -129,10 +140,10 @@ const Dashboard = (() => {
     const totalEl=document.getElementById('comparison-change-total');totalEl.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
     const unitLabel=state.district?'ตำบล':'อำเภอ';
     document.getElementById('comparison-area-header').textContent=unitLabel;
-    document.getElementById('comparison-current-header').textContent=`พ.ศ. ${selectedYear}`;
-    document.getElementById('comparison-previous-header').textContent=`พ.ศ. ${previousYear}`;
+    document.getElementById('comparison-current-header').textContent='ช่วงที่เลือก';
+    document.getElementById('comparison-previous-header').textContent='ย้อนหลัง 1 ปี';
     document.getElementById('title-comparison').textContent=`เปรียบเทียบ Hotspot ราย${unitLabel}`;
-    document.getElementById('comparison-period').textContent=`${temporalText()} · ${state.crop||'ทุกชนิดพืช'}`;
+    document.getElementById('comparison-period').textContent=`${temporalText()} เทียบกับช่วงเดียวกันย้อนหลัง 1 ปี · ${state.crop||'ทุกชนิดพืช'}`;
   }
 
   function updateRiskLegend(values){
@@ -147,18 +158,20 @@ const Dashboard = (() => {
   }
 
   function selectedMonths(){return Array.isArray(state.months)?state.months.map(Number).filter(Number.isFinite):(state.month?[Number(state.month)]:[]);}
-  function matchesState(f){
-    const p=f.properties||{},parts=H().datePartsOf(f),months=selectedMonths(),day=Number(state.day||0);
-    return p.__province==='กำแพงเพชร'&&(!state.district||p.__district===state.district)&&(!state.subdistrict||p.__subdistrict===state.subdistrict)&&(!state.crop||p.__crop===state.crop)&&(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
-  }
+  function matchesState(f){return baseMatches(f)&&matchesRange(f,0);}
   function temporalText(){
+    const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    if(Number(state.startYM)&&Number(state.endYM)){
+      const aY=Number(state.startYear),aM=Number(state.startMonth),bY=Number(state.endYear),bM=Number(state.endMonth);
+      const a=`${short[aM]} ${aY}`,b=`${short[bM]} ${bY}`;
+      return Number(state.startYM)===Number(state.endYM)?a:`${a} ถึง ${b}`;
+    }
     const months=selectedMonths(),day=Number(state.day||0);
     const names=['','มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-    const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
     const text=!months.length?'สะสมทั้งปี':(months.length===1?names[months[0]]:months.map(m=>short[m]).join(', '));
     return day&&months.length?`${text} วันที่ ${day}`:text;
   }
-  function formatYears(years){if(!years.length)return'ไม่เลือกชุดข้อมูลปี';if(years.length===1)return`ชุดข้อมูลปี ${years[0]}`;return`ชุดข้อมูลปี ${years.join(', ')}`;}
+  function formatYears(years){return Number(state.startYM)?`ช่วงข้อมูล ${temporalText()}`:(years.length===1?`ชุดข้อมูลปี ${years[0]}`:`ชุดข้อมูลปี ${years.join(', ')}`);}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}
   function riskScoreOf(p){return Number(p?.risk_score??p?.RISK_SCORE??p?.risk??p?.score??0)||0;}
   function selectedRiskFeatures(){
