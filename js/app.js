@@ -10,7 +10,7 @@ const App=(()=>{
     subdistrictFeatures=loaded.subdistrict?.features||[];
     populateDistricts();
     try{Dashboard.init();Dashboard.setData(loaded.hotspot);}catch(err){console.error('[Dashboard] initialization failed:',err);showRuntimeWarning('กราฟโหลดไม่สำเร็จ แต่แผนที่และตัวกรองยังใช้งานได้');}
-    bindFilters();bindPrint();initAdminAccess();bindExcelImport();initVisitorCounter();initMobilePanels();initTimeline();syncYearSelector();populateDayOptions();syncTimelineUI();applyCurrent();
+    bindFilters();bindPrint();initAdminAccess();bindExcelImport();initVisitorCounter();initDesktopSidebarToggle();initMobilePanels();initTimeline();syncYearSelector();populateDayOptions();syncTimelineUI();applyCurrent();
   }
   function showRuntimeWarning(message){let el=document.getElementById('runtime-warning');if(!el){el=document.createElement('div');el.id='runtime-warning';el.style.cssText='position:fixed;left:50%;top:86px;transform:translateX(-50%);z-index:9999;background:#7f1d1d;color:white;padding:8px 14px;border-radius:6px;font-size:14px;box-shadow:0 4px 15px rgba(0,0,0,.35)';document.body.appendChild(el);}el.textContent=message;}
   function populateDistricts(){const sel=document.getElementById('filter-district'),current=sel.value;const districts=[...new Set(subdistrictFeatures.map(f=>MapModule.helpers.districtOf(f.properties)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'th'));sel.innerHTML='<option value="">-- ทั้งหมด --</option>'+districts.map(x=>`<option value="${x}">${x}</option>`).join('');sel.value=current;}
@@ -349,6 +349,26 @@ const App=(()=>{
   function setStatus(text,type){const el=document.getElementById('import-status');if(!el)return;el.textContent=text;el.className=`import-status ${type||''}`;}
 
 
+
+
+  function initDesktopSidebarToggle(){
+    const btn=document.getElementById('sidebar-toggle');
+    const left=document.getElementById('left-panel');
+    if(!btn||!left)return;
+    const key='agri-risk-left-panel-collapsed';
+    const apply=(collapsed)=>{
+      document.body.classList.toggle('left-panel-collapsed',collapsed);
+      btn.setAttribute('aria-expanded',String(!collapsed));
+      btn.innerHTML=collapsed?'☰ แสดงเมนู':'☰ ซ่อนเมนู';
+      btn.title=collapsed?'แสดงเมนูด้านซ้าย':'ซ่อนเมนูด้านซ้าย';
+      try{localStorage.setItem(key,collapsed?'1':'0');}catch{}
+      setTimeout(()=>{MapModule.map?.()?.invalidateSize?.({pan:false});MapModule.focusSelection?.({padding:[24,24]});},260);
+    };
+    let initial=false;
+    try{initial=localStorage.getItem(key)==='1';}catch{}
+    apply(initial);
+    btn.addEventListener('click',()=>apply(!document.body.classList.contains('left-panel-collapsed')));
+  }
 
   function initMobilePanels(){
     const left=document.getElementById('left-panel');
