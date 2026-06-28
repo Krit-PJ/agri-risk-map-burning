@@ -106,6 +106,25 @@ const App=(()=>{
     const day=document.getElementById('filter-day')?.value||'';
     const status=document.getElementById('timeline-status');if(status)status.textContent=`${monthText(months)} ${year||'-'}${day?' · วันที่ '+day:''}`;
     const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ปีประเมิน ${year}`;
+    updatePrintMeta();
+  }
+  function scopeText(){
+    const d=document.getElementById('filter-district')?.value||'';
+    const t=document.getElementById('filter-subdistrict')?.value||'';
+    if(t&&d)return `ตำบล${t} อำเภอ${d}`;
+    if(d)return `อำเภอ${d}`;
+    return 'จังหวัดกำแพงเพชร';
+  }
+  function updatePrintMeta(){
+    const year=selectedYear();
+    const months=selectedMonths();
+    const day=document.getElementById('filter-day')?.value||'';
+    const period=`ปีประเมิน ${year} · ${monthText(months)}${day?' · วันที่ '+day:''}`;
+    const printSummary=document.getElementById('print-filter-summary');if(printSummary)printSummary.textContent=period;
+    const printScope=document.getElementById('print-scope');if(printScope)printScope.textContent=`ขอบเขต: ${scopeText()}`;
+    const printDate=document.getElementById('print-date');if(printDate)printDate.textContent='วันที่พิมพ์รายงาน: '+new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+    const updated=document.getElementById('last-updated')?.textContent||'';
+    const printUpdated=document.getElementById('print-data-updated');if(printUpdated)printUpdated.textContent=updated||'ข้อมูลล่าสุด: -';
   }
   function applyCurrent(){const s=current();syncTimelineUI();MapModule.applyFilter(s);try{Dashboard.applyFilter(s);}catch(err){console.warn('[Dashboard] filter skipped:',err.message);}}
   function bindFilters(){
@@ -116,18 +135,29 @@ const App=(()=>{
     document.addEventListener('change',e=>{if(e.target?.classList?.contains('hs-layer')){syncYearSelector();populateDayOptions();}});
     cropLayer.addEventListener('change',()=>{c.disabled=!cropLayer.checked;if(!cropLayer.checked)c.value='';applyCurrent();});
     document.getElementById('btn-apply-filter').addEventListener('click',applyCurrent);
-    document.getElementById('btn-reset-filter').addEventListener('click',()=>{
-      d.value='';populateSubdistricts();t.value='';c.value='';
-      const year=String(CONFIG.CURRENT_YEAR_BE||2569);
-      const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=year;
-      const hiddenYear=document.getElementById('filter-year');if(hiddenYear)hiddenYear.value=year;
-      setSelectedMonths([]);
-      if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';}
-      syncYearSelector();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'reset'}}));
-    });
+    document.getElementById('btn-reset-filter')?.addEventListener('click',()=>resetFilters());
   }
+  function resetFilters(){
+    const d=document.getElementById('filter-district'),t=document.getElementById('filter-subdistrict'),c=document.getElementById('filter-crop');
+    if(d)d.value='';populateSubdistricts();
+    if(t){t.value='';t.disabled=true;t.innerHTML='<option value="">-- เลือกอำเภอก่อน --</option>';}
+    if(c)c.value='';
+    const cropLayer=document.getElementById('lyr-crop');
+    if(cropLayer&&!cropLayer.checked&&c)c.disabled=true;
+    const year=String(CONFIG.CURRENT_YEAR_BE||2569);
+    const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=year;
+    const hiddenYear=document.getElementById('filter-year');if(hiddenYear)hiddenYear.value=year;
+    setSelectedMonths([]);
+    const day=document.getElementById('filter-day');
+    if(day){day.value='';day.disabled=true;day.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';}
+    syncYearSelector();syncTimelineUI();applyCurrent();
+    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'reset'}}));
+    document.dispatchEvent(new CustomEvent('agri-risk:filter-change',{detail:{source:'reset'}}));
+  }
+
   function bindPrint(){
     const prepare=()=>{
+      updatePrintMeta();
       document.body.classList.add('print-preparing');
       try{Dashboard.setPrintMode?.(true);}catch(err){console.warn('[Print] chart contrast:',err.message);}
       const refit=()=>{
@@ -344,11 +374,19 @@ const App=(()=>{
   }
 
   async function initVisitorCounter(){
-    // External visitor counter is embedded in index.html. Keep legacy local counter only when #visitor-count exists.
-    const el=document.getElementById('visitor-count');if(!el)return;
-    const key='agri-risk-pageviews';let local=Number(localStorage.getItem(key)||0)+1;localStorage.setItem(key,String(local));
-    const endpoint=CONFIG.VISITOR_COUNTER?.endpoint;if(endpoint){try{const r=await fetch(endpoint,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();el.textContent=Number(j.count??j.value??local).toLocaleString('th-TH');return;}catch(e){console.warn('[Counter]',e.message);}}
-    el.textContent=local.toLocaleString('th-TH');
+    const fallback=document.getElementById('visitor-counter-fallback');
+    const box=document.getElementById('external-counter-box');
+    if(!fallback)return;
+    const key='agri-risk-pageviews-fallback';
+    const local=Number(localStorage.getItem(key)||0)+1;
+    localStorage.setItem(key,String(local));
+    const showFallback=()=>{
+      const hasExternal=!!(box?.querySelector('img')) || /\d/.test(String(box?.textContent||'').replace(String(fallback.textContent||''),''));
+      if(!hasExternal){fallback.textContent='ผู้เข้าชม '+local.toLocaleString('th-TH');fallback.classList.add('is-fallback');}
+      else {fallback.textContent='';fallback.classList.remove('is-fallback');}
+    };
+    setTimeout(showFallback,1800);
+    setTimeout(showFallback,4200);
   }
   return{init};
 })();

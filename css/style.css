@@ -1103,3 +1103,192 @@ button{font-weight:900!important;}
   #mobile-overlay{inset:calc(var(--header-h) + 154px + var(--mobile-toolbar-h)) 0 0!important;}
 }
 .external-counter-box .counter-break{display:none!important;}
+
+/* =====================================================
+   Dev-tech refinement: visible counter, data-date update,
+   print report layout, chart contrast, light hover states
+   ===================================================== */
+.header-action-badge,
+#last-updated.header-action-badge,
+.btn-print.header-action-badge{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:42px!important;
+  padding:8px 12px!important;
+  border:2px solid rgba(255,255,255,.72)!important;
+  border-radius:14px!important;
+  background:#ffffff!important;
+  color:#111827!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  box-shadow:0 2px 8px rgba(0,0,0,.18)!important;
+  white-space:nowrap!important;
+}
+.btn-print.header-action-badge{background:#ecfdf5!important;color:#064e3b!important;border-color:#bbf7d0!important;}
+.btn-admin{min-height:42px!important;border-radius:14px!important;border:2px solid rgba(255,255,255,.72)!important;box-shadow:0 2px 8px rgba(0,0,0,.18)!important;}
+.external-counter{gap:8px!important;}
+.external-counter .counter-label{color:#111827!important;font-weight:900!important;}
+.counter-fallback{display:inline-flex!important;color:#111827!important;background:#f0fdf4!important;border:1px solid #bbf7d0!important;border-radius:999px!important;padding:3px 8px!important;font-weight:900!important;min-width:74px!important;justify-content:center!important;}
+.counter-fallback:empty{display:none!important;}
+.external-counter-box{min-width:90px!important;justify-content:center!important;}
+.external-counter-box img{max-height:24px!important;}
+.external-counter-box a{display:none!important;}
+@media(max-width:768px){
+  .external-counter{display:inline-flex!important;max-width:150px!important;overflow:hidden!important;}
+  .external-counter .counter-label{display:none!important;}
+  #last-updated.header-action-badge{display:none!important;}
+}
+
+/* Reset button remains useful as a single return-to-default control; make it visually explicit. */
+#btn-reset-filter{background:#fff7ed!important;color:#7c2d12!important;border:2px solid #fed7aa!important;font-weight:900!important;}
+#btn-reset-filter:hover{background:#ffedd5!important;color:#7c2d12!important;}
+
+/* Light, readable hover states. */
+.chart-box:hover,
+.panel-section:hover,
+.comparison-box:hover,
+.layer-group:hover{
+  background:#ffffff!important;
+  border-color:#86efac!important;
+  box-shadow:0 4px 14px rgba(22,163,74,.12)!important;
+}
+.toggle-row:hover,
+.card:hover,
+.timeline-track button:hover,
+.timeline-all:hover,
+.timeline-preset-wrap button:hover{
+  background:#ecfdf5!important;
+  color:#111827!important;
+  border-color:#86efac!important;
+}
+.timeline-track button.active:hover,
+.timeline-all.active:hover{background:#15803d!important;color:#ffffff!important;}
+#tbl-hotspot-comparison tbody tr:hover td,
+#tbl-top-district tbody tr:hover td{background:#f0fdf4!important;color:#111827!important;}
+
+/* Chart and canvas labels: fully opaque dark text. */
+.chart-box,
+.chart-box h4,
+.scope-caption,
+.risk-legend-item,
+.risk-legend-name,
+.risk-legend-pct{
+  color:#111827!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+canvas{color:#111827!important;}
+
+/* Print report: A4 landscape, 1 cm margins, executive header and framed content. */
+@page{size:A4 landscape;margin:10mm!important;}
+@media print{
+  @page{size:A4 landscape;margin:10mm!important;}
+  html,body{width:277mm!important;height:190mm!important;overflow:hidden!important;background:#ffffff!important;color:#111827!important;font-family:'Sarabun','Noto Sans Thai',sans-serif!important;}
+  body{margin:0!important;padding:0!important;font-size:8pt!important;}
+  #app-header,#hotspot-timeline,#mobile-toolbar,#mobile-overlay,#left-panel,.leaflet-control-container,.no-print,button,input[type=file],#trend-box,#top5-box,#top10-box{display:none!important;}
+  .print-only{display:block!important;}
+  #print-report-header{
+    display:grid!important;
+    grid-template-columns:44mm 1fr 64mm!important;
+    align-items:center!important;
+    min-height:25mm!important;
+    border:1.2pt solid #111827!important;
+    border-radius:3mm!important;
+    padding:2mm 3mm!important;
+    margin:0 0 2mm 0!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  .print-title-block{text-align:center!important;color:#111827!important;line-height:1.18!important;}
+  .print-report-logos{display:flex!important;justify-content:center!important;align-items:center!important;gap:4mm!important;margin-bottom:1mm!important;}
+  .print-report-logos img{width:12mm!important;height:12mm!important;object-fit:contain!important;border-radius:50%!important;}
+  .print-title-block h1{font-size:15pt!important;line-height:1.05!important;margin:0!important;color:#111827!important;font-weight:900!important;}
+  .print-title-block p{font-size:8.3pt!important;margin:.5mm 0 0!important;color:#111827!important;font-weight:800!important;}
+  .print-meta-block{font-size:7.3pt!important;line-height:1.35!important;color:#111827!important;border-left:1pt solid #d1d5db!important;padding-left:3mm!important;font-weight:800!important;}
+  #print-filter-summary{
+    display:block!important;
+    border:1.2pt solid #166534!important;
+    border-radius:2mm!important;
+    padding:1.3mm 3mm!important;
+    margin:0 0 2mm 0!important;
+    color:#111827!important;
+    background:#ecfdf5!important;
+    font-size:9.5pt!important;
+    font-weight:900!important;
+    text-align:center!important;
+  }
+  #app-body{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) 96mm!important;
+    grid-template-rows:108mm 48mm!important;
+    gap:2mm!important;
+    margin:0!important;
+    height:158mm!important;
+    width:100%!important;
+    padding:0!important;
+    background:#ffffff!important;
+  }
+  #map-container{
+    grid-column:1!important;
+    grid-row:1!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    height:108mm!important;
+    min-height:108mm!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+  }
+  #map{width:100%!important;height:100%!important;min-height:108mm!important;margin:auto!important;background:#ffffff!important;}
+  #map-legend{font-size:6.8pt!important;line-height:1.2!important;background:#ffffff!important;color:#111827!important;border:1pt solid #374151!important;bottom:3mm!important;right:3mm!important;padding:1.2mm 1.8mm!important;}
+  #map-legend strong,#map-legend div{color:#111827!important;}
+  #right-panel{display:contents!important;background:#ffffff!important;color:#111827!important;overflow:visible!important;padding:0!important;border:0!important;}
+  #hotspot-comparison-box{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    min-height:0!important;
+    height:108mm!important;
+    overflow:hidden!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    padding:1.5mm!important;
+    margin:0!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  .comparison-heading h4{font-size:8.2pt!important;line-height:1.1!important;margin:0 0 .8mm!important;color:#111827!important;font-weight:900!important;}
+  .comparison-heading span{font-size:6.8pt!important;line-height:1.1!important;color:#111827!important;font-weight:800!important;}
+  .comparison-table-wrap{max-height:96mm!important;height:96mm!important;overflow:hidden!important;border:0!important;background:#ffffff!important;}
+  #tbl-hotspot-comparison{width:100%!important;border-collapse:collapse!important;font-size:6.4pt!important;color:#111827!important;table-layout:fixed!important;}
+  #tbl-hotspot-comparison th,#tbl-hotspot-comparison td{padding:.72mm .7mm!important;border:0.5pt solid #d1d5db!important;color:#111827!important;background:#ffffff!important;line-height:1.15!important;white-space:normal!important;word-break:break-word!important;}
+  #tbl-hotspot-comparison thead th,#tbl-hotspot-comparison tfoot th{background:#dcfce7!important;color:#111827!important;font-weight:900!important;position:static!important;}
+  #tbl-hotspot-comparison th:nth-child(1),#tbl-hotspot-comparison td:nth-child(1){width:44%!important;}
+  #tbl-hotspot-comparison th:nth-child(2),#tbl-hotspot-comparison td:nth-child(2),#tbl-hotspot-comparison th:nth-child(3),#tbl-hotspot-comparison td:nth-child(3){width:17%!important;text-align:right!important;}
+  #tbl-hotspot-comparison th:nth-child(4),#tbl-hotspot-comparison td:nth-child(4){width:22%!important;text-align:center!important;}
+  .change-badge{background:transparent!important;color:#111827!important;border:0!important;padding:0!important;font-size:6.2pt!important;min-width:0!important;}
+  #risk-box{
+    grid-column:1 / 3!important;
+    grid-row:2!important;
+    display:block!important;
+    height:48mm!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    border:1.2pt solid #111827!important;
+    border-radius:2mm!important;
+    padding:1.5mm!important;
+    margin:0!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  #risk-box h4{font-size:9pt!important;margin:0 0 1mm!important;color:#111827!important;font-weight:900!important;}
+  .risk-chart-layout{display:grid!important;grid-template-columns:48mm 1fr!important;gap:4mm!important;align-items:center!important;height:40mm!important;}
+  .risk-canvas-wrap,#chart-risk{height:38mm!important;max-height:38mm!important;}
+  .risk-legend-list{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:2mm!important;background:#ffffff!important;border:0!important;padding:0!important;}
+  .risk-legend-item{font-size:8pt!important;color:#111827!important;font-weight:800!important;grid-template-columns:4mm 1fr auto!important;gap:1mm!important;align-items:center!important;}
+  .risk-legend-name,.risk-legend-pct{color:#111827!important;font-weight:900!important;}
+  .risk-legend-swatch{width:4mm!important;height:4mm!important;border:0.6pt solid #111827!important;}
+}

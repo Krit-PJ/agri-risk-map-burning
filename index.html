@@ -144,16 +144,17 @@
 <p class="developer-credit">พัฒนาโดย ดร. กิตติ&nbsp;&nbsp;โพธิ์จวง กลุ่มอารักขาพืช สำนักงานเกษตรจังหวัดกำแพงเพชร</p>
 </div>
 </div>
-<div class="header-right"><span class="visitor-counter external-counter" title="ตัวนับผู้เข้าชมภายนอก">
-  Visit counter:
-  <span class="external-counter-box">
+<div class="header-right"><span class="visitor-counter external-counter header-action-badge" title="ตัวนับผู้เข้าชมภายนอก">
+  <span class="counter-label">Visit counter</span>
+  <span class="external-counter-box" id="external-counter-box">
     <script type="text/javascript" src="https://www.free-counters.org/count/jwoy"></script><br class="counter-break" aria-hidden="true"/>
     <a href="https://www.acadoo.de/leistungen/ghostwriter-doktorarbeit/" rel="nofollow" aria-hidden="true" tabindex="-1">Dissertation Unterstützung</a>
     <script type="text/javascript" src="https://www.whomania.com/ctr?id=f86714acfcb722f8ab86c0abf994a86cbc6adf00"></script>
+    <span id="visitor-counter-fallback" class="counter-fallback" aria-live="polite">กำลังโหลด…</span>
   </span>
 </span>
-<span id="last-updated"></span>
-<button class="btn-print no-print" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ พิมพ์รายงาน</button>
+<span id="last-updated" class="header-action-badge update-badge">ข้อมูลล่าสุด: กำลังโหลด…</span>
+<button class="btn-print no-print header-action-badge" id="btn-print" title="พิมพ์รายงาน 1 หน้า A4" type="button">🖨️ พิมพ์รายงาน</button>
 <button class="btn-admin no-print" id="btn-admin-login" type="button" aria-haspopup="dialog">🔐 Login</button>
 <button class="btn-admin-logout no-print hidden" id="btn-admin-logout" type="button">ออกจากระบบ</button>
 </div>
@@ -163,6 +164,25 @@
   <button id="mobile-toggle-dashboard" type="button" aria-controls="right-panel" aria-expanded="false">📊 สรุปผล</button>
 </div>
 <div id="mobile-overlay" class="no-print" hidden></div>
+
+<section id="print-report-header" class="print-only" aria-label="หัวรายงานสำหรับพิมพ์">
+  <div class="print-header-spacer"></div>
+  <div class="print-title-block">
+    <div class="print-report-logos">
+      <img alt="ตรากรมส่งเสริมการเกษตร" src="assets/logo-doae.png"/>
+      <img alt="ตราจังหวัดกำแพงเพชร" src="assets/logo-kpp.jpg"/>
+    </div>
+    <h1>Agri-Risk Map Burning</h1>
+    <p>ระบบประเมินและเฝ้าระวังความเสี่ยงการเผาในพื้นที่เกษตร จังหวัดกำแพงเพชร</p>
+    <p>พัฒนาโดย ดร. กิตติ&nbsp;&nbsp;โพธิ์จวง กลุ่มอารักขาพืช สำนักงานเกษตรจังหวัดกำแพงเพชร</p>
+  </div>
+  <div class="print-meta-block">
+    <div id="print-data-updated">ข้อมูลล่าสุด: -</div>
+    <div id="print-date">วันที่พิมพ์รายงาน: -</div>
+    <div id="print-scope">ขอบเขต: จังหวัดกำแพงเพชร</div>
+  </div>
+</section>
+<div id="print-filter-summary" class="print-only">ปีประเมิน 2569 · สะสมทุกเดือน</div>
 
 <section id="hotspot-timeline" class="no-print" aria-label="เส้นเวลาเดือนของข้อมูล Hotspot">
   <div class="timeline-year-wrap">
@@ -241,7 +261,7 @@
 </label>
 <div class="filter-actions">
 <button class="btn-primary" id="btn-apply-filter" type="button">ใช้ตัวกรอง</button>
-<button class="btn-secondary" id="btn-reset-filter" type="button">รีเซ็ต</button>
+<button class="btn-secondary" id="btn-reset-filter" type="button">รีเซ็ตตัวกรอง</button>
 </div>
 </div>
 <div class="layer-group hs-year-internal" aria-hidden="true">
