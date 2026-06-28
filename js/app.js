@@ -379,7 +379,7 @@ const App=(()=>{
     const key='agri-risk-pageviews-fallback';
     const local=Number(localStorage.getItem(key)||0)+1;
     localStorage.setItem(key,String(local));
-    const fallbackText='สำรอง '+local.toLocaleString('th-TH');
+    const fallbackText=local.toLocaleString('th-TH');
     fallback.textContent=fallbackText;
     fallback.classList.add('is-fallback');
     const checkExternal=()=>{
