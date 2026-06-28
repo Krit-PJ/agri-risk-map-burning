@@ -97,7 +97,7 @@ const App=(()=>{
   function initTimeline(){
     fillPeriodSelects();setLatestPeriod();
     ['range-start-month','range-start-year','range-end-month','range-end-year'].forEach(id=>document.getElementById(id)?.addEventListener('change',applyYearSelector));
-    document.getElementById('btn-latest-period')?.addEventListener('click',()=>{setLatestPeriod();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'latest-period'}}));});
+    document.getElementById('btn-latest-period')?.addEventListener('click',()=>{normalizePeriodRange();syncYearSelector();populateDayOptions();syncTimelineUI();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'apply-period-range'}}));});
   }
   function periodText(r=selectedRange()){
     const a=`${MONTH_SHORT[r.startMonth]} ${r.startYear}`;

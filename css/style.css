@@ -3320,3 +3320,25 @@ body.print-preparing #hotspot-comparison-box{
   #app-body{margin-top:calc(var(--header-h) + 168px + var(--mobile-toolbar-h))!important;height:calc(100vh - var(--header-h) - 168px - var(--mobile-toolbar-h))!important;}
   #left-panel,#right-panel{top:calc(var(--header-h) + 168px + var(--mobile-toolbar-h))!important;}
 }
+
+
+/* ===== Final range-control cleanup: remove obsolete year dropdown and make apply button explicit ===== */
+#timeline-year.timeline-year-hidden,
+#timeline-year[hidden],
+.timeline-year-hidden{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+.period-latest-btn{
+  background:#15803d!important;
+  color:#ffffff!important;
+  border-color:#15803d!important;
+  letter-spacing:.01em!important;
+}
+.period-latest-btn::before{content:'✓ ';font-weight:900!important;}
