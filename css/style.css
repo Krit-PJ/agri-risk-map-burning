@@ -2724,3 +2724,337 @@ body.left-panel-collapsed .sidebar-toggle-btn *{
   .risk-legend-swatch{width:3mm!important;height:3mm!important;border:.5pt solid #111827!important;}
   .risk-legend-name,.risk-legend-pct{font-size:6.2pt!important;font-weight:900!important;color:#111827!important;}
 }
+
+/* =====================================================
+   28 Jun final B: dashboard legibility + safer print layout
+   Evidence: right-side report table was clipped and chart/legend competed for space.
+   Strategy: keep live Leaflet map, reduce map width slightly, give the table a safe column,
+   remove risk-criteria from print, place donut at the bottom, and make all dashboard legends light.
+   ===================================================== */
+
+/* Screen: make risk legend/table headers readable and remove dark blocks. */
+.risk-legend-list,
+.chart-box .risk-legend-list{
+  background:#ffffff!important;
+  border:1.5px solid #d1fae5!important;
+  box-shadow:none!important;
+  color:#111827!important;
+}
+.risk-legend-item,
+.risk-legend-name,
+.risk-legend-pct{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  text-shadow:none!important;
+  opacity:1!important;
+}
+#tbl-top-district thead th,
+#tbl-top-district th{
+  background:#dcfce7!important;
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  font-weight:900!important;
+}
+#tbl-top-district td{
+  color:#111827!important;
+  -webkit-text-fill-color:#111827!important;
+  background:#ffffff!important;
+}
+
+/* Screen: comparison table remains compact but visible in the right panel. */
+#right-panel #hotspot-comparison-box .comparison-table-wrap{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+#right-panel #tbl-hotspot-comparison{
+  font-size:12.5px!important;
+  line-height:1.14!important;
+}
+#right-panel #tbl-hotspot-comparison th,
+#right-panel #tbl-hotspot-comparison td{
+  padding:5px 5px!important;
+}
+#right-panel #tbl-hotspot-comparison th:nth-child(1),
+#right-panel #tbl-hotspot-comparison td:nth-child(1){width:45%!important;}
+#right-panel #tbl-hotspot-comparison th:nth-child(2),
+#right-panel #tbl-hotspot-comparison td:nth-child(2),
+#right-panel #tbl-hotspot-comparison th:nth-child(3),
+#right-panel #tbl-hotspot-comparison td:nth-child(3){width:16%!important;}
+#right-panel #tbl-hotspot-comparison th:nth-child(4),
+#right-panel #tbl-hotspot-comparison td:nth-child(4){width:23%!important;}
+
+/* Print-only final layout: one-page A4 landscape with safe margins.
+   Do not use full 277mm printable width; browsers add rounding, causing right-side clipping.
+*/
+@media print{
+  @page{size:A4 landscape;margin:10mm!important;}
+  html,body{
+    width:277mm!important;
+    height:190mm!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+    color:#111827!important;
+  }
+  *{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Hide non-report UI and any items that have repeatedly caused overflow. */
+  #app-header,#hotspot-timeline,#mobile-toolbar,#mobile-overlay,#left-panel,
+  .leaflet-control-container,.no-print,button,input[type=file],
+  #trend-box,#top5-box,#top10-box,.chart-crop-full,#print-risk-level-card,
+  #right-panel .chart-box:not(#hotspot-comparison-box):not(#risk-box){
+    display:none!important;
+  }
+  .print-only{display:block!important;}
+
+  /* Header: compact, balanced, no developer line. */
+  #print-report-header{
+    display:grid!important;
+    grid-template-columns:24mm 1fr 24mm!important;
+    align-items:center!important;
+    width:270mm!important;
+    height:19mm!important;
+    min-height:19mm!important;
+    max-height:19mm!important;
+    margin:0 auto 1.2mm auto!important;
+    padding:1.2mm 3mm!important;
+    border:1.1pt solid #111827!important;
+    border-radius:2.5mm!important;
+    background:#ffffff!important;
+    overflow:hidden!important;
+  }
+  .print-side-logo{display:flex!important;align-items:center!important;justify-content:center!important;}
+  .print-left-logo{grid-column:1!important;justify-content:flex-start!important;}
+  .print-right-logo{grid-column:3!important;justify-content:flex-end!important;}
+  .print-side-logo img{width:13mm!important;height:13mm!important;object-fit:contain!important;border-radius:50%!important;}
+  #print-report-header .print-title-block{
+    grid-column:2!important;
+    text-align:center!important;
+    line-height:1.05!important;
+    padding:0 2mm!important;
+    color:#111827!important;
+  }
+  #print-report-header .print-title-block h1{
+    margin:0!important;
+    color:#111827!important;
+    font-size:14.2pt!important;
+    line-height:1!important;
+    font-weight:900!important;
+  }
+  #print-report-header .print-title-block p{
+    margin:.65mm 0 0!important;
+    color:#111827!important;
+    font-size:8.2pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+  }
+  .developer-credit,.print-meta-block{display:none!important;}
+
+  /* Metadata strip: always visible. */
+  #print-report-meta{
+    display:grid!important;
+    grid-template-columns:1fr 1fr 1fr!important;
+    gap:2mm!important;
+    width:270mm!important;
+    height:6.4mm!important;
+    max-height:6.4mm!important;
+    margin:0 auto 1.2mm auto!important;
+    padding:.95mm 2mm!important;
+    border:1pt solid #15803d!important;
+    border-radius:2mm!important;
+    background:#ecfdf5!important;
+    overflow:hidden!important;
+  }
+  #print-report-meta div,
+  #print-data-updated,#print-date,#print-scope{
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    color:#111827!important;
+    -webkit-text-fill-color:#111827!important;
+    font-size:7.2pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  #print-date{text-align:center!important;}
+  #print-scope{text-align:right!important;}
+
+  #print-filter-summary{
+    display:block!important;
+    width:270mm!important;
+    height:6.4mm!important;
+    max-height:6.4mm!important;
+    margin:0 auto 1.7mm auto!important;
+    padding:.95mm 2mm!important;
+    border:1pt solid #15803d!important;
+    border-radius:2mm!important;
+    background:#ecfdf5!important;
+    color:#064e3b!important;
+    font-size:7.8pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    text-align:center!important;
+    overflow:hidden!important;
+  }
+
+  /* Safer body width: 270mm instead of full 277mm prevents right-side clipping. */
+  #app-body{
+    display:grid!important;
+    grid-template-columns:146mm 121mm!important;
+    grid-template-rows:100mm 43mm!important;
+    gap:3mm!important;
+    width:270mm!important;
+    height:146mm!important;
+    max-height:146mm!important;
+    margin:0 auto!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #map-container{
+    grid-column:1!important;
+    grid-row:1 / 3!important;
+    position:relative!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    width:146mm!important;
+    height:146mm!important;
+    min-width:146mm!important;
+    max-width:146mm!important;
+    min-height:146mm!important;
+    max-height:146mm!important;
+    border:1.15pt solid #111827!important;
+    border-radius:2mm!important;
+    overflow:hidden!important;
+    background:#ffffff!important;
+  }
+  #map{width:146mm!important;height:146mm!important;min-height:146mm!important;max-height:146mm!important;margin:0!important;background:#ffffff!important;}
+  .print-north-arrow{top:3mm!important;left:3mm!important;width:10mm!important;height:13mm!important;z-index:9000!important;}
+  #map-legend{right:3mm!important;bottom:3mm!important;z-index:9000!important;background:#ffffff!important;color:#111827!important;}
+
+  #right-panel{display:contents!important;background:#ffffff!important;border:0!important;padding:0!important;margin:0!important;overflow:visible!important;color:#111827!important;}
+
+  /* Table: give it the top section, with all fields and all district/tambon rows visible. */
+  #hotspot-comparison-box{
+    grid-column:2!important;
+    grid-row:1!important;
+    display:block!important;
+    width:121mm!important;
+    height:100mm!important;
+    max-height:100mm!important;
+    margin:0!important;
+    padding:1.4mm!important;
+    border:1.15pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    overflow:hidden!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  .comparison-heading{
+    display:grid!important;
+    grid-template-columns:1fr auto!important;
+    gap:1.5mm!important;
+    align-items:start!important;
+    margin:0 0 .9mm!important;
+    color:#111827!important;
+  }
+  .comparison-heading h4{
+    margin:0!important;
+    font-size:7.4pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    color:#111827!important;
+  }
+  .comparison-heading span{
+    display:block!important;
+    max-width:33mm!important;
+    font-size:5.7pt!important;
+    line-height:1.05!important;
+    font-weight:900!important;
+    text-align:right!important;
+    color:#111827!important;
+    white-space:normal!important;
+  }
+  .comparison-table-wrap{
+    display:block!important;
+    width:100%!important;
+    height:90mm!important;
+    max-height:90mm!important;
+    overflow:hidden!important;
+    border:0!important;
+    background:#ffffff!important;
+  }
+  #tbl-hotspot-comparison{
+    width:100%!important;
+    table-layout:fixed!important;
+    border-collapse:collapse!important;
+    font-size:5.35pt!important;
+    line-height:1.00!important;
+    color:#111827!important;
+  }
+  #tbl-hotspot-comparison th,
+  #tbl-hotspot-comparison td{
+    padding:.34mm .38mm!important;
+    border:.38pt solid #cbd5e1!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    vertical-align:middle!important;
+    overflow:hidden!important;
+    white-space:normal!important;
+    word-break:normal!important;
+    overflow-wrap:break-word!important;
+  }
+  #tbl-hotspot-comparison thead th,
+  #tbl-hotspot-comparison tfoot th,
+  #tbl-hotspot-comparison tfoot td{
+    position:static!important;
+    background:#dcfce7!important;
+    color:#111827!important;
+    font-weight:900!important;
+  }
+  #tbl-hotspot-comparison th:nth-child(1),#tbl-hotspot-comparison td:nth-child(1){width:45%!important;text-align:left!important;}
+  #tbl-hotspot-comparison th:nth-child(2),#tbl-hotspot-comparison td:nth-child(2),
+  #tbl-hotspot-comparison th:nth-child(3),#tbl-hotspot-comparison td:nth-child(3){width:15%!important;text-align:right!important;white-space:nowrap!important;}
+  #tbl-hotspot-comparison th:nth-child(4),#tbl-hotspot-comparison td:nth-child(4){width:25%!important;text-align:center!important;white-space:nowrap!important;}
+  .change-badge{background:transparent!important;border:0!important;padding:0!important;min-width:0!important;font-size:5.15pt!important;line-height:1!important;font-weight:900!important;color:#111827!important;white-space:nowrap!important;}
+
+  /* Donut: bottom only, small and separated from the table. */
+  #risk-box{
+    grid-column:2!important;
+    grid-row:2!important;
+    display:block!important;
+    width:121mm!important;
+    height:43mm!important;
+    max-height:43mm!important;
+    margin:0!important;
+    padding:1.3mm!important;
+    border:1.15pt solid #111827!important;
+    border-radius:2mm!important;
+    background:#ffffff!important;
+    color:#111827!important;
+    overflow:hidden!important;
+    break-inside:avoid!important;
+    page-break-inside:avoid!important;
+  }
+  #risk-box h4{font-size:7pt!important;line-height:1.05!important;margin:0 0 .8mm!important;font-weight:900!important;color:#111827!important;}
+  .risk-chart-layout{display:grid!important;grid-template-columns:34mm 1fr!important;gap:2mm!important;align-items:center!important;height:35mm!important;overflow:hidden!important;}
+  .risk-canvas-wrap{height:34mm!important;max-height:34mm!important;width:34mm!important;max-width:34mm!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;}
+  #chart-risk{height:34mm!important;max-height:34mm!important;width:34mm!important;max-width:34mm!important;}
+  .risk-legend-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:.6mm 1.1mm!important;background:#ffffff!important;border:0!important;padding:0!important;box-shadow:none!important;}
+  .risk-legend-item{font-size:5.8pt!important;line-height:1.05!important;font-weight:900!important;color:#111827!important;display:grid!important;grid-template-columns:3mm 1fr auto!important;gap:.6mm!important;align-items:center!important;}
+  .risk-legend-swatch{width:3mm!important;height:3mm!important;border:.5pt solid #111827!important;}
+  .risk-legend-name,.risk-legend-pct{font-size:5.8pt!important;color:#111827!important;font-weight:900!important;}
+}
