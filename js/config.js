@@ -27,6 +27,6 @@ const CONFIG = {
     {label:'สูงมาก',class:'risk-very-high',color:'#e74c3c',min:75,max:101}
   ],
   RISK_MODEL:{yearWeights:{2566:0.15,2567:0.25,2568:0.35,2569:0.40},weights:{hotspot:0.40,trend:0.20,crop:0.20,area:0.20}},
-  CROP_RISK:{'ข้าว':70,'ข้าวโพด':90,'อ้อย':80,'มันสำปะหลัง':75,'อื่นๆ':50},
+  CROP_RISK:{'นาข้าว':70,'อ้อย':80,'ข้าวโพดและไร่หมุนเวียน':90,'เกษตรอื่น ๆ':55,'พื้นที่ป่า':95,'อื่น ๆ':45},
   VISITOR_COUNTER:{endpoint:''}
 };

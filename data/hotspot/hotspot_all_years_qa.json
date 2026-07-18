@@ -1,16 +1,65 @@
 {
   "province": "กำแพงเพชร",
-  "assessment_method_single_year": "Unified Annual Evidence Gate",
-  "annual_thresholds": {
-    "0-2": "ต่ำ",
-    "3-5": "ปานกลาง",
-    "6-10": "สูง",
-    ">10": "สูงมาก"
-  },
+  "filter_standard": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in [\"นาข้าว\",\"อ้อย\",\"ข้าวโพดและไร่หมุนเวียน\",\"เกษตรอื่น ๆ\",\"พื้นที่ป่า\",\"อื่น ๆ\"]",
+  "admin_hierarchy": "Province → Amphoe → Tambon → BaanN from source table; spatial join is fallback only",
+  "note": "Counts changed from earlier all-land/legacy layers because every year is now regenerated with the same Province + LandType + PlantType criteria.",
   "datasets": {
-    "2566": {"features": 916, "geometry": "Point", "subdistrict_assignment": "spatial join with source-name fallback"},
-    "2567": {"features": 682, "geometry": "Point", "converted_from_single-point_multipoint": 682},
-    "2568": {"features": 547, "geometry": "Point", "outside_province_removed": 9},
-    "2569": {"features": 513, "geometry": "Point", "subdistrict_assignment": "spatial join"}
+    "2566": {
+      "features": 384,
+      "geometry": "Point",
+      "source_file": "HOTSPOT Viirs 1 ม.ค - 31 พ.ค 66 (รวม).xlsx",
+      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
+      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
+      "month_range": "2566-01/2566-05",
+      "by_plant_type": {
+        "นาข้าว": 260,
+        "อ้อย": 69,
+        "เกษตรอื่น ๆ": 54,
+        "ข้าวโพดและไร่หมุนเวียน": 1
+      }
+    },
+    "2567": {
+      "features": 341,
+      "geometry": "Point",
+      "source_file": "HOTSPOT เหนือ 1 ม.ค.- 31 พ.ค. 67 (เกษตร).xlsx",
+      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
+      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
+      "month_range": "2567-01/2567-05",
+      "by_plant_type": {
+        "นาข้าว": 245,
+        "อ้อย": 54,
+        "เกษตรอื่น ๆ": 37,
+        "ข้าวโพดและไร่หมุนเวียน": 5
+      }
+    },
+    "2568": {
+      "features": 273,
+      "geometry": "Point",
+      "source_file": "HOTSPOT Viirs 1 ม.ค - 31 พ.ค. 68 (รวม).xlsx",
+      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
+      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
+      "month_range": "2568-01/2568-05",
+      "by_plant_type": {
+        "นาข้าว": 195,
+        "อ้อย": 47,
+        "เกษตรอื่น ๆ": 29,
+        "ข้าวโพดและไร่หมุนเวียน": 2
+      }
+    },
+    "2569": {
+      "features": 585,
+      "geometry": "Point",
+      "source_file": "2026-7-6 HS2026(1).xlsx",
+      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
+      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
+      "date_range": "2025-10-02/2026-05-12",
+      "note": "Jan-May 2569 remains 513; Oct-May fiscal-style period is 585.",
+      "by_plant_type": {
+        "นาข้าว": 442,
+        "อ้อย": 82,
+        "เกษตรอื่น ๆ": 59,
+        "อื่น ๆ": 2
+      }
+    }
   }
 }

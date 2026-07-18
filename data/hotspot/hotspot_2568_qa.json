@@ -1,0 +1,58 @@
+{
+  "source_file": "HOTSPOT Viirs 1 ม.ค - 31 พ.ค. 68 (รวม).xlsx",
+  "accepted_features": 273,
+  "filter": {
+    "Province": "กำแพงเพชร",
+    "LandType": "พื้นที่เกษตร",
+    "PlantType_allowed": [
+      "นาข้าว",
+      "อ้อย",
+      "ข้าวโพดและไร่หมุนเวียน",
+      "เกษตรอื่น ๆ",
+      "พื้นที่ป่า",
+      "อื่น ๆ"
+    ],
+    "admin_hierarchy_columns": [
+      "Province/จังหวัด",
+      "Amphoe/อำเภอ",
+      "Tambon/ตำบล",
+      "BaanN/จุดใกล้หมู่บ้าน"
+    ]
+  },
+  "qa": {
+    "inputRows": 56005,
+    "provinceKamphaengPhet": 1916,
+    "wrongProvince": 54089,
+    "provinceButNotAgri": 1643,
+    "provinceAgriButPlantNotAllowed": 0,
+    "accepted": 273,
+    "duplicateHsIdRemoved": 0
+  },
+  "counts": {
+    "by_month": {
+      "2568-01": 43,
+      "2568-02": 24,
+      "2568-03": 53,
+      "2568-04": 116,
+      "2568-05": 37
+    },
+    "by_district": {
+      "ขาณุวรลักษบุรี": 73,
+      "เมืองกำแพงเพชร": 62,
+      "คลองขลุง": 46,
+      "พรานกระต่าย": 43,
+      "บึงสามัคคี": 14,
+      "ลานกระบือ": 12,
+      "ไทรงาม": 8,
+      "โกสัมพีนคร": 7,
+      "ปางศิลาทอง": 7,
+      "ทรายทองวัฒนา": 1
+    },
+    "by_plant_type": {
+      "นาข้าว": 195,
+      "อ้อย": 47,
+      "เกษตรอื่น ๆ": 29,
+      "ข้าวโพดและไร่หมุนเวียน": 2
+    }
+  }
+}

@@ -95,6 +95,19 @@ const Dashboard = (() => {
     return {text:`${pct>0?'+':''}${pct.toFixed(1)}%`,cls:pct>0?'change-up':pct<0?'change-down':'change-flat'};
   }
   function ymIndex(year,month){return Number(year)*12+Number(month);}
+  function ymFromIndex(i){return {year:Math.floor((Number(i)-1)/12),month:((Number(i)-1)%12)+1};}
+  function periodTextFromYM(startYM,endYM){
+    const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    if(!Number.isFinite(Number(startYM))||!Number.isFinite(Number(endYM)))return '-';
+    const a=ymFromIndex(startYM),b=ymFromIndex(endYM);
+    const start=`${short[a.month]} ${a.year}`,end=`${short[b.month]} ${b.year}`;
+    return Number(startYM)===Number(endYM)?start:`${start} ถึง ${end}`;
+  }
+  function priorRange(){
+    const start=Number(state.startYM)||null,end=Number(state.endYM)||null;
+    if(!start||!end)return {startYM:null,endYM:null,label:'ช่วงเดียวกันย้อนหลัง 1 ปี'};
+    return {startYM:start-12,endYM:end-12,label:periodTextFromYM(start-12,end-12)};
+  }
   function featureYM(f){const p=f.properties||{},parts=H().datePartsOf(f),year=Number(p.year_be||p.season_be||0);return year&&parts.month?ymIndex(year,parts.month):null;}
   function baseMatches(f){
     const p=f.properties||{};
@@ -140,10 +153,11 @@ const Dashboard = (() => {
     const totalEl=document.getElementById('comparison-change-total');totalEl.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
     const unitLabel=state.district?'ตำบล':'อำเภอ';
     document.getElementById('comparison-area-header').textContent=unitLabel;
+    const previousPeriod=priorRange();
     document.getElementById('comparison-current-header').textContent='ช่วงที่เลือก';
-    document.getElementById('comparison-previous-header').textContent='ย้อนหลัง 1 ปี';
+    document.getElementById('comparison-previous-header').textContent='ช่วงเดียวกันปีก่อน';
     document.getElementById('title-comparison').textContent=`เปรียบเทียบ Hotspot ราย${unitLabel}`;
-    document.getElementById('comparison-period').textContent=`${temporalText()} เทียบกับช่วงเดียวกันย้อนหลัง 1 ปี · ${state.crop||'ทุกชนิดพืช'}`;
+    document.getElementById('comparison-period').textContent=`${temporalText()} เทียบกับ ${previousPeriod.label} · ${state.crop||'ทุกชนิดพืช'}`;
   }
 
   function updateRiskLegend(values){

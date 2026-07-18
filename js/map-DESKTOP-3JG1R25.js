@@ -6,26 +6,21 @@ const MapModule = (() => {
     risk:null, riskDistrict:null, riskSubdistrict:null
   };
   const shown = { province:null, district:null, subdistrict:null, hotspot:{}, crop:null, burnscar:null, risk:null };
-  let state = { district:'', subdistrict:'', crop:'', months:[], month:'', day:'', startYM:null, endYM:null, startYear:null, startMonth:null, endYear:null, endMonth:null };
+  let state = { district:'', subdistrict:'', crop:'', month:'', day:'' };
 
   const clean = v => String(v || '').replace(/^(อ\.|อำเภอ|ต\.|ตำบล|จ\.|จังหวัด)\s*/, '').trim();
   const districtOf = p => clean(p?.__district || p?.district || p?.Amphoe || p?.AmphoeN || p?.AMP_NAMT || p?.AMP_NAM_T || p?.AMPHOE_T || p?.AMPHOE || p?.NAME_2);
   const subdistrictOf = p => clean(p?.__subdistrict || p?.subdistrict || p?.Tambon || p?.TambonN || p?.TAM_NAMT || p?.TAM_NAM_T || p?.TAMBON_T || p?.NAME_3);
   const normalizeCrop = v => {
     const s = String(v || '').trim();
-    // Use PlantType categories from the source HS table as the canonical classes.
-    // This prevents totals from drifting when "นาข้าว" is collapsed to "ข้าว" or
-    // when "เกษตรอื่น ๆ" is mixed with "อื่น ๆ".
-    if (!s) return 'อื่น ๆ';
-    if (['นาข้าว','ข้าว'].includes(s)) return 'นาข้าว';
-    if (s.includes('ข้าวโพด')) return 'ข้าวโพดและไร่หมุนเวียน';
+    if (['นาข้าว','ข้าว'].includes(s)) return 'ข้าว';
+    if (s.includes('ข้าวโพด')) return 'ข้าวโพด';
     if (s.includes('อ้อย')) return 'อ้อย';
-    if (s.includes('ป่า')) return 'พื้นที่ป่า';
-    if (s === 'เกษตรอื่น ๆ' || s === 'เกษตรอื่นๆ') return 'เกษตรอื่น ๆ';
-    if (['อื่น ๆ','อื่นๆ','อื่น'].includes(s)) return 'อื่น ๆ';
+    if (s.includes('มันสำปะหลัง')) return 'มันสำปะหลัง';
+    if (['เกษตรอื่น ๆ','อื่น ๆ','อื่น',''].includes(s)) return 'อื่นๆ';
     return s;
   };
-  const cropOf = p => normalizeCrop(p?.__plant_type || p?.plant_type || p?.PlantType || p?.crop_type_raw || p?.__crop || p?.crop_type || p?.crop || p?.LU_HP_Name);
+  const cropOf = p => normalizeCrop(p?.__crop || p?.crop_type || p?.PlantType || p?.crop || p?.LU_HP_Name);
   const provinceOf = p => clean(p?.__province || p?.province || p?.Province || p?.ProvinceN || p?.PROV_NAMT || p?.PROV_NAM_T || p?.Prov || p?.NAME_1);
   function excelSerialToDate(value){
     const n=Number(value); if(!Number.isFinite(n)||n<1)return null;
@@ -51,31 +46,15 @@ const MapModule = (() => {
     if(Number.isFinite(Number(p.__month))&&Number.isFinite(Number(p.__day)))return{month:Number(p.__month),day:Number(p.__day),date:p.__date||''};
     const d=parseHotspotDate(p,p.year_be);return d?{month:d.getUTCMonth()+1,day:d.getUTCDate(),date:d.toISOString().slice(0,10)}:{month:0,day:0,date:''};
   }
-  function selectedMonths(){return Array.isArray(state.months)?state.months.map(Number).filter(Number.isFinite):(state.month?[Number(state.month)]:[]);}
-  function ymIndex(year,month){return Number(year)*12+Number(month);}
-  function featureYM(feature){const p=feature?.properties||{},parts=datePartsOf(feature),year=Number(p.year_be||p.season_be||0);return year&&parts.month?ymIndex(year,parts.month):null;}
-  function rangePeriodText(){const short=['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];if(state.startYear&&state.startMonth&&state.endYear&&state.endMonth){const a=`${short[state.startMonth]} ${state.startYear}`,b=`${short[state.endMonth]} ${state.endYear}`;return Number(state.startYM)===Number(state.endYM)?a:`${a} ถึง ${b}`;}return selectedMonths().length?`เดือน ${selectedMonths().join(',')}`:'สะสมทั้งปี';}
   function matchesDate(feature){
-    const parts=datePartsOf(feature),months=selectedMonths(),day=Number(state.day||0),idx=featureYM(feature);
-    if(Number.isFinite(Number(state.startYM))&&Number.isFinite(Number(state.endYM))&&idx!==null){
-      return idx>=Number(state.startYM)&&idx<=Number(state.endYM)&&(!day||parts.day===day);
-    }
-    return(!months.length||months.includes(parts.month))&&(!day||parts.day===day);
+    const parts=datePartsOf(feature),month=Number(state.month||0),day=Number(state.day||0);
+    return(!month||parts.month===month)&&(!day||parts.day===day);
   }
   async function fetchJSON(url){ const r=await fetch(url); if(!r.ok) throw new Error(`${url}: HTTP ${r.status}`); return r.json(); }
   function remove(layer){ if(layer && map.hasLayer(layer)) map.removeLayer(layer); }
   function hotspotEnabled(){ return document.getElementById('lyr-hotspot')?.checked !== false; }
   function activeYears(){
     if(!hotspotEnabled()) return [];
-    const keys=Object.keys(raw.hotspot).map(Number).filter(Number.isFinite).sort((a,b)=>a-b);
-    // When the month/year range selector is active, choose the dataset file(s)
-    // that actually contain features in the selected period. This is important
-    // for fiscal-year datasets such as HS2026, where Oct-Dec 2025 are stored in
-    // the 2569 dataset file but their calendar year is 2568.
-    if(Number.isFinite(Number(state.startYM)) && Number.isFinite(Number(state.endYM)) && keys.length){
-      const matched=keys.filter(y=>(raw.hotspot[y]?.features||[]).some(f=>matchesDate(f)));
-      if(matched.length) return matched;
-    }
     return [...document.querySelectorAll('.hs-layer:checked')]
       .map(el => Number(el.dataset.year)).filter(Number.isFinite).sort((a,b)=>a-b);
   }
@@ -140,32 +119,13 @@ const MapModule = (() => {
   function enrichFeature(input,fallbackYearBE){
     const f=asPointFeature(input);
     const p=f.properties||(f.properties={});
-    // Use the source-table administrative hierarchy first:
-    // Province -> Amphoe -> Tambon -> BaanN. Spatial matching is only a fallback
-    // for missing names, not an override. This keeps HS totals aligned with the
-    // Excel pivot/filter logic.
     let d=districtOf(p), t=subdistrictOf(p), prov=provinceOf(p);
-    if((!d || !t || !prov) && window.turf && f.geometry?.type==='Point'){
+    if(window.turf && f.geometry?.type==='Point'){
       const hit=(raw.subdistrict?.features||[]).find(poly=>{ try{return turf.booleanPointInPolygon(f,poly);}catch{return false;} });
-      if(hit){ d=d||districtOf(hit.properties); t=t||subdistrictOf(hit.properties); prov=prov||'กำแพงเพชร'; }
+      if(hit){ d=districtOf(hit.properties); t=subdistrictOf(hit.properties); prov='กำแพงเพชร'; }
     }
-    p.__district=d;
-    p.__subdistrict=t;
-    p.__village=clean(p.__village || p.village || p.BaanN || p.Village || p.Moo || '');
-    p.__plant_type=cropOf(p);
-    p.__crop=p.__plant_type;
-    p.__province=prov||'กำแพงเพชร';
-    const dt=parseHotspotDate(p,fallbackYearBE||p.year_be);
-    if(dt){
-      p.__date=dt.toISOString().slice(0,10);
-      p.__month=dt.getUTCMonth()+1;
-      p.__day=dt.getUTCDate();
-      // Calendar Buddhist year is used by the month/year range selector.
-      p.year_be=Number(p.year_be)||dt.getUTCFullYear()+543;
-    }else{
-      p.year_be=Number(p.year_be||fallbackYearBE)||fallbackYearBE;
-    }
-    p.dataset_year_be=Number(p.dataset_year_be||p.season_be||fallbackYearBE)||fallbackYearBE;
+    p.__district=d; p.__subdistrict=t; p.__crop=cropOf(p); p.__province=prov||'กำแพงเพชร';
+    const dt=parseHotspotDate(p,fallbackYearBE||p.year_be);if(dt){p.__date=dt.toISOString().slice(0,10);p.__month=dt.getUTCMonth()+1;p.__day=dt.getUTCDate();}p.year_be=Number(p.year_be||fallbackYearBE)||fallbackYearBE;
     return f;
   }
   function enrichHotspots(){ Object.entries(raw.hotspot).forEach(([year,fc])=>{fc.features=(fc.features||[]).map(f=>enrichFeature(f,Number(year))).filter(f=>f.properties?.__province==='กำแพงเพชร');}); }
@@ -271,8 +231,8 @@ const MapModule = (() => {
             hotspot_score:+hs.toFixed(2),trend_score:+trend.toFixed(2),
             crop_score:+r.crop.toFixed(2),area_score:+area.toFixed(2),
             risk_years:years.join(','),
-            risk_months:selectedMonths().join(','),risk_day:state.day||'',
-            risk_period:rangePeriodText(),
+            risk_month:state.month||'',risk_day:state.day||'',
+            risk_period:[state.day?`วันที่ ${state.day}`:'',state.month?`เดือน ${state.month}`:''].filter(Boolean).join(' ')||'ทุกเดือน',
             risk_method:method,
             selected_hotspot_count:selectedCount,
             risk_reference_max:referenceMax,
@@ -306,10 +266,9 @@ const MapModule = (() => {
   function renderHotspots(){
     Object.values(shown.hotspot).forEach(remove); shown.hotspot={};
     if(!hotspotEnabled()) return;
-    const active=new Set(activeYears().map(String));
     Object.entries(raw.hotspot).forEach(([year,fc])=>{
-      if(active.size && !active.has(String(year)))return;
-      const filtered=(fc.features||[]).filter(matchesFeature), group=L.markerClusterGroup({disableClusteringAtZoom:11,chunkedLoading:true,chunkInterval:35,chunkDelay:30});
+      const cb=document.querySelector(`.hs-layer[data-year="${year}"]`); if(cb&&!cb.checked)return;
+      const filtered=(fc.features||[]).filter(matchesFeature), group=L.markerClusterGroup({disableClusteringAtZoom:11});
       L.geoJSON({type:'FeatureCollection',features:filtered},{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:5.5,fillColor:CONFIG.YEAR_COLORS[year]||'#ef4444',color:'#ffffff',weight:1.4,fillOpacity:.96}),onEachFeature:(f,l)=>l.bindPopup(`<b>Hotspot ปี ${year}</b><br>วันที่ ${f.properties.__date||'-'}<br>อ.${f.properties.__district||'-'} ต.${f.properties.__subdistrict||'-'}<br>พืช: ${f.properties.__crop||'-'}`)}).addTo(group);
       group.addTo(map); shown.hotspot[year]=group;
     });
@@ -331,13 +290,13 @@ const MapModule = (() => {
       style:type==='burnscar'?{color:'#dc2626',fillColor:'#ef4444',weight:.8,fillOpacity:.4}:f=>{const l=getRiskLevel(Number(f.properties?.risk_score||0));return{color:l.color,fillColor:l.color,weight:1.4,fillOpacity:.62};},
       onEachFeature:type==='risk'?(f,l)=>{
         const p=f.properties||{}, score=Number(p.risk_score||0), name=level==='district'?`อ.${districtOf(p)}`:`ต.${subdistrictOf(p)}`;
-        l.bindTooltip(`${name}<br>คะแนน ${score.toFixed(1)} (${getRiskLevel(score).label})<br>ปี ${p.risk_years||'-'} | ${p.risk_period||'สะสมทั้งปี'}`);
+        l.bindTooltip(`${name}<br>คะแนน ${score.toFixed(1)} (${getRiskLevel(score).label})<br>ปี ${p.risk_years||'-'} | ${p.risk_period||'ทุกเดือน'}`);
       }:undefined
     }).addTo(map);
   }
 
   function applyFilter(next){
-    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||'',months:Array.isArray(next.months)?next.months.map(Number).filter(Number.isFinite):(next.month?[Number(next.month)]:[]),month:String(next.month||''),day:String(next.day||''),startYM:Number(next.startYM)||null,endYM:Number(next.endYM)||null,startYear:Number(next.startYear)||null,startMonth:Number(next.startMonth)||null,endYear:Number(next.endYear)||null,endMonth:Number(next.endMonth)||null};
+    state={district:clean(next.district),subdistrict:clean(next.subdistrict),crop:next.crop||'',month:String(next.month||''),day:String(next.day||'')};
     computeDynamicRisk();
     raw.risk=state.district?raw.riskSubdistrict:raw.riskDistrict;
     renderBoundaries();renderHotspots();renderCrop();renderAux('burnscar');renderAux('risk');focusSelection();
@@ -370,9 +329,9 @@ const MapModule = (() => {
   function availableMonths(years=activeYears()){
     const set=new Set();years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const m=datePartsOf(f).month;if(m)set.add(m);}));return[...set].sort((a,b)=>a-b);
   }
-  function availableDays(years=activeYears(),months=selectedMonths()){
-    const wanted=Array.isArray(months)?months.map(Number).filter(Number.isFinite):(months?[Number(months)]:[]),set=new Set();if(!wanted.length)return[];years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const d=datePartsOf(f);if(wanted.includes(d.month)&&d.day)set.add(d.day);}));return[...set].sort((a,b)=>a-b);
+  function availableDays(years=activeYears(),month=state.month){
+    const target=Number(month||0),set=new Set();if(!target)return[];years.forEach(y=>(raw.hotspot[y]?.features||[]).forEach(f=>{const d=datePartsOf(f);if(d.month===target&&d.day)set.add(d.day);}));return[...set].sort((a,b)=>a-b);
   }
-  function temporalState(){return{months:selectedMonths(),month:selectedMonths().join(','),day:String(state.day||''),startYM:state.startYM,endYM:state.endYM,startYear:state.startYear,startMonth:state.startMonth,endYear:state.endYear,endMonth:state.endMonth};}
+  function temporalState(){return{month:String(state.month||''),day:String(state.day||'')};}
   return { init,applyFilter,focusSelection,zoomToKPT,getRiskLevel,getRiskForScope,getData:()=>raw,map:()=>map,activeYears,computeDynamicRisk,importHotspots,availableMonths,availableDays,temporalState,helpers:{districtOf,subdistrictOf,cropOf,provinceOf,clean,normalizeCrop,annualEvidenceScore,datePartsOf,matchesDate} };
 })();
