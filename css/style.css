@@ -3357,3 +3357,36 @@ body.print-preparing #hotspot-comparison-box{
   #right-panel .comparison-heading h4{display:block!important;margin:0 0 .6mm!important;}
   #right-panel .comparison-heading span{display:block!important;text-align:left!important;}
 }
+
+
+/* ===== Professional refinement: guide label, comparison badges, remove yearly HS card, all-area ranking ===== */
+#risk-guide-drive-link{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+}
+#risk-guide-drive-link.hidden{display:none!important;}
+#trend-box{display:none!important;}
+.change-badge.change-up{
+  background:#fee2e2!important;
+  color:#991b1b!important;
+  border:1px solid #ef4444!important;
+}
+.change-badge.change-down,.change-badge.change-flat{
+  background:#dcfce7!important;
+  color:#166534!important;
+  border:1px solid #22c55e!important;
+}
+#tbl-top-district th,#tbl-top-district td{
+  vertical-align:middle!important;
+}
+@media print{
+  #trend-box{display:none!important;}
+  .change-badge.change-up,.change-badge.change-down,.change-badge.change-flat{
+    background:transparent!important;
+    border:0!important;
+    color:#111827!important;
+    -webkit-text-fill-color:#111827!important;
+  }
+}

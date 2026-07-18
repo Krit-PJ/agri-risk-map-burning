@@ -6,7 +6,8 @@ const Dashboard = (() => {
 
   function init(){
     Object.keys(charts).forEach(key=>{try{charts[key]?.destroy?.();}catch{} delete charts[key];});
-    charts.trend=new Chart(document.getElementById('chart-trend'),{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:[]}]},options:opts()});
+    const trendCanvas=document.getElementById('chart-trend');
+    if(trendCanvas) charts.trend=new Chart(trendCanvas,{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:[]}]},options:opts()});
     charts.top=new Chart(document.getElementById('chart-top-district'),{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:'#38bdf8'}]},options:{...opts(),indexAxis:'y'}});
     charts.risk=new Chart(document.getElementById('chart-risk'),{type:'doughnut',data:{labels:CONFIG.RISK_LEVELS.map(x=>x.label),datasets:[{data:[0,0,0,0],backgroundColor:CONFIG.RISK_LEVELS.map(x=>x.color)}]},options:riskOpts(),plugins:[riskPercentPlugin]});
     updateDataTimestamp();
@@ -53,11 +54,13 @@ const Dashboard = (() => {
   }
   function refresh(){
     const years=activeYears(), fs=selected();
-    charts.trend.data.labels=years;
-    charts.trend.data.datasets[0].data=years.map(y=>(store[y]?.features||[]).filter(matchesState).length);
-    charts.trend.data.datasets[0].backgroundColor=years.map(y=>CONFIG.YEAR_COLORS[y]||'#ef4444');
-    charts.trend.update('none');
-    lockCanvasSize(charts.trend,'chart-trend');
+    if(charts.trend){
+      charts.trend.data.labels=years;
+      charts.trend.data.datasets[0].data=years.map(y=>(store[y]?.features||[]).filter(matchesState).length);
+      charts.trend.data.datasets[0].backgroundColor=years.map(y=>CONFIG.YEAR_COLORS[y]||'#ef4444');
+      charts.trend.update('none');
+      lockCanvasSize(charts.trend,'chart-trend');
+    }
 
     const unit=state.district?'__subdistrict':'__district', counts=countBy(fs,unit), ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
     charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]); charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]); charts.top.update('none'); lockCanvasSize(charts.top,'chart-top-district');
@@ -71,9 +74,9 @@ const Dashboard = (() => {
     updateComparisonTable(years);
 
     const tbody=document.querySelector('#tbl-top-district tbody'); tbody.innerHTML='';
-    ranked.slice(0,10).forEach(([name,n])=>{
+    ranked.forEach(([name,n])=>{
       const score=riskScoreFor(name), level=MapModule.getRiskLevel(score), tr=document.createElement('tr');
-      tr.innerHTML=`<td>${name||'ไม่ระบุ'}</td><td>${state.district?'อ.'+state.district:'กำแพงเพชร'}</td><td>${n.toLocaleString('th-TH')}</td><td><span class="risk-badge ${level.class}" title="คะแนนความเสี่ยง ${score.toFixed(1)} จากปีที่เลือก">${level.label}</span></td>`;
+      tr.innerHTML=`<td>${name||'ไม่ระบุ'}</td><td>${n.toLocaleString('th-TH')}</td><td><span class="risk-badge ${level.class}" title="คะแนนความเสี่ยง ${score.toFixed(1)} จากปีที่เลือก">${level.label}</span></td>`;
       tbody.appendChild(tr);
     });
     updateTitles(yearText);
@@ -205,11 +208,9 @@ const Dashboard = (() => {
   function updateTitles(yearText){
     const scope=state.subdistrict?`ตำบล${state.subdistrict} อำเภอ${state.district}`:state.district?`อำเภอ${state.district}`:'จังหวัดกำแพงเพชร';
     const unit=state.district?'ตำบล':'อำเภอ';
-    document.getElementById('scope-caption').textContent=`ขอบเขตวิเคราะห์: ${scope} | ${yearText} | ${temporalText()}${state.crop?' | พืช: '+state.crop:''}`;
-    document.getElementById('title-trend').textContent=`Hotspot รายปี - ${scope}`;
     document.getElementById('title-top5').textContent=`Top 5 ${unit} - ${yearText} (${temporalText()})`;
     document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับความเสี่ยงสะสม':'ระดับความเสี่ยงสะสม'} - ${yearText} (${temporalText()})`;
-    document.getElementById('title-top10').textContent=`Top 10 ${unit} (Hotspot สูงสุด) - ${yearText} (${temporalText()})`;
+    document.getElementById('title-top10').textContent=`ทุก${unit} (Hotspot สูงสุด) - ${yearText} (${temporalText()})`;
     document.getElementById('rank-area-header').textContent=unit;
   }
 
