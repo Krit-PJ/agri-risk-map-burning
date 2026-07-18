@@ -3,13 +3,16 @@ const Dashboard = (() => {
   let state={district:'',subdistrict:'',crop:'',months:[],month:'',day:'',startYM:null,endYM:null,startYear:null,startMonth:null,endYear:null,endMonth:null};
   let refreshQueued=false;
   const H=()=>MapModule.helpers;
+  function el(id){return document.getElementById(id);}
+  function setText(id,value){const node=el(id); if(node)node.textContent=value;}
+  function setHTML(id,value){const node=el(id); if(node)node.innerHTML=value;}
+  function makeChart(id,config){const canvas=el(id); if(!canvas||typeof Chart==='undefined')return null; return new Chart(canvas,config);}
 
   function init(){
     Object.keys(charts).forEach(key=>{try{charts[key]?.destroy?.();}catch{} delete charts[key];});
-    const trendCanvas=document.getElementById('chart-trend');
-    if(trendCanvas) charts.trend=new Chart(trendCanvas,{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:[]}]},options:opts()});
-    charts.top=new Chart(document.getElementById('chart-top-district'),{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:'#38bdf8'}]},options:{...opts(),indexAxis:'y'}});
-    charts.risk=new Chart(document.getElementById('chart-risk'),{type:'doughnut',data:{labels:CONFIG.RISK_LEVELS.map(x=>x.label),datasets:[{data:[0,0,0,0],backgroundColor:CONFIG.RISK_LEVELS.map(x=>x.color)}]},options:riskOpts(),plugins:[riskPercentPlugin]});
+    charts.trend=makeChart('chart-trend',{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:[]}]},options:opts()});
+    charts.top=makeChart('chart-top-district',{type:'bar',data:{labels:[],datasets:[{label:'Hotspot',data:[],backgroundColor:'#38bdf8'}]},options:{...opts(),indexAxis:'y'}});
+    charts.risk=makeChart('chart-risk',{type:'doughnut',data:{labels:CONFIG.RISK_LEVELS.map(x=>x.label),datasets:[{data:[0,0,0,0],backgroundColor:CONFIG.RISK_LEVELS.map(x=>x.color)}]},options:riskOpts(),plugins:[riskPercentPlugin]});
     updateDataTimestamp();
     document.addEventListener('agri-risk:years-changed',queueRefresh);
   }
@@ -41,8 +44,8 @@ const Dashboard = (() => {
   function updateDataTimestamp(){
     const latest=latestDataDate();
     const text=latest?`ข้อมูลล่าสุด: ${formatThaiDate(latest)}`:'ข้อมูลล่าสุด: กำลังโหลด…';
-    const el=document.getElementById('last-updated');if(el)el.textContent=text;
-    const printEl=document.getElementById('print-data-updated');if(printEl)printEl.textContent=text;
+    setText('last-updated',text);
+    setText('print-data-updated',text);
   }
   function setData(hotspot){Object.assign(store,hotspot);updateDataTimestamp();queueRefresh();}
   function setYearData(year,fc){store[String(year)]=fc;updateDataTimestamp();queueRefresh();}
@@ -63,22 +66,23 @@ const Dashboard = (() => {
     }
 
     const unit=state.district?'__subdistrict':'__district', counts=countBy(fs,unit), ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-    charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]); charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]); charts.top.update('none'); lockCanvasSize(charts.top,'chart-top-district');
+    if(charts.top){charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]); charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]); charts.top.update('none'); lockCanvasSize(charts.top,'chart-top-district');}
 
     const riskFeatures=selectedRiskFeatures(), risk=[0,0,0,0];
     riskFeatures.forEach(f=>{const score=riskScoreOf(f.properties);const idx=CONFIG.RISK_LEVELS.findIndex(x=>score>=x.min&&score<x.max);risk[Math.max(idx,0)]++;});
-    charts.risk.data.datasets[0].data=risk; charts.risk.update('none'); lockCanvasSize(charts.risk,'chart-risk');
+    if(charts.risk){charts.risk.data.datasets[0].data=risk; charts.risk.update('none'); lockCanvasSize(charts.risk,'chart-risk');}
     updateRiskLegend(risk);
 
     const yearText=formatYears(years);
     updateComparisonTable(years);
 
-    const tbody=document.querySelector('#tbl-top-district tbody'); tbody.innerHTML='';
+    const tbody=document.querySelector('#tbl-top-district tbody');
+    if(tbody){tbody.innerHTML='';
     ranked.forEach(([name,n])=>{
       const score=riskScoreFor(name), level=MapModule.getRiskLevel(score), tr=document.createElement('tr');
       tr.innerHTML=`<td>${name||'ไม่ระบุ'}</td><td>${n.toLocaleString('th-TH')}</td><td><span class="risk-badge ${level.class}" title="คะแนนความเสี่ยง ${score.toFixed(1)} จากปีที่เลือก">${level.label}</span></td>`;
       tbody.appendChild(tr);
-    });
+    });}
     updateTitles(yearText);
   }
 
@@ -151,16 +155,16 @@ const Dashboard = (() => {
       body.appendChild(tr);
     });
     const ct=currentFs.length,pt=previousFs.length,totalChange=pctChange(ct,pt);
-    document.getElementById('comparison-current-total').textContent=ct.toLocaleString('th-TH');
-    document.getElementById('comparison-previous-total').textContent=pt.toLocaleString('th-TH');
-    const totalEl=document.getElementById('comparison-change-total');totalEl.innerHTML=`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`;
+    setText('comparison-current-total',ct.toLocaleString('th-TH'));
+    setText('comparison-previous-total',pt.toLocaleString('th-TH'));
+    setHTML('comparison-change-total',`<span class="change-badge ${totalChange.cls}">${totalChange.text}</span>`);
     const unitLabel=state.district?'ตำบล':'อำเภอ';
-    document.getElementById('comparison-area-header').textContent=unitLabel;
+    setText('comparison-area-header',unitLabel);
     const previousPeriod=priorRange();
-    document.getElementById('comparison-current-header').textContent='ช่วงที่เลือก';
-    document.getElementById('comparison-previous-header').textContent='ช่วงเดียวกันปีก่อน';
-    document.getElementById('title-comparison').textContent=`เปรียบเทียบ Hotspot ราย${unitLabel}`;
-    document.getElementById('comparison-period').textContent=`${temporalText()} เทียบกับ ${previousPeriod.label} · ${state.crop||'ทุกชนิดพืช'}`;
+    setText('comparison-current-header','ช่วงที่เลือก');
+    setText('comparison-previous-header','ช่วงเดียวกันปีก่อน');
+    setText('title-comparison',`เปรียบเทียบ Hotspot ราย${unitLabel}`);
+    setText('comparison-period',`${temporalText()} เทียบกับ ${previousPeriod.label} · ${state.crop||'ทุกชนิดพืช'}`);
   }
 
   function updateRiskLegend(values){
@@ -208,10 +212,10 @@ const Dashboard = (() => {
   function updateTitles(yearText){
     const scope=state.subdistrict?`ตำบล${state.subdistrict} อำเภอ${state.district}`:state.district?`อำเภอ${state.district}`:'จังหวัดกำแพงเพชร';
     const unit=state.district?'ตำบล':'อำเภอ';
-    document.getElementById('title-top5').textContent=`Top 5 ${unit} - ${yearText} (${temporalText()})`;
-    document.getElementById('title-risk').textContent=`${activeYears().length===1?'ระดับความเสี่ยงสะสม':'ระดับความเสี่ยงสะสม'} - ${yearText} (${temporalText()})`;
-    document.getElementById('title-top10').textContent=`ทุก${unit} (Hotspot สูงสุด) - ${yearText} (${temporalText()})`;
-    document.getElementById('rank-area-header').textContent=unit;
+    setText('title-top5',`Top 5 ${unit} - ${yearText} (${temporalText()})`);
+    setText('title-risk',`${activeYears().length===1?'ระดับความเสี่ยงสะสม':'ระดับความเสี่ยงสะสม'} - ${yearText} (${temporalText()})`);
+    setText('title-top10',`ทุก${unit} (Hotspot สูงสุด) - ${yearText} (${temporalText()})`);
+    setText('rank-area-header',unit);
   }
 
   function setPrintMode(enabled){
