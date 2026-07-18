@@ -65,7 +65,7 @@ const Dashboard = (() => {
       lockCanvasSize(charts.trend,'chart-trend');
     }
 
-    const unit=state.district?'__subdistrict':'__district', counts=countBy(fs,unit), ranked=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    const unit=state.district?'__subdistrict':'__district', counts=countBy(fs,unit), ranked=rankingRows(counts,unit);
     if(charts.top){charts.top.data.labels=ranked.slice(0,5).map(x=>x[0]); charts.top.data.datasets[0].data=ranked.slice(0,5).map(x=>x[1]); charts.top.update('none'); lockCanvasSize(charts.top,'chart-top-district');}
 
     const riskFeatures=selectedRiskFeatures(), risk=[0,0,0,0];
@@ -97,9 +97,10 @@ const Dashboard = (() => {
   }
 
   function pctChange(current,previous){
-    if(previous===0)return current===0?{text:'0.0%',cls:'change-flat'}:{text:`+${(current*100).toFixed(1)}%`,cls:'change-up'};
+    if(previous===0)return current===0?{text:'0%',cls:'change-flat'}:{text:`+${Math.round(current*100)}%`,cls:'change-up'};
     const pct=(current-previous)*100/previous;
-    return {text:`${pct>0?'+':''}${pct.toFixed(1)}%`,cls:pct>0?'change-up':pct<0?'change-down':'change-flat'};
+    const rounded=Math.round(pct);
+    return {text:`${rounded>0?'+':''}${rounded}%`,cls:rounded>0?'change-up':rounded<0?'change-down':'change-flat'};
   }
   function ymIndex(year,month){return Number(year)*12+Number(month);}
   function ymFromIndex(i){return {year:Math.floor((Number(i)-1)/12),month:((Number(i)-1)%12)+1};}
@@ -194,6 +195,16 @@ const Dashboard = (() => {
   }
   function formatYears(years){return Number(state.startYM)?`ช่วงข้อมูล ${temporalText()}`:(years.length===1?`ชุดข้อมูลปี ${years[0]}`:`ชุดข้อมูลปี ${years.join(', ')}`);}
   function countBy(fs,key){const o={};fs.forEach(f=>{const k=f.properties?.[key]||'ไม่ระบุ';o[k]=(o[k]||0)+1;});return o;}
+  function rankingRows(counts,unit){
+    let names=Object.keys(counts).filter(n=>n&&n!=='ไม่ระบุ');
+    if(unit==='__district'&&!state.district){
+      const order=['เมืองกำแพงเพชร','ไทรงาม','คลองลาน','ขาณุวรลักษบุรี','คลองขลุง','พรานกระต่าย','ลานกระบือ','ทรายทองวัฒนา','ปางศิลาทอง','บึงสามัคคี','โกสัมพีนคร'];
+      const boundary=MapModule.getRiskForScope('district')?.features||[];
+      const boundaryNames=boundary.map(f=>H().districtOf(f.properties)).filter(Boolean);
+      names=[...new Set([...order,...boundaryNames,...names])];
+    }
+    return names.map(name=>[name,counts[name]||0]).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'th'));
+  }
   function riskScoreOf(p){return Number(p?.risk_score??p?.RISK_SCORE??p?.risk??p?.score??0)||0;}
   function selectedRiskFeatures(){
     const scope=state.district?'subdistrict':'district';

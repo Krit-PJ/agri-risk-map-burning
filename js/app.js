@@ -1,6 +1,7 @@
 const App=(()=>{
   let subdistrictFeatures=[];
   let lastImported=null;
+  let appliedPeriodRange=null;
   const ADMIN_SESSION_KEY='agri-risk-admin-session';
   const ADMIN_CREDENTIAL_HASH='c8e1f70c7abe021cf605303463b617d548d63e251f3fb1d9ae566470086b7603';
   const ADMIN_SESSION_MINUTES=30;
@@ -57,6 +58,8 @@ const App=(()=>{
     const a=ymFromIndex(startYM),b=ymFromIndex(endYM);
     return {startYear:a.year,startMonth:a.month,endYear:b.year,endMonth:b.month,startYM,endYM};
   }
+  function cloneRange(r){return r?{startYear:r.startYear,startMonth:r.startMonth,endYear:r.endYear,endMonth:r.endMonth,startYM:r.startYM,endYM:r.endYM}:null;}
+  function activeRange(){return cloneRange(appliedPeriodRange)||selectedRange();}
   function normalizePeriodRange(){
     const r=selectedRange();
     const sy=document.getElementById('range-start-year'),sm=document.getElementById('range-start-month'),ey=document.getElementById('range-end-year'),em=document.getElementById('range-end-month');
@@ -67,7 +70,7 @@ const App=(()=>{
     if(r.startYear===r.endYear){const out=[];for(let m=r.startMonth;m<=r.endMonth;m++)out.push(m);return out;}
     return [];
   }
-  function current(){const r=selectedRange();return{
+  function current(){const r=activeRange();return{
     district:document.getElementById('filter-district').value,
     subdistrict:document.getElementById('filter-subdistrict').value,
     crop:document.getElementById('filter-crop').value,
@@ -75,12 +78,12 @@ const App=(()=>{
     day:document.getElementById('filter-day')?.value||'',
     startYear:r.startYear,startMonth:r.startMonth,endYear:r.endYear,endMonth:r.endMonth,startYM:r.startYM,endYM:r.endYM
   };}
-  function selectedYear(){return String(selectedRange().endYear||CONFIG.CURRENT_YEAR_BE||2569);}
+  function selectedYear(){return String(activeRange().endYear||CONFIG.CURRENT_YEAR_BE||2569);}
   function ensureYearDropdown(){fillPeriodSelects();}
-  function activeRangeYears(){const r=selectedRange(),out=[];for(let y=r.startYear;y<=r.endYear;y++)out.push(y);return out;}
+  function activeRangeYears(){const r=activeRange(),out=[];for(let y=r.startYear;y<=r.endYear;y++)out.push(y);return out;}
   function syncYearSelector(){
     ensureYearDropdown();
-    const r=selectedRange();
+    const r=activeRange();
     const active=new Set(activeRangeYears().map(String));
     const hidden=document.getElementById('filter-year');if(hidden)hidden.value=String(r.endYear);
     const timelineYear=document.getElementById('timeline-year');if(timelineYear)timelineYear.value=String(r.endYear);
@@ -88,26 +91,30 @@ const App=(()=>{
     const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ช่วงข้อมูล ${periodText(r)}`;
   }
   function applyYearSelector(){
-    normalizePeriodRange();syncYearSelector();populateDayOptions();applyCurrent();
-    document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'period-range'}}));
+    normalizePeriodRange();
+    const pending=selectedRange();
+    const btn=document.getElementById('btn-latest-period');
+    if(btn)btn.classList.add('period-pending');
+    const status=document.getElementById('timeline-status');
+    if(status)status.textContent=`เลือกช่วง ${periodText(pending)} แล้ว · กดแสดงข้อมูลเพื่อใช้ช่วงนี้`;
   }
   function populateDayOptions(){
     const daySel=document.getElementById('filter-day');if(!daySel)return;
     daySel.innerHTML='<option value="">-- ไม่ใช้ตัวกรองวันที่ --</option>';daySel.disabled=true;daySel.value='';
   }
   function initTimeline(){
-    fillPeriodSelects();setLatestPeriod();
+    fillPeriodSelects();setLatestPeriod();appliedPeriodRange=selectedRange();syncYearSelector();
     ['range-start-month','range-start-year','range-end-month','range-end-year'].forEach(id=>document.getElementById(id)?.addEventListener('change',applyYearSelector));
-    document.getElementById('btn-latest-period')?.addEventListener('click',()=>{normalizePeriodRange();syncYearSelector();populateDayOptions();syncTimelineUI();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'apply-period-range'}}));});
+    document.getElementById('btn-latest-period')?.addEventListener('click',()=>{normalizePeriodRange();appliedPeriodRange=selectedRange();const btn=document.getElementById('btn-latest-period');if(btn)btn.classList.remove('period-pending');syncYearSelector();populateDayOptions();syncTimelineUI();applyCurrent();document.dispatchEvent(new CustomEvent('agri-risk:years-changed',{detail:{years:MapModule.activeYears(),source:'apply-period-range'}}));});
   }
-  function periodText(r=selectedRange()){
+  function periodText(r=activeRange()){
     const a=`${MONTH_SHORT[r.startMonth]} ${r.startYear}`;
     const b=`${MONTH_SHORT[r.endMonth]} ${r.endYear}`;
     return r.startYM===r.endYM?a:`${a} ถึง ${b}`;
   }
   function monthText(){return periodText();}
   function syncTimelineUI(){
-    const r=selectedRange();syncYearSelector();
+    const r=activeRange();syncYearSelector();
     const status=document.getElementById('timeline-status');if(status)status.textContent=`จุดความร้อนสะสม: ${periodText(r)}`;
     const chip=document.getElementById('selected-year-display');if(chip)chip.textContent=`ช่วงข้อมูล ${periodText(r)}`;
     updatePrintMeta();
@@ -120,7 +127,7 @@ const App=(()=>{
     return 'จังหวัดกำแพงเพชร';
   }
   function updatePrintMeta(){
-    const r=selectedRange();
+    const r=activeRange();
     const period=`ช่วงข้อมูลจุดความร้อนสะสม: ${periodText(r)}`;
     const printSummary=document.getElementById('print-filter-summary');if(printSummary)printSummary.textContent=period;
     const printScope=document.getElementById('print-scope');if(printScope)printScope.textContent=`ขอบเขต: ${scopeText()}`;

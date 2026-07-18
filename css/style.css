@@ -3390,3 +3390,6 @@ body.print-preparing #hotspot-comparison-box{
     -webkit-text-fill-color:#111827!important;
   }
 }
+
+/* Pending period selector: selected controls are applied only after pressing แสดงข้อมูล. */
+.period-latest-btn.period-pending{box-shadow:0 0 0 3px rgba(234,179,8,.24)!important;border-color:#eab308!important;}
