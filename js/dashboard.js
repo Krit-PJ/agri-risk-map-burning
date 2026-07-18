@@ -90,7 +90,7 @@ const Dashboard = (() => {
   }
 
   function pctChange(current,previous){
-    if(previous===0)return current===0?{text:'0.0%',cls:'change-flat'}:{text:'ใหม่',cls:'change-new'};
+    if(previous===0)return current===0?{text:'0.0%',cls:'change-flat'}:{text:`+${(current*100).toFixed(1)}%`,cls:'change-up'};
     const pct=(current-previous)*100/previous;
     return {text:`${pct>0?'+':''}${pct.toFixed(1)}%`,cls:pct>0?'change-up':pct<0?'change-down':'change-flat'};
   }

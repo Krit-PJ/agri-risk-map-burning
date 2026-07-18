@@ -3342,3 +3342,18 @@ body.print-preparing #hotspot-comparison-box{
   letter-spacing:.01em!important;
 }
 .period-latest-btn::before{content:'✓ ';font-weight:900!important;}
+
+
+/* Admin-controlled Drive guide link + comparison heading final refinement */
+#risk-guide-drive-link.hidden,#guide-visibility-section.hidden{display:none!important;}
+.guide-toggle-row{align-items:center!important;gap:8px!important;}
+#right-panel .comparison-heading{display:block!important;}
+#right-panel .comparison-heading h4{display:block!important;margin:0 0 4px!important;}
+#right-panel .comparison-heading span{display:block!important;text-align:left!important;line-height:1.25!important;}
+.change-badge.change-up{background:#dcfce7!important;color:#166534!important;border-color:#22c55e!important;}
+@media print{
+  #risk-guide-drive-link,#guide-visibility-section{display:none!important;}
+  #right-panel .comparison-heading{display:block!important;}
+  #right-panel .comparison-heading h4{display:block!important;margin:0 0 .6mm!important;}
+  #right-panel .comparison-heading span{display:block!important;text-align:left!important;}
+}

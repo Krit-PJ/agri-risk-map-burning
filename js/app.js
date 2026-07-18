@@ -4,6 +4,7 @@ const App=(()=>{
   const ADMIN_SESSION_KEY='agri-risk-admin-session';
   const ADMIN_CREDENTIAL_HASH='c8e1f70c7abe021cf605303463b617d548d63e251f3fb1d9ae566470086b7603';
   const ADMIN_SESSION_MINUTES=30;
+  const GUIDE_VISIBLE_KEY='agri-risk-guide-visible';
 
   async function init(){
     const loaded=await MapModule.init();
@@ -193,6 +194,7 @@ const App=(()=>{
     modal?.addEventListener('click',event=>{if(event.target===modal)closeAdminModal();});
     document.addEventListener('keydown',event=>{if(event.key==='Escape')closeAdminModal();});
     form?.addEventListener('submit',adminLogin);
+    document.getElementById('toggle-risk-guide')?.addEventListener('change',event=>setGuideVisible(Boolean(event.target.checked)));
     updateAdminUI();
   }
   function isAdminAuthenticated(){
@@ -229,15 +231,34 @@ const App=(()=>{
     const dl=document.getElementById('btn-download-import');if(dl)dl.disabled=true;
     updateAdminUI();
   }
+  function isGuideVisible(){
+    try{return localStorage.getItem(GUIDE_VISIBLE_KEY)==='1';}catch{return false;}
+  }
+  function setGuideVisible(visible){
+    try{localStorage.setItem(GUIDE_VISIBLE_KEY,visible?'1':'0');}catch{}
+    updateGuideVisibility();
+  }
+  function updateGuideVisibility(){
+    const visible=isGuideVisible();
+    const link=document.getElementById('risk-guide-drive-link');
+    const toggle=document.getElementById('toggle-risk-guide');
+    link?.classList.toggle('hidden',!visible);
+    link?.setAttribute('aria-hidden',String(!visible));
+    if(toggle)toggle.checked=visible;
+  }
   function updateAdminUI(){
     const authenticated=isAdminAuthenticated();
     const section=document.getElementById('excel-import-section');
+    const guideSection=document.getElementById('guide-visibility-section');
     const loginBtn=document.getElementById('btn-admin-login');
     const logoutBtn=document.getElementById('btn-admin-logout');
     section?.classList.toggle('hidden',!authenticated);
     section?.setAttribute('aria-hidden',String(!authenticated));
+    guideSection?.classList.toggle('hidden',!authenticated);
+    guideSection?.setAttribute('aria-hidden',String(!authenticated));
     loginBtn?.classList.toggle('hidden',authenticated);
     logoutBtn?.classList.toggle('hidden',!authenticated);
+    updateGuideVisibility();
     if(authenticated)touchAdminSession();
   }
   function openAdminModal(message=''){

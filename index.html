@@ -293,15 +293,21 @@
 <label><input name="basemap" type="radio" value="topo"/> Topo</label>
 </div>
 </section>
-<section class="panel-section no-print admin-only hidden" id="excel-import-section" aria-hidden="true"><h3>📥 นำเข้า Hotspot จาก Excel</h3><p class="field-help">รองรับไฟล์ .xlsx/.xls ที่มีตารางรายละเอียด hsID, Date, Province, LandType และ Maps/X/Y</p><label>ปีข้อมูล (พ.ศ.)<input id="import-year" inputmode="numeric" max="2600" min="2566" type="number" value="2570"/></label><label>ไฟล์ Excel<input accept=".xlsx,.xls" id="import-excel" type="file"/></label><div class="data-actions"><button class="btn-primary" id="btn-import-excel" type="button">ตรวจสอบและนำเข้า</button><button class="btn-secondary" disabled="" id="btn-download-import" type="button">ดาวน์โหลด GeoJSON</button></div><div aria-live="polite" class="import-status" id="import-status" role="status">ยังไม่ได้เลือกไฟล์</div></section><section class="panel-section" id="risk-methodology">
+<section class="panel-section no-print admin-only hidden" id="excel-import-section" aria-hidden="true"><h3>📥 นำเข้า Hotspot จาก Excel</h3><p class="field-help">รองรับไฟล์ .xlsx/.xls ที่มีตารางรายละเอียด hsID, Date, Province, LandType และ Maps/X/Y</p><label>ปีข้อมูล (พ.ศ.)<input id="import-year" inputmode="numeric" max="2600" min="2566" type="number" value="2570"/></label><label>ไฟล์ Excel<input accept=".xlsx,.xls" id="import-excel" type="file"/></label><div class="data-actions"><button class="btn-primary" id="btn-import-excel" type="button">ตรวจสอบและนำเข้า</button><button class="btn-secondary" disabled="" id="btn-download-import" type="button">ดาวน์โหลด GeoJSON</button></div><div aria-live="polite" class="import-status" id="import-status" role="status">ยังไม่ได้เลือกไฟล์</div></section><section class="panel-section no-print admin-only hidden" id="guide-visibility-section" aria-hidden="true">
+<h3>📘 คู่มือการประเมินความเสี่ยง</h3>
+<label class="toggle-row guide-toggle-row">
+<input id="toggle-risk-guide" type="checkbox"/> เปิดให้ผู้ใช้เห็นปุ่มคู่มือ
+</label>
+<p class="field-help">เมื่อเปิด ระบบจะแสดงปุ่มคู่มือในแถบซ้าย และเปิดไปที่ Google Drive ไม่เปิดไฟล์ PDF โดยตรง</p>
+</section><section class="panel-section" id="risk-methodology">
 <h3>📊 หลักเกณฑ์การประเมินระดับความเสี่ยง</h3>
 <div aria-label="ระดับความเสี่ยง" class="risk-levels">
 <div class="risk-level"><span class="risk-swatch" style="background:#e74c3c"></span><span><strong>สูงมาก:</strong> 75-100 คะแนน</span></div>
-<div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง:</strong> 50-74.99 คะแนน</span></div>
-<div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.99 คะแนน</span></div>
-<div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.99 คะแนน</span></div>
+<div class="risk-level"><span class="risk-swatch" style="background:#e67e22"></span><span><strong>สูง:</strong> 50-74.9 คะแนน</span></div>
+<div class="risk-level"><span class="risk-swatch" style="background:#f1c40f"></span><span><strong>ปานกลาง:</strong> 25-49.9 คะแนน</span></div>
+<div class="risk-level"><span class="risk-swatch" style="background:#2ecc71"></span><span><strong>ต่ำ:</strong> 0-24.9 คะแนน</span></div>
 </div>
-<div class="btn-guide-download guide-disabled" aria-disabled="true">คู่มือการประเมินความเสี่ยง: ปิดการดาวน์โหลดชั่วคราว</div>
+<a class="btn-guide-download hidden" id="risk-guide-drive-link" href="https://drive.google.com/drive/folders/1O53HA5-hh7KT67g7-HI8sNWKzJGJXRww" target="_blank" rel="noopener noreferrer">เปิดคู่มือการประเมินความเสี่ยงใน Google Drive</a>
 <div class="visitor-sidebar-card no-print" title="ตัวนับผู้เข้าชม">
   <div class="visitor-sidebar-title"><span aria-hidden="true">👁</span><strong>ผู้เข้าชม</strong></div>
   <div class="visitor-sidebar-count" id="visitor-display">
@@ -370,9 +376,9 @@
   <h4>เกณฑ์ระดับความเสี่ยง</h4>
   <div class="print-risk-level-grid">
     <div class="print-risk-level-item very-high"><span></span><strong>สูงมาก</strong><em>75–100</em></div>
-    <div class="print-risk-level-item high"><span></span><strong>สูง</strong><em>50–74.99</em></div>
-    <div class="print-risk-level-item medium"><span></span><strong>ปานกลาง</strong><em>25–49.99</em></div>
-    <div class="print-risk-level-item low"><span></span><strong>ต่ำ</strong><em>0–24.99</em></div>
+    <div class="print-risk-level-item high"><span></span><strong>สูง</strong><em>50–74.9</em></div>
+    <div class="print-risk-level-item medium"><span></span><strong>ปานกลาง</strong><em>25–49.9</em></div>
+    <div class="print-risk-level-item low"><span></span><strong>ต่ำ</strong><em>0–24.9</em></div>
   </div>
 </div>
 <!-- Top Districts Table -->
