@@ -1,13 +1,7 @@
 {
   "dataset_year_be": 2567,
-  "source_file": "2569-7-20 รวม 67-69 เขต 6.xlsx",
-  "sheet": "2567",
-  "raw_rows": 79842,
-  "province_kamphaeng_phet_rows": 2442,
-  "province_and_agri_rows": 341,
-  "after_plant_normalization_rows": 341,
-  "duplicates_removed_by_hsID": 0,
-  "missing_coordinate_rows_skipped": 0,
+  "source_file": "existing standardized dataset + 2026_KPI_HS_Anlys.xlsx",
+  "sheet": "hotspot_2567.geojson",
   "final_feature_count": 341,
   "date_min": "2024-01-01",
   "date_max": "2024-05-19",
@@ -137,126 +131,13 @@
     "โกสัมพีนคร": 3
   },
   "by_plant_type": {
+    "ข้าวโพดและไร่หมุนเวียน": 5,
     "นาข้าว": 245,
     "อ้อย": 54,
-    "เกษตรอื่น ๆ": 37,
-    "ข้าวโพดและไร่หมุนเวียน": 5
+    "เกษตรอื่น ๆ": 37
   },
   "by_land_type": {
     "พื้นที่เกษตร": 341
   },
-  "sample_tambon_top20": [
-    {
-      "Amphoe": "เมืองกำแพงเพชร",
-      "Tambon": "เทพนคร",
-      "count": 40
-    },
-    {
-      "Amphoe": "เมืองกำแพงเพชร",
-      "Tambon": "นิคมทุ่งโพธิ์ทะเล",
-      "count": 22
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "วังแขม",
-      "count": 19
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "คลองขลุง",
-      "count": 16
-    },
-    {
-      "Amphoe": "เมืองกำแพงเพชร",
-      "Tambon": "คณฑี",
-      "count": 15
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "ท่ามะเขือ",
-      "count": 13
-    },
-    {
-      "Amphoe": "พรานกระต่าย",
-      "Tambon": "เขาคีริส",
-      "count": 12
-    },
-    {
-      "Amphoe": "บึงสามัคคี",
-      "Tambon": "เทพนิมิต",
-      "count": 11
-    },
-    {
-      "Amphoe": "ขาณุวรลักษบุรี",
-      "Tambon": "โค้งไผ่",
-      "count": 11
-    },
-    {
-      "Amphoe": "ทรายทองวัฒนา",
-      "Tambon": "ทุ่งทราย",
-      "count": 10
-    },
-    {
-      "Amphoe": "ขาณุวรลักษบุรี",
-      "Tambon": "บ่อถ้ำ",
-      "count": 9
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "วังยาง",
-      "count": 9
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "ท่าพุทรา",
-      "count": 8
-    },
-    {
-      "Amphoe": "ขาณุวรลักษบุรี",
-      "Tambon": "ดอนแตง",
-      "count": 8
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "หัวถนน",
-      "count": 7
-    },
-    {
-      "Amphoe": "คลองขลุง",
-      "Tambon": "วังบัว",
-      "count": 7
-    },
-    {
-      "Amphoe": "เมืองกำแพงเพชร",
-      "Tambon": "สระแก้ว",
-      "count": 6
-    },
-    {
-      "Amphoe": "บึงสามัคคี",
-      "Tambon": "วังชะโอน",
-      "count": 6
-    },
-    {
-      "Amphoe": "ขาณุวรลักษบุรี",
-      "Tambon": "สลกบาตร",
-      "count": 6
-    },
-    {
-      "Amphoe": "เมืองกำแพงเพชร",
-      "Tambon": "นครชุม",
-      "count": 5
-    }
-  ],
-  "columns_used": [
-    "Province",
-    "Amphoe",
-    "Tambon",
-    "BaanN",
-    "LandType",
-    "PlantType",
-    "Date",
-    "เดือน",
-    "Maps",
-    "hsID"
-  ]
+  "note": "นำข้อมูลที่จัดทำไว้ก่อนหน้านี้มาเพิ่มเติม เนื่องจากไฟล์หลักรอบนี้ใช้ Sheet 2025All สำหรับชุดปี 2568 เป็นหลัก"
 }
