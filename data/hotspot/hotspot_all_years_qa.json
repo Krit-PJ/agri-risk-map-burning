@@ -1,30 +1,31 @@
 {
-  "province": "กำแพงเพชร",
-  "filter_standard": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in [\"นาข้าว\",\"อ้อย\",\"ข้าวโพดและไร่หมุนเวียน\",\"เกษตรอื่น ๆ\",\"พื้นที่ป่า\",\"อื่น ๆ\"]",
-  "admin_hierarchy": "Province → Amphoe → Tambon → BaanN from source table; spatial join is fallback only",
-  "note": "Counts changed from earlier all-land/legacy layers because every year is now regenerated with the same Province + LandType + PlantType criteria.",
-  "datasets": {
-    "2566": {
-      "features": 384,
-      "geometry": "Point",
-      "source_file": "HOTSPOT Viirs 1 ม.ค - 31 พ.ค 66 (รวม).xlsx",
-      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
-      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
-      "month_range": "2566-01/2566-05",
-      "by_plant_type": {
-        "นาข้าว": 260,
-        "อ้อย": 69,
-        "เกษตรอื่น ๆ": 54,
-        "ข้าวโพดและไร่หมุนเวียน": 1
-      }
-    },
+  "source_file": "2569-7-20 รวม 67-69 เขต 6.xlsx",
+  "standard_filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType normalized to allowed groups; de-duplicate by hsID",
+  "years": {
     "2567": {
-      "features": 341,
-      "geometry": "Point",
-      "source_file": "HOTSPOT เหนือ 1 ม.ค.- 31 พ.ค. 67 (เกษตร).xlsx",
-      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
-      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
-      "month_range": "2567-01/2567-05",
+      "final_feature_count": 341,
+      "date_min": "2024-01-01",
+      "date_max": "2024-05-19",
+      "by_month": {
+        "2567-01": 37,
+        "2567-02": 75,
+        "2567-03": 65,
+        "2567-04": 128,
+        "2567-05": 36
+      },
+      "by_district": {
+        "เมืองกำแพงเพชร": 116,
+        "ไทรงาม": 5,
+        "คลองลาน": 4,
+        "ขาณุวรลักษบุรี": 53,
+        "คลองขลุง": 90,
+        "พรานกระต่าย": 32,
+        "ลานกระบือ": 5,
+        "ทรายทองวัฒนา": 10,
+        "ปางศิลาทอง": 2,
+        "บึงสามัคคี": 21,
+        "โกสัมพีนคร": 3
+      },
       "by_plant_type": {
         "นาข้าว": 245,
         "อ้อย": 54,
@@ -33,12 +34,29 @@
       }
     },
     "2568": {
-      "features": 273,
-      "geometry": "Point",
-      "source_file": "HOTSPOT Viirs 1 ม.ค - 31 พ.ค. 68 (รวม).xlsx",
-      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
-      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
-      "month_range": "2568-01/2568-05",
+      "final_feature_count": 273,
+      "date_min": "2025-01-01",
+      "date_max": "2025-05-17",
+      "by_month": {
+        "2568-01": 43,
+        "2568-02": 24,
+        "2568-03": 53,
+        "2568-04": 116,
+        "2568-05": 37
+      },
+      "by_district": {
+        "เมืองกำแพงเพชร": 62,
+        "ไทรงาม": 8,
+        "คลองลาน": 0,
+        "ขาณุวรลักษบุรี": 73,
+        "คลองขลุง": 46,
+        "พรานกระต่าย": 43,
+        "ลานกระบือ": 12,
+        "ทรายทองวัฒนา": 1,
+        "ปางศิลาทอง": 7,
+        "บึงสามัคคี": 14,
+        "โกสัมพีนคร": 7
+      },
       "by_plant_type": {
         "นาข้าว": 195,
         "อ้อย": 47,
@@ -47,19 +65,36 @@
       }
     },
     "2569": {
-      "features": 585,
-      "geometry": "Point",
-      "source_file": "2026-7-6 HS2026(1).xlsx",
-      "filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list",
-      "hierarchy": "source table Province→Amphoe→Tambon→BaanN; spatial join is fallback only",
-      "date_range": "2025-10-02/2026-05-12",
-      "note": "Jan-May 2569 remains 513; Oct-May fiscal-style period is 585.",
+      "final_feature_count": 513,
+      "date_min": "2026-01-02",
+      "date_max": "2026-05-12",
+      "by_month": {
+        "2569-01": 47,
+        "2569-02": 23,
+        "2569-03": 28,
+        "2569-04": 112,
+        "2569-05": 303
+      },
+      "by_district": {
+        "เมืองกำแพงเพชร": 131,
+        "ไทรงาม": 14,
+        "คลองลาน": 6,
+        "ขาณุวรลักษบุรี": 139,
+        "คลองขลุง": 73,
+        "พรานกระต่าย": 89,
+        "ลานกระบือ": 19,
+        "ทรายทองวัฒนา": 10,
+        "ปางศิลาทอง": 1,
+        "บึงสามัคคี": 25,
+        "โกสัมพีนคร": 6
+      },
       "by_plant_type": {
-        "นาข้าว": 442,
-        "อ้อย": 82,
-        "เกษตรอื่น ๆ": 59,
+        "นาข้าว": 380,
+        "อ้อย": 77,
+        "เกษตรอื่น ๆ": 54,
         "อื่น ๆ": 2
       }
     }
-  }
+  },
+  "updated_at": "2026-07-20"
 }
