@@ -3393,3 +3393,81 @@ body.print-preparing #hotspot-comparison-box{
 
 /* Pending period selector: selected controls are applied only after pressing แสดงข้อมูล. */
 .period-latest-btn.period-pending{box-shadow:0 0 0 3px rgba(234,179,8,.24)!important;border-color:#eab308!important;}
+
+/* =====================================================
+   Fiscal default period, compact workspace, and admin login readability
+   Update: 2026-07-20
+   ===================================================== */
+@media screen and (min-width:769px){
+  :root{--timeline-h:122px!important;}
+  html,body{height:100vh!important;min-height:100vh!important;overflow:hidden!important;background:#f8fafc!important;}
+  #app-body{
+    margin-top:calc(var(--header-h) + var(--timeline-h))!important;
+    height:calc(100vh - var(--header-h) - var(--timeline-h))!important;
+    min-height:0!important;
+    max-height:calc(100vh - var(--header-h) - var(--timeline-h))!important;
+    overflow:hidden!important;
+    align-items:stretch!important;
+    background:#ffffff!important;
+  }
+  #map-container,
+  #map,
+  #right-panel{
+    height:100%!important;
+    min-height:0!important;
+    max-height:100%!important;
+  }
+  #map-container{display:block!important;overflow:hidden!important;background:#eef2f7!important;}
+  #map{display:block!important;width:100%!important;}
+  #right-panel{overflow-y:auto!important;overflow-x:hidden!important;}
+  #left-panel{overflow-y:auto!important;overflow-x:hidden!important;}
+}
+
+/* Admin login modal: readable text and equal-width action buttons. */
+.admin-modal-card,
+.admin-modal-card h2,
+.admin-modal-card p,
+.admin-modal-card label,
+.admin-modal-card input,
+.admin-login-status{
+  color:#111827!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+.admin-modal-card{
+  background:#ffffff!important;
+  border:2px solid #86efac!important;
+  box-shadow:0 24px 64px rgba(15,23,42,.28)!important;
+}
+.admin-modal-card h2{font-weight:900!important;color:#064e3b!important;}
+.admin-modal-card p{font-weight:800!important;color:#374151!important;}
+.admin-modal-card label{font-weight:900!important;color:#111827!important;}
+.admin-modal-card input{
+  background:#ffffff!important;
+  color:#111827!important;
+  border:2px solid #86efac!important;
+  border-radius:12px!important;
+}
+.admin-login-actions{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+.admin-login-actions .btn-primary,
+.admin-login-actions .btn-secondary,
+.admin-login-actions button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:12px!important;
+  font-size:16px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+}
+.admin-login-actions .btn-primary{background:#15803d!important;color:#ffffff!important;border:2px solid #166534!important;}
+.admin-login-actions .btn-secondary{background:#f8fafc!important;color:#111827!important;border:2px solid #cbd5e1!important;}
+.admin-modal-close{color:#111827!important;background:#f8fafc!important;border:1px solid #cbd5e1!important;}

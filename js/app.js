@@ -46,7 +46,13 @@ const App=(()=>{
     normalizePeriodRange();
     syncYearSelector();syncTimelineUI();
   }
-  function setLatestPeriod(){const latest=latestYM();setPeriodRange(latest.year,latest.month,latest.year,latest.month);}
+  function setLatestPeriod(){
+    const latest=latestYM();
+    // Default cumulative HS period: October of the previous year through the latest available data month.
+    // Example: latest data May 2569 => default range Oct 2568–May 2569.
+    const startYear=Number(latest.year)-1;
+    setPeriodRange(startYear,10,latest.year,latest.month);
+  }
   function selectedRange(){
     fillPeriodSelects();
     const sy=Number(document.getElementById('range-start-year')?.value||CONFIG.CURRENT_YEAR_BE||2569);
