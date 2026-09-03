@@ -1,10 +1,27 @@
 {
+  "province": "กำแพงเพชร",
+  "scope": "พื้นที่เกษตร",
   "dataset_year_be": 2569,
-  "source_file": "2026_KPI_HS_Anlys.xlsx",
-  "sheet": "2026All",
-  "final_feature_count": 585,
+  "source_file": "2026-9-3 HS2026.xlsx",
+  "detail_sheet": "hsAll",
+  "reference_sheet": "hsPlant2026",
+  "filter_order": [
+    "Province",
+    "LandType",
+    "PlantType"
+  ],
+  "plant_types": [
+    "นาข้าว",
+    "อ้อย",
+    "เกษตรอื่น ๆ",
+    "อื่น ๆ"
+  ],
+  "period": "2025-10-02/2026-08-26",
+  "reference_total": 593,
+  "reference_match": true,
+  "final_feature_count": 593,
   "date_min": "2025-10-02",
-  "date_max": "2026-05-12",
+  "date_max": "2026-08-26",
   "by_month": {
     "2568-10": 3,
     "2568-11": 14,
@@ -13,9 +30,11 @@
     "2569-02": 23,
     "2569-03": 28,
     "2569-04": 112,
-    "2569-05": 303
+    "2569-05": 303,
+    "2569-07": 3,
+    "2569-08": 5
   },
-  "by_day_count": 122,
+  "by_day_count": 125,
   "by_day": {
     "2025-10-02": 1,
     "2025-10-03": 1,
@@ -138,44 +157,45 @@
     "2026-05-07": 3,
     "2026-05-08": 5,
     "2026-05-11": 3,
-    "2026-05-12": 2
+    "2026-05-12": 2,
+    "2026-07-23": 3,
+    "2026-08-14": 3,
+    "2026-08-26": 2
   },
   "by_district": {
-    "เมืองกำแพงเพชร": 139,
+    "เมืองกำแพงเพชร": 142,
     "ไทรงาม": 15,
     "คลองลาน": 7,
     "ขาณุวรลักษบุรี": 149,
     "คลองขลุง": 84,
-    "พรานกระต่าย": 108,
+    "พรานกระต่าย": 109,
     "ลานกระบือ": 22,
-    "ทรายทองวัฒนา": 12,
+    "ทรายทองวัฒนา": 14,
     "ปางศิลาทอง": 1,
-    "บึงสามัคคี": 42,
+    "บึงสามัคคี": 44,
     "โกสัมพีนคร": 6
   },
   "by_plant_type": {
-    "นาข้าว": 442,
-    "อื่น ๆ": 2,
-    "อ้อย": 82,
-    "เกษตรอื่น ๆ": 59
+    "นาข้าว": 448,
+    "อ้อย": 84,
+    "เกษตรอื่น ๆ": 59,
+    "อื่น ๆ": 2
   },
   "by_land_type": {
-    "พื้นที่เกษตร": 585
+    "พื้นที่เกษตร": 593
   },
-  "raw_rows": 93482,
-  "province_kamphaeng_phet_rows": 3616,
-  "province_and_agri_rows": 585,
-  "after_plant_normalization_rows": 585,
+  "reference_by_plant_type": {
+    "นาข้าว": 448,
+    "อ้อย": 84,
+    "เกษตรอื่น ๆ": 59,
+    "อื่น ๆ": 2
+  },
+  "raw_rows": 93765,
   "duplicates_removed_by_hsID": 0,
   "missing_coordinate_rows_skipped": 0,
   "missing_date_rows_skipped": 0,
-  "filter_columns": [
-    "Date",
-    "Time",
-    "Province",
-    "Amphoe",
-    "Tambon",
-    "LandType",
-    "PlantType"
-  ]
+  "excluded_wrong_province": 90128,
+  "excluded_wrong_land_type": 3044,
+  "excluded_wrong_plant_type": 0,
+  "excluded_plant_type_values": {}
 }

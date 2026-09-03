@@ -1,8 +1,7 @@
 {
-  "source_file_primary": "2026_KPI_HS_Anlys.xlsx",
-  "primary_sheet": "2025All",
-  "supplement": "hotspot_2567.geojson from previous standardized data; 2026All sheet used to keep fiscal 2569 coverage consistent",
-  "standard_filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType canonical groups; de-duplicate by hsID; preserve Province-Amphoe-Tambon-BaanN hierarchy",
+  "source_file_primary": "2026-9-3 HS2026.xlsx",
+  "primary_sheet": "hsPlant2026",
+  "standard_filter": "Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in [นาข้าว, อ้อย, เกษตรอื่น ๆ, อื่น ๆ]",
   "years": {
     "2567": {
       "final_feature_count": 341,
@@ -78,9 +77,9 @@
       "sheet": "2025All"
     },
     "2569": {
-      "final_feature_count": 585,
+      "final_feature_count": 593,
       "date_min": "2025-10-02",
-      "date_max": "2026-05-12",
+      "date_max": "2026-08-26",
       "by_month": {
         "2568-10": 3,
         "2568-11": 14,
@@ -89,29 +88,32 @@
         "2569-02": 23,
         "2569-03": 28,
         "2569-04": 112,
-        "2569-05": 303
+        "2569-05": 303,
+        "2569-07": 3,
+        "2569-08": 5
       },
       "by_district": {
-        "เมืองกำแพงเพชร": 139,
+        "เมืองกำแพงเพชร": 142,
         "ไทรงาม": 15,
         "คลองลาน": 7,
         "ขาณุวรลักษบุรี": 149,
         "คลองขลุง": 84,
-        "พรานกระต่าย": 108,
+        "พรานกระต่าย": 109,
         "ลานกระบือ": 22,
-        "ทรายทองวัฒนา": 12,
+        "ทรายทองวัฒนา": 14,
         "ปางศิลาทอง": 1,
-        "บึงสามัคคี": 42,
+        "บึงสามัคคี": 44,
         "โกสัมพีนคร": 6
       },
       "by_plant_type": {
-        "นาข้าว": 442,
-        "อื่น ๆ": 2,
-        "อ้อย": 82,
-        "เกษตรอื่น ๆ": 59
+        "นาข้าว": 448,
+        "อ้อย": 84,
+        "เกษตรอื่น ๆ": 59,
+        "อื่น ๆ": 2
       },
-      "source_file": "2026_KPI_HS_Anlys.xlsx",
-      "sheet": "2026All"
+      "source_file": "2026-9-3 HS2026.xlsx"
     }
-  }
+  },
+  "detail_sheet": "hsAll",
+  "historical_data": "hotspot_2567.geojson and hotspot_2568.geojson preserved from the previous standardized release"
 }

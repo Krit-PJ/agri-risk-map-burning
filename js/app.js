@@ -305,8 +305,10 @@ const App=(()=>{
       const wb=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
       const detail=findDetailTable(wb);
       if(!detail)throw new Error('ไม่พบตารางรายละเอียดที่มีคอลัมน์ hsID, Date, Province และ LandType');
-      const result=rowsToGeoJSON(detail.rows,detail.headers,yearBE);
+      const hsPlantReference=readHsPlant2026Reference(wb);
+      const result=rowsToGeoJSON(detail.rows,detail.headers,yearBE,hsPlantReference,detail.sheet);
       if(!result.features.length)throw new Error(`ไม่พบข้อมูลจังหวัดกำแพงเพชร พื้นที่เกษตร ปี ${yearBE}`);
+      if(result.metadata?.qa?.referenceMatch===false)throw new Error(`ผลกรอง ${result.features.length.toLocaleString('th-TH')} จุด ไม่ตรงกับ hsPlant2026 ${Number(result.metadata.qa.referenceTotal).toLocaleString('th-TH')} จุด จึงยกเลิกการนำเข้า`);
       const checkbox=ensureYearCheckbox(yearBE);
       checkbox.checked=true;
       MapModule.importHotspots(yearBE,result);
@@ -315,7 +317,8 @@ const App=(()=>{
       lastImported={year:yearBE,geojson:result,fileName:`hotspot_${yearBE}.geojson`};
       document.getElementById('btn-download-import').disabled=false;
       const qa=result.metadata?.qa||{};
-      setStatus(`นำเข้าสำเร็จ ${result.features.length.toLocaleString('th-TH')} จุด | ซ้ำที่ตัดออก ${qa.duplicates||0} | ไม่มีพิกัด ${qa.noCoordinates||0}`,'success');
+      const referenceText=qa.referenceTotal===null?'':` | hsPlant2026 ${qa.referenceMatch?'✓ ตรง':'⚠ ไม่ตรง'} ${Number(qa.referenceTotal).toLocaleString('th-TH')} จุด`;
+      setStatus(`นำเข้าสำเร็จ ${result.features.length.toLocaleString('th-TH')} จุด${referenceText} | ซ้ำที่ตัดออก ${qa.duplicates||0} | ไม่มีพิกัด ${qa.noCoordinates||0}`,qa.referenceMatch===false?'warning':'success');
     }catch(err){console.error(err);setStatus(`นำเข้าไม่สำเร็จ: ${err.message}`,'error');}
   }
   function findDetailTable(wb){
@@ -323,15 +326,31 @@ const App=(()=>{
       const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:false,dateNF:'yyyy-mm-dd'});
       for(let i=0;i<rows.length;i++){
         const headers=(rows[i]||[]).map(v=>String(v??'').trim());
-        const required=['hsID','Date','Province','LandType'];
-        if(required.every(k=>headers.includes(k)))return{sheet:name,headers,rows:rows.slice(i+1)};
+        const required=['hsID','Province','LandType','PlantType'];
+        const hasDate=headers.includes('Date')||headers.includes('YYYY-MM-DD');
+        if(required.every(k=>headers.includes(k))&&hasDate)return{sheet:name,headers,rows:rows.slice(i+1)};
       }
     }
     return null;
   }
-  function rowsToGeoJSON(rows,headers,yearBE){
+  function readHsPlant2026Reference(wb){
+    const sheetName=wb.SheetNames.find(name=>String(name).trim().toLowerCase()==='hsplant2026');
+    if(!sheetName)return null;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:true});
+    const compact=v=>String(v??'').replace(/\s+/g,'').trim();
+    const headerIndex=rows.findIndex(row=>compact(row?.[0])==='จังหวัด'&&row.some(v=>compact(v)==='นาข้าว'));
+    if(headerIndex<0)return null;
+    const headers=rows[headerIndex].map(compact);
+    const provinceRow=rows.slice(headerIndex+1).find(row=>compact(row?.[0])==='กำแพงเพชร');
+    if(!provinceRow)return null;
+    const wanted=[['นาข้าว','นาข้าว'],['อ้อย','อ้อย'],['เกษตรอื่น ๆ','เกษตรอื่นๆ'],['อื่น ๆ','อื่นๆ']];
+    const byPlantType={};
+    for(const [plant,header] of wanted){const i=headers.indexOf(header);byPlantType[plant]=i>=0?Number(provinceRow[i]||0):0;}
+    return{sheet:sheetName,province:'กำแพงเพชร',byPlantType,total:Object.values(byPlantType).reduce((sum,n)=>sum+n,0)};
+  }
+  function rowsToGeoJSON(rows,headers,yearBE,hsPlantReference=null,sourceSheet=''){
     const idx=Object.fromEntries(headers.map((h,i)=>[h,i])), seen=new Set();
-    const allowedPlantTypes=new Set(['นาข้าว','อ้อย','ข้าวโพดและไร่หมุนเวียน','เกษตรอื่น ๆ','พื้นที่ป่า','อื่น ๆ']);
+    const allowedPlantTypes=new Set(['นาข้าว','อ้อย','เกษตรอื่น ๆ','อื่น ๆ']);
     let duplicates=0,noCoordinates=0,wrongProvince=0,wrongLand=0,wrongDate=0,wrongPlantType=0;
     const features=[], byPlant={}, byDistrict={}, byMonth={};
     for(const row of rows){
@@ -343,9 +362,9 @@ const App=(()=>{
       if(province!=='กำแพงเพชร'){wrongProvince++;continue;}
       if(String(get('LandType')??'').trim()!=='พื้นที่เกษตร'){wrongLand++;continue;}
       const plantRaw=String(get('PlantType')??'').trim();
-      const plantType=MapModule.helpers.normalizeCrop(plantRaw);
+      const plantType=plantRaw?MapModule.helpers.normalizeCrop(plantRaw):'';
       if(!allowedPlantTypes.has(plantType)){wrongPlantType++;continue;}
-      const dt=parseExcelDate(get('Date'));
+      const dt=parseExcelDate(get('Date')??get('YYYY-MM-DD'));
       if(!dt){wrongDate++;continue;}
       const hsId=String(get('hsID')??'').trim();
       if(hsId&&seen.has(hsId)){duplicates++;continue;} if(hsId)seen.add(hsId);
@@ -375,7 +394,8 @@ const App=(()=>{
         plant_type:plantType,PlantType:plantType,crop_type:plantType,crop_type_raw:plantRaw,__plant_type:plantType,__crop:plantType,
         confidence:Number(get('Q'))||null,Q:get('Q'),
         source:'NASA FIRMS VIIRS / Excel import',
-        filter_rule:'Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in allowed list; hierarchy uses Province→Amphoe→Tambon→BaanN'
+        source_sheet:sourceSheet,
+        filter_rule:'Province=กำแพงเพชร; LandType=พื้นที่เกษตร; PlantType in [นาข้าว, อ้อย, เกษตรอื่น ๆ, อื่น ๆ]'
       }};
       // Do not spatially overwrite Amphoe/Tambon from the source table; only use
       // geometry as a fallback when the source table has missing names.
@@ -392,11 +412,13 @@ const App=(()=>{
     return{type:'FeatureCollection',name:`hotspot_${yearBE}_imported`,metadata:{
       province:'กำแพงเพชร',
       scope:'พื้นที่เกษตร',
+      source_sheet:sourceSheet,
+      reference_sheet:hsPlantReference?.sheet||null,
       filter_order:['Province','Amphoe','Tambon','BaanN','LandType','PlantType'],
       plant_types:[...allowedPlantTypes],
       period:dates.length?`${dates[0]}/${dates[dates.length-1]}`:'',
       counts:{byPlantType:byPlant,byDistrict,byMonth},
-      qa:{inputRows:rows.length,accepted:features.length,duplicates,noCoordinates,wrongProvince,wrongLand,wrongDate,wrongPlantType}
+      qa:{inputRows:rows.length,accepted:features.length,duplicates,noCoordinates,wrongProvince,wrongLand,wrongDate,wrongPlantType,referenceTotal:hsPlantReference?.total??null,referenceMatch:hsPlantReference?features.length===hsPlantReference.total&&[...allowedPlantTypes].every(plant=>(byPlant[plant]||0)===(hsPlantReference.byPlantType[plant]||0)):null,referenceByPlantType:hsPlantReference?.byPlantType||null}
     },features};
   }
   function parseExcelDate(v){

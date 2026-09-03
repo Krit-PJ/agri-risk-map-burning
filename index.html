@@ -276,9 +276,7 @@
 <option value="">-- ทุกชนิดพืช --</option>
 <option value="นาข้าว">นาข้าว</option>
 <option value="อ้อย">อ้อย</option>
-<option value="ข้าวโพดและไร่หมุนเวียน">ข้าวโพดและไร่หมุนเวียน</option>
 <option value="เกษตรอื่น ๆ">เกษตรอื่น ๆ</option>
-<option value="พื้นที่ป่า">พื้นที่ป่า</option>
 <option value="อื่น ๆ">อื่น ๆ</option>
 </select>
 </div>
@@ -293,7 +291,7 @@
 <label><input name="basemap" type="radio" value="topo"/> Topo</label>
 </div>
 </section>
-<section class="panel-section no-print admin-only hidden" id="excel-import-section" aria-hidden="true"><h3>📥 นำเข้า Hotspot จาก Excel</h3><p class="field-help">รองรับไฟล์ .xlsx/.xls ที่มีตารางรายละเอียด hsID, Date, Province, LandType และ Maps/X/Y</p><label>ปีข้อมูล (พ.ศ.)<input id="import-year" inputmode="numeric" max="2600" min="2566" type="number" value="2570"/></label><label>ไฟล์ Excel<input accept=".xlsx,.xls" id="import-excel" type="file"/></label><div class="data-actions"><button class="btn-primary" id="btn-import-excel" type="button">ตรวจสอบและนำเข้า</button><button class="btn-secondary" disabled="" id="btn-download-import" type="button">ดาวน์โหลด GeoJSON</button></div><div aria-live="polite" class="import-status" id="import-status" role="status">ยังไม่ได้เลือกไฟล์</div></section><section class="panel-section no-print admin-only hidden" id="guide-visibility-section" aria-hidden="true">
+<section class="panel-section no-print admin-only hidden" id="excel-import-section" aria-hidden="true"><h3>📥 นำเข้า Hotspot จาก Excel</h3><p class="field-help">รองรับไฟล์ .xlsx/.xls ที่มี hsPlant2026 สำหรับตรวจยอด และตารางรายละเอียด hsID, Date/ YYYY-MM-DD, Province, LandType, PlantType และ Maps/X/Y</p><label>ปีข้อมูล (พ.ศ.)<input id="import-year" inputmode="numeric" max="2600" min="2566" type="number" value="2569"/></label><label>ไฟล์ Excel<input accept=".xlsx,.xls" id="import-excel" type="file"/></label><div class="data-actions"><button class="btn-primary" id="btn-import-excel" type="button">ตรวจสอบและนำเข้า</button><button class="btn-secondary" disabled="" id="btn-download-import" type="button">ดาวน์โหลด GeoJSON</button></div><div aria-live="polite" class="import-status" id="import-status" role="status">ยังไม่ได้เลือกไฟล์</div></section><section class="panel-section no-print admin-only hidden" id="guide-visibility-section" aria-hidden="true">
 <h3>📘 คู่มือการประเมินความเสี่ยง</h3>
 <label class="toggle-row guide-toggle-row">
 <input id="toggle-risk-guide" type="checkbox"/> เปิดให้ผู้ใช้เห็นปุ่มคู่มือ
